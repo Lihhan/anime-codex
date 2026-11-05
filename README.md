@@ -76,7 +76,7 @@ npm start
 
 The repository is private, so cloning requires GitHub access. Use `npm run dev` for development. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`.
 
-A packaged `Anime Codex 0.2.2.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.2/`.
+A packaged `Anime Codex 0.2.3.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.3/`.
 
 ## First use
 
@@ -88,7 +88,9 @@ A packaged `Anime Codex 0.2.2.exe` runs without Node/npm but still requires your
 
 Read-only is the default. To allow edits, choose **Project write** in Settings before starting a new conversation. This permits changes within the selected folder without approving every file; Codex still enforces sandbox and organization policies. Reselect the project and start a new conversation to change permission mode.
 
-If Codex is not on PATH, use **Choose codex.exe and connect**. A common desktop installation path is `%LOCALAPPDATA%\OpenAI\Codex\bin\<version>\codex.exe`. You may instead set `CODEX_PATH` to the native executable. A `codex.cmd` npm wrapper is not the native backend and is not launched through a shell.
+The app resolves a native `codex.exe` from an explicit selection or `CODEX_PATH`, a remembered successful connection, PATH, or the Codex desktop installation under `%LOCALAPPDATA%\OpenAI\Codex\bin\<version>\codex.exe`. Desktop discovery works even when launching from Explorer supplies no Codex PATH entry. A successful selection is saved locally; if that saved file disappears after an update, automatic discovery runs again.
+
+If automatic discovery fails, open Settings and use **Choose codex.exe and connect**. `CODEX_PATH`, when set, must be a valid absolute native executable path; an invalid explicit configuration is reported instead of silently ignored. A `codex.cmd` npm wrapper is not the native backend and is not launched through a shell. The app never searches the selected project folder for a backend executable.
 
 ## Language and local data
 
@@ -103,6 +105,8 @@ npm test
 npm run build
 npm run smoke:ui
 npm run smoke:customization
+# Real handshake/account read with an empty PATH, including restart persistence:
+npm run smoke:connection
 # Optional real local AI check (downloads the model if missing):
 $env:RUN_REAL_BACKGROUND = '1'
 npm run smoke:background -- path/to/character.png

@@ -11,6 +11,7 @@ const path = require("node:path");
 
 const { pathToFileURL } = require("node:url");
 const { Rpc } = require("./rpc.cjs");
+const { resolveCodex } = require("./codex-executable.cjs");
 const { Preferences, PHASES } = require("./preferences.cjs");
 const { Desktop } = require("./desktop.cjs");
 const { BackgroundRemoval } = require("./background.cjs");
@@ -78,9 +79,15 @@ function knownThread(id) {
 }
 async function connect(executable) {
   idle();
+  const resolved = await resolveCodex({
+    explicit: executable,
+    saved: preferences.data.codexExecutable,
+  });
   if (rpc) rpc.close();
-  rpc = new Rpc(executable || process.env.CODEX_PATH || "codex");
-  rpc.on("event", (m) => {
+  const connection = new Rpc(resolved);
+  rpc = connection;
+  connection.on("event", (m) => {
+    if (rpc !== connection) return;
     if (m.id !== undefined) {
       requests.set(String(m.id), m);
       desktop.expand();
@@ -94,14 +101,24 @@ async function connect(executable) {
     }
     emit(m);
   });
-  rpc.on("disconnect", (message) => {
+  connection.on("disconnect", (message) => {
+    if (rpc !== connection) return;
     turn = null;
     starting = false;
     requests.clear();
     emit({ method: "client/disconnected", params: { message: t(message) } });
   });
-  await rpc.start();
-  const account = await rpc.request("account/read", { refreshToken: false });
+  try {
+    await connection.start();
+  } catch (error) {
+    if (error.code === "ENOENT") throw new Error("error.codexNotFound");
+    throw error;
+  }
+  const account = await connection.request("account/read", {
+    refreshToken: false,
+  });
+  preferences.data.codexExecutable = resolved;
+  await preferences.save();
   return {
     account: account.account,
     requiresOpenaiAuth: account.requiresOpenaiAuth,

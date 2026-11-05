@@ -4,14 +4,15 @@ Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3
 
 ## Automated checks
 
-Latest unit results: **22/22 tests passed**, including fresh Rin installation, transparent action assets, restart preservation and adding Rin without replacing an existing custom selection. The production build passed. Source and packaged UI/customization checks and a real Codex read/history-resume check are described below. The dependency audit reported zero vulnerabilities.
+Latest unit results: **26/26 tests passed**, including Windows executable discovery, fresh Rin installation, transparent action assets, restart preservation and adding Rin without replacing an existing custom selection. The production build passed. Source and packaged UI/customization checks and real Codex connection/read/history-resume checks are described below. The dependency audit reported zero vulnerabilities.
 
 The 0.2.2 source app and Windows packaged executable both passed the UI/customization checks, including switching from a custom character to Rin and back, preserving that custom selection on restart, and transparent approval-state rendering. The packaged 0.2.2 executable also passed the real local background-removal check with Rin present in the library. Real Codex backend evidence below is from the earlier backend implementation, which this character-library update does not change.
 
-The current unit suite contains 22 tests covering:
+The current unit suite contains 26 tests covering:
 
 - Idle-only fallback for every action; selecting an uploaded action and restoring fallback after removal.
 - Bundled Rin installed once, transparent aligned action images, preserved profile edits and upgrade-safe custom selection.
+- Native executable selection precedence, absolute PATH lookup without shell wrappers, desktop discovery with empty PATH, stale saved paths, and actionable errors when no backend exists.
 - Import copying, optional action assignment, profile/language persistence and missing original files.
 - Rejection of non-images, truncated/oversized headers, unsupported actions and invalid profile selection.
 - Desktop geometry, scale limits, negative monitor coordinates, all four docking edges and approval-aware hiding.
@@ -28,13 +29,17 @@ Five additional unit checks cover letterboxing/mask alpha behavior, pinned model
 
 ## Real backend evidence
 
+For 0.2.3, the connection smoke check deliberately removes PATH and clears CODEX_PATH. It performs a real App Server initialize/account read, confirms native desktop installation discovery, restarts the client, and verifies that the successful path was saved and reused. This check sends no model turn. An initial source restart attempt encountered an unexpected App Server exit; repeating the source check passed both stages. This is recorded separately from the original missing-executable bug, and does not establish why that transient exit happened.
+
+The Windows packaged 0.2.3 executable passed both empty-PATH connection stages and the UI smoke check. Authentication was available on this machine. The test does not claim that an unsigned package will work under every organization's executable restrictions, or that a successful account read proves a programming task completed.
+
 The real backend smoke check has verified file reads/writes with matching random fixture content, streamed deltas, stored history and resuming the same thread. The real desktop check has verified the UI → preload → main → App Server path: it asks Codex to read a fixture, receives tool records and original replies, and restores the conversation history. Latest raw local reports are in ignored `test-results/` files.
 
 UI-only approval/action fixtures never count as executed commands. A real turn may fail for a backend, authentication, policy or environment reason; the app displays that failure instead of claiming success. GitHub Actions results are not inferred from local checks.
 
 ## Packaging and limitations
 
-Windows 0.2.2 packages are built under `release/v0.2.2/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
+Windows 0.2.3 packages are built under `release/v0.2.3/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
 
 Geometry tests cover multiple logical display areas, including negative coordinates. Not every monitor arrangement, DPI transition, GPU, system voice, accessibility tool or managed Codex policy has been physically tested. Image mode does not deform faces or limbs, generate missing artwork, perform Live2D rendering, or provide phoneme-accurate lip sync.
 

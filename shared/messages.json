@@ -225,7 +225,8 @@
     "error.bgCancelled": "已取消去背景，图片未更改。",
     "error.bgTimeout": "去背景处理超时，原图未更改。",
     "error.bgNoOriginal": "没有可恢复的原图。",
-    "error.bgOptions": "无效的去背景设置。"
+    "error.bgOptions": "无效的去背景设置。",
+    "error.codexNotFound": "未找到 Codex 后端程序。请在设置中点击「选择 codex.exe 并连接」，选择已安装的 Codex 程序，然后重试。"
   },
   "en": {
     "Start the Electron desktop app to connect to Codex.": "Start the Electron desktop app to connect to Codex.",
@@ -453,7 +454,8 @@
     "error.bgCancelled": "Background removal cancelled. No image was changed.",
     "error.bgTimeout": "Background removal timed out. The original is unchanged.",
     "error.bgNoOriginal": "There is no original image to restore.",
-    "error.bgOptions": "Invalid background-removal options."
+    "error.bgOptions": "Invalid background-removal options.",
+    "error.codexNotFound": "Codex backend was not found. In Settings, use Choose codex.exe and connect to select your installed native Codex executable, then retry."
   },
   "ja": {
     "Start the Electron desktop app to connect to Codex.": "Electron デスクトップアプリから起動してください。",
@@ -681,6 +683,7 @@
     "error.bgCancelled": "背景除去をキャンセルしました。画像は変更されていません。",
     "error.bgTimeout": "背景除去がタイムアウトしました。元の画像は変更されていません。",
     "error.bgNoOriginal": "復元できる元の画像がありません。",
-    "error.bgOptions": "背景除去の設定が無効です。"
+    "error.bgOptions": "背景除去の設定が無効です。",
+    "error.codexNotFound": "Codex バックエンドが見つかりません。設定の「codex.exe を選択して接続」でインストール済みの Codex 実行ファイルを選び、再試行してください。"
   }
 }

@@ -1,3 +1,12 @@
+## 0.2.3
+
+- Fix `spawn codex ENOENT` when Windows desktop launches do not inherit the terminal's PATH.
+- Discover native Codex executables in PATH and the desktop app's installation directories.
+- Remember successful backend selections and recover when a saved installation path becomes stale.
+- Show an actionable missing-backend message in Chinese, English and Japanese.
+- Keep native, shell-free launching and ignore events from replaced connections.
+- Add discovery tests and a real empty-PATH connection/restart check.
+
 ## 0.2.2
 
 - Restore the original Rin sample as a bundled, editable character with eight transparent expressions.
