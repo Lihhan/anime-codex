@@ -22,8 +22,11 @@ try {
   const page = await app.firstWindow(),
     errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.getByTestId("import-first-idle").waitFor();
-  assert.equal(await page.locator(".state-image").count(), 0);
+  await page.getByTestId("character-images").waitFor();
+  assert.equal(await page.locator(".state-image").count(), 10);
+  await page.waitForFunction(() =>
+    document.querySelector(".drag-handle").textContent.includes("凛"),
+  );
   await page.getByTestId("language-select").selectOption("en");
   await page
     .getByRole("heading", { name: "What would you like to build?" })
@@ -39,6 +42,13 @@ try {
   await page
     .getByRole("heading", { name: "Character library", exact: true })
     .waitFor();
+  assert.equal(
+    await page
+      .getByTestId("character-select")
+      .locator("option", { hasText: "Rin" })
+      .count(),
+    1,
+  );
   const files = {
     idle: path.join(dataDirectory, "idle-fixture.png"),
     thinking: path.join(dataDirectory, "thinking-fixture.png"),
@@ -102,6 +112,12 @@ try {
       .locator(".action-preview")
       .click();
     assert.equal(await active(), "idle");
+    assert.equal(
+      await page
+        .getByTestId("character")
+        .evaluate((el) => getComputedStyle(el).backgroundColor),
+      "rgba(0, 0, 0, 0)",
+    );
   }
   for (const action of ["thinking", "coding", "failure"]) {
     await pick(files[action]);
@@ -210,6 +226,19 @@ try {
   );
   await page.getByTestId("language-select").selectOption("ja");
   await page.waitForFunction(() => document.documentElement.lang === "ja");
+  if (!(await page.getByTestId("character-select").isVisible()))
+    await page.getByTestId("settings-toggle").click();
+  await page
+    .getByTestId("character-select")
+    .selectOption("ef1143cb-cddb-4d71-8f82-9bf4b8cfd7d2");
+  await page.waitForFunction(() =>
+    document.querySelector(".drag-handle").textContent.includes("凛"),
+  );
+  assert.equal(await page.locator(".state-image").count(), 10);
+  await page.getByTestId("character-select").selectOption(characterId);
+  await page.waitForFunction(() =>
+    document.querySelector(".drag-handle").textContent.includes("Alice"),
+  );
   assert.deepEqual(errors, []);
   await app.close();
   app = await electron.launch(options);

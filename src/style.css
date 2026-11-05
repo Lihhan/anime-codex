@@ -791,7 +791,7 @@ h1 .header-star {
   justify-content: center;
   z-index: 10;
 }
-.approval {
+.approval-shade > .approval {
   background: #22222f;
   border: 1px solid #70607e;
   border-radius: 16px;

@@ -338,6 +338,10 @@ app.whenReady().then(async () => {
     app.getPath("userData"),
     nativeImage,
     (bytes) => background.remove(bytes),
+    {
+      profile: require("../characters/rin.json"),
+      directory: path.join(root, "dist/characters/rin"),
+    },
   ).load();
   const area = screen.getPrimaryDisplay().workArea;
   const width = Math.min(1440, area.width),

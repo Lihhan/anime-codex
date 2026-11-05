@@ -1,3 +1,12 @@
+## 0.2.2
+
+- Restore the original Rin sample as a bundled, editable character with eight transparent expressions.
+- Install Rin once without replacing existing custom selections, artwork or settings.
+- Localize Rin's default display name and preserve user renames and image edits.
+- Add real desktop and clearly labeled action-preview screenshots to the English README.
+- Fix an approval-state style collision that added a panel behind the character.
+- Verify fresh installation, upgrade preservation and restart behavior.
+
 ## 0.2.1
 
 - Add optional local automatic background removal for new imports and existing action images.

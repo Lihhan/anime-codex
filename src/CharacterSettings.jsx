@@ -4,6 +4,7 @@ export function CharacterSettings({
   t,
   character,
   library,
+  language,
   profileName,
   setProfileName,
   loading,
@@ -50,7 +51,9 @@ export function CharacterSettings({
           </option>
           {library.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name}
+              {c.builtin === "rin" && c.name === "Rin"
+                ? c.localizedNames?.[language] || c.name
+                : c.name}
             </option>
           ))}
         </select>

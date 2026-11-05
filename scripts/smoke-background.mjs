@@ -61,7 +61,7 @@ const app = await electron.launch({
 });
 try {
   const page = await app.firstWindow();
-  await page.getByTestId("import-first-idle").waitFor();
+  await page.getByTestId("character-images").waitFor();
   await page.getByTestId("language-select").selectOption("en");
   await page.getByTestId("settings-toggle").click();
   await page.getByTestId("auto-background").click();

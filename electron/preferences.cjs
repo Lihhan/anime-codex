@@ -4,10 +4,11 @@ const { randomUUID } = require("node:crypto");
 const PHASES = require("../shared/actions.json");
 const LANGUAGES = ["zh", "en", "ja"];
 class Preferences {
-  constructor(directory, nativeImage, processBackground) {
+  constructor(directory, nativeImage, processBackground, builtin = null) {
     this.directory = directory;
     this.nativeImage = nativeImage;
     this.processBackground = processBackground;
+    this.builtin = builtin;
     this.queue = Promise.resolve();
     this.data = {
       schemaVersion: 2,
@@ -63,8 +64,39 @@ class Preferences {
         this.warning =
           "Preferences could not be loaded; defaults were restored.";
     }
-    if (!this.find(this.data.activeCharacter)) this.data.activeCharacter = null;
+    await this.ensureBuiltin();
+    if (!this.find(this.data.activeCharacter))
+      this.data.activeCharacter = this.builtin?.profile.id || null;
+    if (this.builtin) await this.save();
     return this;
+  }
+  async ensureBuiltin() {
+    if (!this.builtin || this.find(this.builtin.profile.id)) return;
+    const { profile, directory } = this.builtin;
+    const images = {};
+    await fs.mkdir(path.join(this.directory, "characters"), {
+      recursive: true,
+    });
+    for (const [phase, name] of Object.entries(profile.files)) {
+      if (!PHASES.includes(phase) || !/^[a-z]+\.png$/.test(name))
+        throw new Error("error.imageType");
+      const file = randomUUID() + ".png";
+      await fs.copyFile(path.join(directory, name), this.assetPath(file));
+      images[phase] = { file, width: profile.width, height: profile.height };
+    }
+    this.data.characters.unshift({
+      id: profile.id,
+      builtin: "rin",
+      name: profile.name,
+      localizedNames: profile.localizedNames,
+      persona: profile.persona,
+      renderer: "images",
+      width: profile.width,
+      height: profile.height,
+      voice: profile.voice,
+      assetLicense: profile.assetLicense,
+      images,
+    });
   }
   find(id) {
     return this.data.characters.find((c) => c.id === id);
@@ -110,7 +142,12 @@ class Preferences {
     return {
       language: this.data.language,
       character: await this.character(),
-      characters: this.data.characters.map((c) => ({ id: c.id, name: c.name })),
+      characters: this.data.characters.map((c) => ({
+        id: c.id,
+        name: c.name,
+        builtin: c.builtin,
+        localizedNames: c.localizedNames,
+      })),
       desktop: this.data.desktop,
       warning: this.warning,
       backgroundRemoval: this.data.backgroundRemoval,

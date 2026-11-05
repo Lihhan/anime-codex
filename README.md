@@ -4,6 +4,18 @@ A transparent Windows desktop programming companion powered by the **real Codex 
 
 **UI languages:** Simplified Chinese, English and Japanese, selectable from the desktop toolbar. The preference is saved locally. Repository documentation is maintained in English.
 
+## Meet Rin
+
+**Rin is included in the character library and selected on a fresh install.** Her calm, warm personality and eight original expressions work with the same action-image system as your own characters. Upgrading adds Rin without replacing your selected character, images or settings. You can switch characters, customize Rin, or upload someone entirely different.
+
+![Rin in the actual transparent desktop app](docs/images/rin-desktop.png)
+
+Actual application capture, with no project connected. The surrounding area is transparent; the chat panel is optional. This is the welcome screen, not a claimed task execution.
+
+![Rin action previews: thinking, working, waiting for approval and success](docs/images/rin-actions.png)
+
+These are the application's explicitly labeled **Preview** states. Real task states follow Codex events. Speaking reuses the listening image; interrupted reuses idle. See [artwork provenance](characters/ASSETS.md).
+
 ## Your character, your images
 
 **One idle image is enough.** Upload an idle portrait to create a character. Every other image is optional: any action without its own image automatically uses the idle image.
@@ -21,7 +33,7 @@ A transparent Windows desktop programming companion powered by the **real Codex 
 | Sorry / failure | A failed turn or a disconnected backend |
 | Stopped | You interrupt a turn |
 
-Import PNG, JPEG or WebP files separately for the actions you want. Transparent PNG is recommended for a background-free desktop character. Backgrounds are retained by default; optional local AI can remove them. The app does not generate characters, rig them or change their facial artwork. There is no automatic default avatar, Face Studio or procedural skin mode.
+Import PNG, JPEG or WebP files separately for the actions you want. Transparent PNG is recommended for a background-free desktop character. Backgrounds are retained by default; optional local AI can remove them. The app does not generate characters, rig them or change their facial artwork. There is no Face Studio or procedural skin mode.
 
 In **Settings → Character library**, create another character, rename it, edit its personality, replace individual images or restore an optional action to idle fallback. Preview is clearly labeled and does not execute a task. Files are copied locally, not uploaded to Codex or GitHub. See [character setup](docs/CHARACTERS.md).
 
@@ -64,12 +76,12 @@ npm start
 
 The repository is private, so cloning requires GitHub access. Use `npm run dev` for development. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`.
 
-A packaged `Anime Codex 0.2.1.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.1/`.
+A packaged `Anime Codex 0.2.2.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.2/`.
 
 ## First use
 
 1. Pick Chinese, English or Japanese on the bottom toolbar.
-2. Click **Upload idle image** on the character placeholder, or open Settings and select **New character from idle image**. Optional action images can be added later.
+2. Start with Rin, or open **Settings → Character library → New character from idle image** to upload your own character. Optional action images can be added later. Rin remains available in the character selector.
 3. Click **Connect to Codex and choose project** above the composer. Select the folder you want Codex to work in. Opening the official Codex app alone does not connect this client.
 4. Send a message. **Show workspace** exposes threads, progress, raw events, command records and diffs.
 5. Read every approval's original command, directory and reason before deciding.
@@ -112,6 +124,6 @@ The UI uses image crossfades and subtle presentation motion. It does not include
 
 ## License and repository
 
-Code: MIT. Dependencies retain their own licenses. The original, now-unused Rin sample has a [provenance record](characters/ASSETS.md); it is not automatically selected or displayed. Your imported images are not relicensed by this project. See [reuse evaluation](docs/REUSE.md).
+Code: MIT. Dependencies retain their own licenses. Rin's original AI-generated sample artwork has a [provenance record](characters/ASSETS.md). Your imported images are not relicensed by this project. See [reuse evaluation](docs/REUSE.md).
 
 Repository: [Lihhan/anime-codex](https://github.com/Lihhan/anime-codex), private, default branch `main`. Do not commit personal images, application data, `test-results/`, credentials, `.env` or local Codex settings.

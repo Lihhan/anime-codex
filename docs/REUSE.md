@@ -13,6 +13,6 @@ Checked on November 5, 2026 using project README files, license endpoints and Gi
 
 The official [App Server interface](https://learn.chatgpt.com/docs/app-server) was selected for client-managed approvals, real thread history and streamed events. Local CLI-generated protocol types were inspected to cross-check the implementation. This avoids treating a third-party chat wrapper as proof of actual tool execution.
 
-The current renderer uses only local user-supplied action images with explicit idle fallback. It requires no avatar SDK, generated model or character-service account. Imported artwork remains subject to its own permissions.
+The current renderer uses local action images: the bundled original Rin sample or user-supplied artwork, with explicit idle fallback. It requires no avatar SDK, generated model or character-service account. Imported artwork remains subject to its own permissions.
 
 For a future Cubism renderer, review the separate [Live2D SDK publication requirements](https://www.live2d.com/en/sdk/license/), particularly user-extensible applications. Neither a wrapper license nor a downloadable sample model is blanket permission to redistribute Core, artwork, motions, textures or voices.

@@ -49,7 +49,10 @@ function App() {
     [voiceOn, setVoiceOn] = useState(false),
     [mouth, setMouth] = useState(0),
     [answers, setAnswers] = useState({});
-  const displayName = character?.name || t("Your character");
+  const displayName =
+    character?.builtin === "rin" && character.name === "Rin"
+      ? character.localizedNames?.[language] || character.name
+      : character?.name || t("Your character");
   const labels = Object.fromEntries(
     [
       "idle",
@@ -744,6 +747,7 @@ function App() {
               t={t}
               character={character}
               library={library}
+              language={language}
               profileName={profileName}
               setProfileName={setProfileName}
               loading={loading}
@@ -1006,7 +1010,7 @@ function App() {
               {transcript.map((i) => (
                 <article className={"message " + i.type} key={i.id}>
                   <div className="message-author">
-                    {i.type === "userMessage" ? t("You") : character?.name}
+                    {i.type === "userMessage" ? t("You") : displayName}
                     <small>
                       {i.type === "agentMessage"
                         ? t("CODEX · ORIGINAL RESPONSE")
