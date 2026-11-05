@@ -66,4 +66,69 @@ function applyMask(image, mask, geometry) {
     }
   return { width, height, data };
 }
-module.exports = { prepareInput, applyMask };
+function prepareGeneralInput(image, size = 320) {
+  const tensor = new Float32Array(3 * size * size);
+  let maximum = 1e-6;
+  for (let y = 0; y < size; y++)
+    for (let x = 0; x < size; x++) {
+      const sx = ((x + 0.5) * image.width) / size - 0.5;
+      const sy = ((y + 0.5) * image.height) / size - 0.5;
+      const alpha =
+        sample(image.data, image.width, image.height, sx, sy, 4, 3) / 255;
+      for (let c = 0; c < 3; c++) {
+        const value =
+          sample(image.data, image.width, image.height, sx, sy, 4, c) * alpha +
+          255 * (1 - alpha);
+        tensor[c * size * size + y * size + x] = value;
+        maximum = Math.max(maximum, value);
+      }
+    }
+  const mean = [0.485, 0.456, 0.406],
+    std = [0.229, 0.224, 0.225];
+  for (let c = 0; c < 3; c++)
+    for (let i = 0; i < size * size; i++) {
+      const index = c * size * size + i;
+      tensor[index] = (tensor[index] / maximum - mean[c]) / std[c];
+    }
+  return {
+    tensor,
+    size,
+    scaledWidth: size,
+    scaledHeight: size,
+    padX: 0,
+    padY: 0,
+  };
+}
+function normalizeGeneralMask(mask) {
+  let min = Infinity,
+    max = -Infinity;
+  for (const p of mask) {
+    if (!Number.isFinite(p)) throw new Error("error.bgInference");
+    min = Math.min(min, p);
+    max = Math.max(max, p);
+  }
+  if (max < 0.05 || max - min < 0.05) throw new Error("error.bgNoForeground");
+  return Float32Array.from(mask, (p) => (p - min) / (max - min));
+}
+function assertForeground(original, output) {
+  let before = 0,
+    after = 0,
+    visible = 0,
+    strong = 0;
+  for (let i = 3; i < original.data.length; i += 4) {
+    before += original.data[i];
+    after += output.data[i];
+    if (original.data[i] > 16) visible++;
+    if (output.data[i] >= 128) strong++;
+  }
+  if (!before || after / before < 0.02 || strong < Math.max(1, visible * 0.005))
+    throw new Error("error.bgNoForeground");
+  return { retainedAlpha: after / before, visible, strong };
+}
+module.exports = {
+  prepareInput,
+  applyMask,
+  prepareGeneralInput,
+  normalizeGeneralMask,
+  assertForeground,
+};

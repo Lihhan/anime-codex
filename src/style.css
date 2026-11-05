@@ -745,6 +745,32 @@ h1 .header-star {
   font-size: 15px;
   margin-top: 0;
 }
+.settings-header {
+  grid-column: 1 / -1;
+  position: sticky;
+  top: -20px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: -20px -20px 0;
+  padding: 12px 20px;
+  background: #20212e;
+  border-bottom: 1px solid #464053;
+}
+.settings-header h2 {
+  margin: 0;
+}
+.settings .settings-close {
+  margin: 0;
+  padding: 4px;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  font-size: 24px;
+  line-height: 1;
+}
 .settings p {
   font-size: 10px;
   color: #9290a6;

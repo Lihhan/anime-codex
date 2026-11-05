@@ -43,7 +43,7 @@ Enable **Automatically remove background on import** in Character library, or cl
 
 The first operation downloads a pinned 176,069,933-byte Anime Segmentation model (about 168 MiB), verifies SHA-256, and caches it under the application's local `models/` directory. Later operations work offline. Character images are never uploaded, and image processing does not require Codex login or consume Codex quota. Download/inference progress can be cancelled. Processing runs in a background CPU worker so the desktop UI remains responsive.
 
-The model is optimized for anime illustrations. Inspect fine hair and complex backgrounds; restore the original if you prefer it. Already-transparent pixels remain transparent. Original source files are never overwritten. Model/runtime sources and licenses are in [third-party notices](THIRD_PARTY_NOTICES.md).
+The first model is optimized for anime illustrations. If its result would remove almost the entire visible foreground, the app tries a small general foreground model (U2NetP, an additional 4,574,861-byte download). Both downloads are checksum-verified and cached. If neither result retains a substantial foreground, processing is rejected and the original stays in place. On startup, old near-empty processed assignments with saved originals are restored automatically. This is a conservative transparency check, not a guarantee of correct person recognition; tiny subjects, fine hair and complex backgrounds can still need a different image or a prepared transparent PNG. Already-transparent pixels remain transparent. Original source files are never overwritten. Model/runtime sources and licenses are in [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Desktop behavior
 
@@ -53,6 +53,7 @@ The model is optimized for anime illustrations. Inspect fine hair and complex ba
 - Pending approvals prevent hiding; a new approval request automatically reveals the UI.
 - Toggle always-on-top and transparent-area click-through. `Ctrl + Alt + A` reveals the overlay and restores mouse input.
 - Position, scale, selected character, action images, personality, auto-hide and language survive restarts.
+- Close Character and connection with its top-right × or Escape. The close control stays visible while scrolling. Closing preserves unsaved input; use Save character to persist profile edits. Escape does not dismiss an approval or cancel image processing.
 
 ## Real Codex capabilities
 
@@ -76,7 +77,7 @@ npm start
 
 The repository is private, so cloning requires GitHub access. Use `npm run dev` for development. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`.
 
-A packaged `Anime Codex 0.2.3.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.3/`.
+A packaged `Anime Codex 0.2.4.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.4/`.
 
 ## First use
 

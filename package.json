@@ -1,6 +1,6 @@
 {
   "name": "anime-codex",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A character-driven Windows desktop client for the real Codex App Server",
   "private": true,
   "type": "module",
@@ -39,7 +39,7 @@
       "signAndEditExecutable": false
     },
     "directories": {
-      "output": "release/v0.2.3"
+      "output": "release/v0.2.4"
     },
     "asarUnpack": [
       "electron/background-worker.cjs",

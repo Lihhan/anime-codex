@@ -53,6 +53,29 @@ function App() {
     character?.builtin === "rin" && character.name === "Rin"
       ? character.localizedNames?.[language] || character.name
       : character?.name || t("Your character");
+  const settingsToggle = useRef(null);
+  function closeSettings() {
+    setSettings(false);
+    settingsToggle.current?.focus();
+  }
+  useEffect(() => {
+    if (!settings) return;
+    const dismiss = (event) => {
+      if (
+        event.key !== "Escape" ||
+        event.defaultPrevented ||
+        state.pending.length ||
+        ["checking", "downloading", "processing"].includes(
+          backgroundStatus.stage,
+        )
+      )
+        return;
+      event.preventDefault();
+      closeSettings();
+    };
+    window.addEventListener("keydown", dismiss);
+    return () => window.removeEventListener("keydown", dismiss);
+  }, [settings, state.pending.length, backgroundStatus.stage]);
   const labels = Object.fromEntries(
     [
       "idle",
@@ -509,6 +532,9 @@ function App() {
         </button>
         <button
           data-testid="settings-toggle"
+          ref={settingsToggle}
+          aria-expanded={settings}
+          aria-controls="character-connection-settings"
           onClick={() => setSettings(!settings)}
         >
           {t("Settings")}
@@ -719,7 +745,25 @@ function App() {
           </div>
         )}
         {settings && (
-          <section className="settings">
+          <section
+            className="settings"
+            id="character-connection-settings"
+            role="dialog"
+            aria-labelledby="settings-title"
+          >
+            <div className="settings-header">
+              <h2 id="settings-title">{t("Character and connection")}</h2>
+              <button
+                type="button"
+                className="settings-close"
+                data-testid="settings-close"
+                onClick={closeSettings}
+                aria-label={t("Close settings")}
+                title={t("Close settings")}
+              >
+                ×
+              </button>
+            </div>
             <CharacterSettings
               backgroundAutomatic={backgroundOptions.automatic}
               onBackgroundAutomatic={(automatic) =>

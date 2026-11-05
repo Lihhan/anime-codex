@@ -37,7 +37,9 @@ The automatic-import checkbox applies to future imports. Existing action slots h
 
 The first use downloads the fixed Anime Segmentation ISNet model and verifies its expected size and SHA-256 before running it. It is cached locally. Images are processed by a CPU worker, never sent to a web API. A progress panel supports cancellation, including while downloading. Failed or cancelled work never replaces the current image or creates an empty character profile.
 
-The model is designed for anime characters, and difficult hair/background boundaries can be imperfect. Restore the original whenever a result is unsuitable.
+The first model is designed for anime characters. If its result would erase almost everything, a small general model is downloaded once and tried locally. If that also lacks a substantial foreground, the app refuses the cutout and preserves the original. An upgrade restores old near-empty processed assignments when their saved originals are available. Difficult hair/background boundaries can still be imperfect. Restore the original whenever a result is unsuitable.
+
+Close the settings panel using its sticky top-right ×, or press Escape. Closing preserves unsaved text in the current session; Save character is still required to persist profile edits. Escape leaves pending approval dialogs and active background processing alone.
 
 ## Desktop placement
 

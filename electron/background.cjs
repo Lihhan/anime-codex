@@ -5,6 +5,7 @@ const { createHash } = require("node:crypto");
 const { Worker } = require("node:worker_threads");
 const os = require("node:os");
 const MODEL = require("../shared/background-model.json");
+const GENERAL_MODEL = require("../shared/background-general-model.json");
 async function hashFile(file) {
   const hash = createHash("sha256");
   for await (const chunk of createReadStream(file)) hash.update(chunk);
@@ -40,7 +41,7 @@ class BackgroundRemoval {
     return path.join(this.directory, this.model.filename);
   }
   publish(stage, percent = 0) {
-    this.status = { stage, percent };
+    this.status = { stage, percent, model: this.model.variant || "anime" };
     this.emit({ method: "client/background", params: this.status });
   }
   async isCached() {
@@ -128,6 +129,7 @@ class BackgroundRemoval {
             modelPath,
             mathPath: this.mathPath,
             inputSize: this.model.inputSize,
+            variant: this.model.variant,
             threads: Math.min(
               4,
               Math.max(1, (os.availableParallelism?.() || 2) - 1),
@@ -168,6 +170,27 @@ class BackgroundRemoval {
       this.idleTimer.unref?.();
       return result;
     } catch (error) {
+      if (
+        error.message === "error.bgNoForeground" &&
+        this.model.filename === MODEL.filename &&
+        !this.cancelled
+      ) {
+        this.failWorker();
+        if (!this.general)
+          this.general = new BackgroundRemoval({
+            directory: this.directory,
+            workerPath: this.workerPath,
+            mathPath: this.mathPath,
+            model: GENERAL_MODEL,
+            fetchFn: this.fetchFn,
+            workerFactory: this.workerFactory,
+            emit: (event) => {
+              this.status = event.params;
+              this.emit(event);
+            },
+          });
+        return await this.general.remove(image);
+      }
       this.publish(
         error.message === "error.bgCancelled" ? "cancelled" : "failed",
       );
@@ -190,6 +213,7 @@ class BackgroundRemoval {
   cancel() {
     this.cancelled = true;
     this.controller?.abort();
+    this.general?.cancel();
     this.failWorker("error.bgCancelled");
     clearTimeout(this.idleTimer);
   }

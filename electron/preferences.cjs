@@ -1,6 +1,8 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { randomUUID } = require("node:crypto");
+const { PNG } = require("pngjs");
+const { assertForeground } = require("../shared/background-math.cjs");
 const PHASES = require("../shared/actions.json");
 const LANGUAGES = ["zh", "en", "ja"];
 class Preferences {
@@ -65,9 +67,10 @@ class Preferences {
           "Preferences could not be loaded; defaults were restored.";
     }
     await this.ensureBuiltin();
+    const recovered = await this.recoverEmptyCutouts();
     if (!this.find(this.data.activeCharacter))
       this.data.activeCharacter = this.builtin?.profile.id || null;
-    if (this.builtin) await this.save();
+    if (this.builtin || recovered) await this.save();
     return this;
   }
   async ensureBuiltin() {
@@ -100,6 +103,37 @@ class Preferences {
   }
   find(id) {
     return this.data.characters.find((c) => c.id === id);
+  }
+  async recoverEmptyCutouts() {
+    let recovered = 0;
+    for (const character of this.data.characters)
+      for (const entry of Object.values(character.images || {})) {
+        if (!entry.backgroundRemoved || !entry.originalFile) continue;
+        try {
+          const original = PNG.sync.read(
+            await fs.readFile(this.assetPath(entry.originalFile)),
+          );
+          const output = PNG.sync.read(
+            await fs.readFile(this.assetPath(entry.file)),
+          );
+          if (
+            original.width !== output.width ||
+            original.height !== output.height
+          )
+            continue;
+          try {
+            assertForeground(original, output);
+          } catch (error) {
+            if (error.message !== "error.bgNoForeground") throw error;
+            entry.file = entry.originalFile;
+            entry.backgroundRemoved = false;
+            recovered++;
+          }
+        } catch {
+          /* A missing or damaged asset must not prevent other profiles loading. */
+        }
+      }
+    return recovered;
   }
   async save() {
     const serialized = JSON.stringify(this.data, null, 2);

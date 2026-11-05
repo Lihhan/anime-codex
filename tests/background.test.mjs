@@ -6,7 +6,13 @@ import os from "node:os";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url),
-  { prepareInput, applyMask } = require("../shared/background-math.cjs"),
+  {
+    prepareInput,
+    applyMask,
+    assertForeground,
+    prepareGeneralInput,
+    normalizeGeneralMask,
+  } = require("../shared/background-math.cjs"),
   { BackgroundRemoval } = require("../electron/background.cjs"),
   { Preferences } = require("../electron/preferences.cjs");
 test("letterboxing preserves aspect ratio and mask changes only alpha, including existing transparency", () => {
@@ -98,6 +104,42 @@ const png = Buffer.from([
   137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 2, 0,
   0, 0, 2, 1,
 ]);
+test("empty or almost-erased cutouts are rejected while a substantial foreground is accepted", () => {
+  const original = { width: 10, height: 10, data: Buffer.alloc(400, 255) };
+  const output = { ...original, data: Buffer.from(original.data) };
+  for (let i = 3; i < output.data.length; i += 4) output.data[i] = 0;
+  assert.throws(
+    () => assertForeground(original, output),
+    /error.bgNoForeground/,
+  );
+  output.data[3] = 255;
+  assert.throws(
+    () => assertForeground(original, output),
+    /error.bgNoForeground/,
+  );
+  for (let i = 3; i < 80; i += 4) output.data[i] = 255;
+  assert.equal(assertForeground(original, output).retainedAlpha, 0.2);
+  assert.throws(
+    () => normalizeGeneralMask(new Float32Array(100).fill(0.004)),
+    /error.bgNoForeground/,
+  );
+  assert.deepEqual(
+    [...normalizeGeneralMask(new Float32Array([0.1, 0.9]))],
+    [0, 1],
+  );
+});
+test("general fallback uses finite normalized RGB and full-canvas geometry", () => {
+  const g = prepareGeneralInput(
+    { width: 2, height: 1, data: Buffer.from([255, 0, 0, 255, 0, 0, 0, 0]) },
+    4,
+  );
+  assert.equal(g.scaledWidth, 4);
+  assert.equal(g.scaledHeight, 4);
+  assert.equal(g.padX, 0);
+  assert.equal(g.padY, 0);
+  assert.ok(g.tensor.every(Number.isFinite));
+  assert.ok(Math.abs(g.tensor[0] - (1 - 0.485) / 0.229) < 0.0001);
+});
 const nativeImage = {
   createFromBuffer: () => ({
     isEmpty: () => false,
@@ -164,4 +206,57 @@ test("failed processing changes neither the selected image nor the character lib
     /error.bgCancelled/,
   );
   assert.equal((await p.snapshot()).character.images.idle.src, before);
+});
+test("upgrading a blank legacy cutout restores its saved original without deleting either image", async (t) => {
+  const { PNG } = require("pngjs");
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "anime-recover-"));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const id = "2e081935-202a-4abc-9995-452c2bca7707";
+  const file = "5b081935-202a-4abc-9995-452c2bca7707.png";
+  const originalFile = "6b081935-202a-4abc-9995-452c2bca7707.png";
+  await fs.mkdir(path.join(root, "characters"));
+  const original = new PNG({ width: 10, height: 10 });
+  original.data.fill(255);
+  const blank = new PNG({ width: 10, height: 10 });
+  await fs.writeFile(
+    path.join(root, "characters", originalFile),
+    PNG.sync.write(original),
+  );
+  await fs.writeFile(
+    path.join(root, "characters", file),
+    PNG.sync.write(blank),
+  );
+  await fs.writeFile(
+    path.join(root, "preferences.json"),
+    JSON.stringify({
+      activeCharacter: id,
+      characters: [
+        {
+          id,
+          name: "Existing character",
+          renderer: "images",
+          images: {
+            idle: {
+              file,
+              originalFile,
+              width: 10,
+              height: 10,
+              backgroundRemoved: true,
+            },
+          },
+        },
+      ],
+    }),
+  );
+  const p = await new Preferences(root, null).load();
+  assert.equal(p.data.activeCharacter, id);
+  assert.equal(p.find(id).images.idle.file, originalFile);
+  assert.equal(p.find(id).images.idle.backgroundRemoved, false);
+  assert.equal(
+    JSON.parse(await fs.readFile(path.join(root, "preferences.json")))
+      .characters[0].images.idle.file,
+    originalFile,
+  );
+  await fs.access(path.join(root, "characters", file));
+  await fs.access(path.join(root, "characters", originalFile));
 });

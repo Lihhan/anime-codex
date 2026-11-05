@@ -1,0 +1,11 @@
+{
+  "name": "U2NetP general foreground fallback",
+  "variant": "general",
+  "repository": "https://github.com/xuebinqin/U-2-Net",
+  "url": "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx",
+  "filename": "u2netp-309c8469.onnx",
+  "sha256": "309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8",
+  "bytes": 4574861,
+  "inputSize": 320,
+  "license": "Apache-2.0"
+}

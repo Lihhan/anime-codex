@@ -1,7 +1,13 @@
 const { parentPort, workerData } = require("node:worker_threads");
 const { PNG } = require("pngjs");
 const ort = require("onnxruntime-node");
-const { prepareInput, applyMask } = require(workerData.mathPath);
+const {
+  prepareInput,
+  prepareGeneralInput,
+  normalizeGeneralMask,
+  applyMask,
+  assertForeground,
+} = require(workerData.mathPath);
 let session;
 parentPort.on("message", async ({ id, image }) => {
   try {
@@ -12,7 +18,9 @@ parentPort.on("message", async ({ id, image }) => {
         interOpNumThreads: 1,
       });
     const input = PNG.sync.read(Buffer.from(image)),
-      geometry = prepareInput(input, workerData.inputSize),
+      geometry = (
+        workerData.variant === "general" ? prepareGeneralInput : prepareInput
+      )(input, workerData.inputSize),
       tensor = new ort.Tensor("float32", geometry.tensor, [
         1,
         3,
@@ -27,9 +35,22 @@ parentPort.on("message", async ({ id, image }) => {
       mask.dims.at(-2) !== geometry.size
     )
       throw new Error("error.bgInference");
-    const output = applyMask(input, mask.data, geometry);
+    const output = applyMask(
+      input,
+      workerData.variant === "general"
+        ? normalizeGeneralMask(mask.data)
+        : mask.data,
+      geometry,
+    );
+    assertForeground(input, output);
     parentPort.postMessage({ id, image: PNG.sync.write(output) });
   } catch (error) {
-    parentPort.postMessage({ id, error: "error.bgInference" });
+    parentPort.postMessage({
+      id,
+      error:
+        error.message === "error.bgNoForeground"
+          ? error.message
+          : "error.bgInference",
+    });
   }
 });

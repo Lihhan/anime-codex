@@ -81,6 +81,9 @@ try {
   await page.getByTestId("toggle-chat").click();
   await page.getByTestId("restore-idle").waitFor({ timeout: 180000 });
   await page.locator(".background-progress").waitFor({ state: "hidden" });
+  const processedModel = (
+    await page.evaluate(() => window.animeCodex.bootstrap())
+  ).background.model;
   const cutoutSrc = await page
       .locator('.state-image[data-action="idle"]')
       .getAttribute("src"),
@@ -125,6 +128,7 @@ try {
     sourceHash,
   );
   const report = {
+    modelVariant: processedModel,
     addedTestBackground,
     testedAt: new Date().toISOString(),
     width: cutout.width,

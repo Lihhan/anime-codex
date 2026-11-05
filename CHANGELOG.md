@@ -1,3 +1,12 @@
+## 0.2.4
+
+- Add a sticky top-right close button and Escape dismissal to Character and connection settings, preserving unsaved input and returning keyboard focus.
+- Prevent empty or almost-erased background-removal results from replacing an image.
+- Fall back to a small, locally executed U2NetP model when the anime model fails to retain foreground.
+- Restore legacy near-empty processed assignments from their saved originals during startup.
+- Add English, Chinese and Japanese controls/messages and document the fallback model's source, checksum and license.
+- Validate the previously failing photo locally without committing private artwork.
+
 ## 0.2.3
 
 - Fix `spawn codex ENOENT` when Windows desktop launches do not inherit the terminal's PATH.
