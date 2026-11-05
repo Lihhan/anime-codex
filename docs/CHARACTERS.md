@@ -25,11 +25,19 @@ A single idle image therefore covers all ten states. Adding an action changes on
 
 Each action accepts one PNG, JPEG or WebP, up to 15 MB and 8192 pixels per side. The main process checks signatures and dimensions, decodes the selected file and stores a PNG copy. SVG/HTML, scripts, remote image URLs and executable avatar packs are not accepted.
 
-Use transparent PNG for a background-free appearance. Existing backgrounds remain intact. For smooth transitions, keep your character's identity, canvas dimensions, size and baseline consistent across images. Different dimensions are contained within the idle image's aspect-ratio area; images are never stretched to change their proportions.
+Use transparent PNG for a background-free appearance. Existing backgrounds remain intact unless you explicitly enable automatic background removal or use the per-image removal button. For smooth transitions, keep your character's identity, canvas dimensions, size and baseline consistent across images. Different dimensions are contained within the idle image's aspect-ratio area; images are never stretched to change their proportions.
 
 Click a slot thumbnail to preview that action. The desktop label explicitly says **Preview**. Previewing never starts a task or invents a result. New activity or an approval clears the preview so genuine task state stays visible. Images crossfade rather than being randomly selected.
 
-This format uses separate action files, not a sprite-sheet editor, face customizer or deformable rig. Uploading an illustration does not automatically animate its limbs or remove its background.
+This format uses separate action files, not a sprite-sheet editor, face customizer or deformable rig. Uploading an illustration does not animate its limbs. Background removal is a separate, optional local AI operation.
+
+## Removing backgrounds
+
+The automatic-import checkbox applies to future imports. Existing action slots have **Remove background** and, after successful processing, **Restore original**. The original is the normalized PNG copy made during import; your external source file is untouched. The model changes only transparency, retaining the original canvas, dimensions and RGB values. Missing action images still fall back to idle normally.
+
+The first use downloads the fixed Anime Segmentation ISNet model and verifies its expected size and SHA-256 before running it. It is cached locally. Images are processed by a CPU worker, never sent to a web API. A progress panel supports cancellation, including while downloading. Failed or cancelled work never replaces the current image or creates an empty character profile.
+
+The model is designed for anime characters, and difficult hair/background boundaries can be imperfect. Restore the original whenever a result is unsuitable.
 
 ## Desktop placement
 
@@ -44,7 +52,8 @@ Disable auto-hide or reset position/size in Settings. `Ctrl + Alt + A` reveals t
 The default directory is `%APPDATA%\anime-codex\`:
 
 - `preferences.json`: language, selected character, names, personalities, action assignments, position, scale and auto-hide.
-- `characters/`: copied and normalized image files with generated filenames.
+- `characters/`: copied originals and processed PNG images with generated filenames.
+- `models/`: the downloaded, checksum-verified background-removal model.
 
 Imports do not depend on the original source file after copying. Images are provided to the renderer as data URLs; the renderer cannot open arbitrary filesystem paths. Replacing/removing an assignment may leave an unused local copy; assets are not automatically uploaded or committed. Close the app and rename `preferences.json` to recover defaults without deleting copied images.
 

@@ -11,6 +11,13 @@ import { CharacterSettings } from "./CharacterSettings";
 const api = window.animeCodex;
 const pretty = (v) => JSON.stringify(v, null, 2);
 function App() {
+  const [backgroundOptions, setBackgroundOptions] = useState({
+      automatic: false,
+    }),
+    [backgroundStatus, setBackgroundStatus] = useState({
+      stage: "idle",
+      percent: 0,
+    });
   const [previewPhase, setPreviewPhase] = useState(null);
   const [language, setLanguage] = useState("zh"),
     [library, setLibrary] = useState([]),
@@ -67,6 +74,9 @@ function App() {
     dockTimer = useRef(null);
   function applyPreferences(result, preserveEdits = false) {
     if (!result) return;
+    if (result.backgroundRemoval)
+      setBackgroundOptions(result.backgroundRemoval);
+    if (result.background) setBackgroundStatus(result.background);
     setLanguage(result.language);
     setLibrary(result.characters);
     setCharacter(result.character);
@@ -138,7 +148,12 @@ function App() {
     try {
       return await fn();
     } catch (e) {
-      setError(e.message);
+      setError(
+        String(e.message).replace(
+          /^Error invoking remote method '[^']+': (?:Error: )?/,
+          "",
+        ),
+      );
     } finally {
       inflight.current = false;
       setLoading(false);
@@ -154,6 +169,10 @@ function App() {
       .then(applyPreferences)
       .catch((e) => setError(e.message));
     return api.onEvent((e) => {
+      if (e.method === "client/background") {
+        setBackgroundStatus(e.params);
+        return;
+      }
       if (e.method === "client/desktop") {
         setDesktop(e.params);
         return;
@@ -240,7 +259,7 @@ function App() {
       const interactive =
         target instanceof Element &&
         target.closest(
-          "button,input,textarea,select,.sidebar,.conversation,.evidence,.settings,.approval-shade,.overlay-controls,.character,.dock-tab",
+          "button,input,textarea,select,.sidebar,.conversation,.evidence,.settings,.approval-shade,.overlay-controls,.character,.dock-tab,.background-progress",
         );
       const next = clickthrough && !interactive;
       if (next !== ignored) {
@@ -394,6 +413,39 @@ function App() {
         (desktop?.edge ? " is-docked" : "")
       }
     >
+      {["checking", "downloading", "processing"].includes(
+        backgroundStatus.stage,
+      ) && (
+        <section
+          className="background-progress"
+          role="status"
+          aria-live="polite"
+        >
+          <strong>
+            {t("bg." + backgroundStatus.stage)}
+            {backgroundStatus.stage === "downloading"
+              ? " · " + backgroundStatus.percent + "%"
+              : ""}
+          </strong>
+          <progress
+            max="100"
+            value={
+              backgroundStatus.stage === "downloading"
+                ? backgroundStatus.percent
+                : undefined
+            }
+          />
+          <small>
+            {t("Images stay on this computer. The original is kept.")}
+          </small>
+          <button
+            data-testid="cancel-background"
+            onClick={() => api.cancelBackgroundRemoval()}
+          >
+            {t("Cancel background removal")}
+          </button>
+        </section>
+      )}
       {desktop?.edge && (
         <button
           className={"dock-tab edge-" + desktop.edge}
@@ -589,22 +641,22 @@ function App() {
           </button>
         </div>
         <nav className="thread-list">
-          {threads.map((t) => (
+          {threads.map((threadEntry) => (
             <button
-              className={thread === t.id ? "selected" : ""}
-              key={t.id}
+              className={thread === threadEntry.id ? "selected" : ""}
+              key={threadEntry.id}
               disabled={state.busy || loading}
-              title={t.id}
+              title={threadEntry.id}
               onClick={() =>
                 run(async () => {
-                  await api.resume({ id: t.id, persona, mode });
-                  reset(t.id);
-                  await history(t.id);
+                  await api.resume({ id: threadEntry.id, persona, mode });
+                  reset(threadEntry.id);
+                  await history(threadEntry.id);
                 })
               }
             >
               <span>◇</span>
-              {t.name || t.preview || t("New conversation")}
+              {threadEntry.name || threadEntry.preview || t("New conversation")}
             </button>
           ))}
           {threadCursor && (
@@ -666,6 +718,29 @@ function App() {
         {settings && (
           <section className="settings">
             <CharacterSettings
+              backgroundAutomatic={backgroundOptions.automatic}
+              onBackgroundAutomatic={(automatic) =>
+                run(async () => {
+                  const result = await api.setBackgroundOptions({ automatic });
+                  setBackgroundOptions(result.backgroundRemoval);
+                })
+              }
+              onRemoveBackground={(phase) =>
+                run(async () =>
+                  applyPreferences(
+                    await api.removeBackground({ id: character.id, phase }),
+                    true,
+                  ),
+                )
+              }
+              onRestoreOriginal={(phase) =>
+                run(async () =>
+                  applyPreferences(
+                    await api.restoreOriginal({ id: character.id, phase }),
+                    true,
+                  ),
+                )
+              }
               t={t}
               character={character}
               library={library}

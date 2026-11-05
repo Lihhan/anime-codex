@@ -1,6 +1,6 @@
 {
   "name": "anime-codex",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A character-driven Windows desktop client for the real Codex App Server",
   "private": true,
   "type": "module",
@@ -15,7 +15,8 @@
     "smoke:ui": "node scripts/smoke-ui.mjs",
     "dist:win": "npm run build && electron-builder --win portable --x64",
     "smoke:customization": "node scripts/smoke-customization.mjs",
-    "smoke:desktop": "node scripts/smoke-desktop-real.mjs"
+    "smoke:desktop": "node scripts/smoke-desktop-real.mjs",
+    "smoke:background": "node scripts/smoke-background.mjs"
   },
   "build": {
     "appId": "io.animecodex.desktop",
@@ -25,17 +26,31 @@
       "electron/**/*",
       "shared/**/*",
       "characters/**/*",
-      "package.json"
+      "package.json",
+      "third_party/**/*",
+      "THIRD_PARTY_NOTICES.md",
+      "!node_modules/onnxruntime-node/bin/napi-v6/linux/**",
+      "!node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
+      "!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**"
     ],
     "win": {
       "target": "portable",
       "signAndEditExecutable": false
     },
     "directories": {
-      "output": "release/v0.2.0"
-    }
+      "output": "release/v0.2.1"
+    },
+    "asarUnpack": [
+      "electron/background-worker.cjs",
+      "shared/background-math.cjs",
+      "node_modules/onnxruntime-node/**",
+      "node_modules/onnxruntime-common/**",
+      "node_modules/pngjs/**"
+    ]
   },
   "dependencies": {
+    "onnxruntime-node": "1.31.1",
+    "pngjs": "7.0.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },

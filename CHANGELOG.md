@@ -1,3 +1,12 @@
+## 0.2.1
+
+- Add optional local automatic background removal for new imports and existing action images.
+- Keep original copies and provide one-click restoration.
+- Run CPU inference in a cancellable background worker.
+- Cache and SHA-256-verify the first-use anime segmentation model.
+- Add Chinese, English and Japanese controls/progress/errors for the feature.
+- Preserve canvas alignment, existing alpha and RGB colors.
+
 ## 0.2.0
 
 - Add user-defined characters with a required idle image and optional per-action images.

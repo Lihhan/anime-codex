@@ -21,9 +21,17 @@ A transparent Windows desktop programming companion powered by the **real Codex 
 | Sorry / failure | A failed turn or a disconnected backend |
 | Stopped | You interrupt a turn |
 
-Import PNG, JPEG or WebP files separately for the actions you want. Transparent PNG is recommended for a background-free desktop character. Images retain their original backgrounds; the app does not generate, segment, rig or modify your character's face. There is no automatic default avatar, Face Studio or procedural skin mode.
+Import PNG, JPEG or WebP files separately for the actions you want. Transparent PNG is recommended for a background-free desktop character. Backgrounds are retained by default; optional local AI can remove them. The app does not generate characters, rig them or change their facial artwork. There is no automatic default avatar, Face Studio or procedural skin mode.
 
 In **Settings → Character library**, create another character, rename it, edit its personality, replace individual images or restore an optional action to idle fallback. Preview is clearly labeled and does not execute a task. Files are copied locally, not uploaded to Codex or GitHub. See [character setup](docs/CHARACTERS.md).
+
+## Local automatic background removal
+
+Enable **Automatically remove background on import** in Character library, or click **Remove background** for an image you already imported. Each action keeps its own original copy; **Restore original** returns to that copy. Removing a background changes alpha only, preserving RGB colors, dimensions and alignment. If processing fails or is cancelled, the current image remains unchanged.
+
+The first operation downloads a pinned 176,069,933-byte Anime Segmentation model (about 168 MiB), verifies SHA-256, and caches it under the application's local `models/` directory. Later operations work offline. Character images are never uploaded, and image processing does not require Codex login or consume Codex quota. Download/inference progress can be cancelled. Processing runs in a background CPU worker so the desktop UI remains responsive.
+
+The model is optimized for anime illustrations. Inspect fine hair and complex backgrounds; restore the original if you prefer it. Already-transparent pixels remain transparent. Original source files are never overwritten. Model/runtime sources and licenses are in [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Desktop behavior
 
@@ -56,7 +64,7 @@ npm start
 
 The repository is private, so cloning requires GitHub access. Use `npm run dev` for development. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`.
 
-A packaged `Anime Codex 0.2.0.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.0/`.
+A packaged `Anime Codex 0.2.1.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.1/`.
 
 ## First use
 
@@ -83,6 +91,9 @@ npm test
 npm run build
 npm run smoke:ui
 npm run smoke:customization
+# Optional real local AI check (downloads the model if missing):
+$env:RUN_REAL_BACKGROUND = '1'
+npm run smoke:background -- path/to/character.png
 $env:RUN_REAL_CODEX = '1'
 npm run smoke:backend
 npm run smoke:desktop

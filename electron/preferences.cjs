@@ -4,9 +4,10 @@ const { randomUUID } = require("node:crypto");
 const PHASES = require("../shared/actions.json");
 const LANGUAGES = ["zh", "en", "ja"];
 class Preferences {
-  constructor(directory, nativeImage) {
+  constructor(directory, nativeImage, processBackground) {
     this.directory = directory;
     this.nativeImage = nativeImage;
+    this.processBackground = processBackground;
     this.queue = Promise.resolve();
     this.data = {
       schemaVersion: 2,
@@ -14,6 +15,7 @@ class Preferences {
       activeCharacter: null,
       characters: [],
       desktop: { scale: 1, autoHide: true },
+      backgroundRemoval: { automatic: false },
     };
   }
   async load() {
@@ -29,6 +31,9 @@ class Preferences {
         ...saved,
         language: LANGUAGES.includes(saved.language) ? saved.language : "zh",
         desktop: { ...this.data.desktop, ...saved.desktop },
+        backgroundRemoval: {
+          automatic: saved.backgroundRemoval?.automatic === true,
+        },
         characters: (Array.isArray(saved.characters) ? saved.characters : [])
           .filter(
             (c) =>
@@ -93,6 +98,10 @@ class Preferences {
         width: entry.width,
         height: entry.height,
         src: "data:image/png;base64," + png.toString("base64"),
+        backgroundRemoved: entry.backgroundRemoved === true,
+        canRestore:
+          entry.backgroundRemoved === true &&
+          /^[a-f0-9-]{36}\.png$/i.test(entry.originalFile || ""),
       };
     }
     return { ...c, images };
@@ -104,6 +113,7 @@ class Preferences {
       characters: this.data.characters.map((c) => ({ id: c.id, name: c.name })),
       desktop: this.data.desktop,
       warning: this.warning,
+      backgroundRemoval: this.data.backgroundRemoval,
     };
   }
   async decodeImage(file) {
@@ -142,6 +152,21 @@ class Preferences {
       recursive: true,
     });
     await fs.writeFile(path.join(this.directory, "characters", asset), encoded);
+    let entry = { file: asset, width, height };
+    if (this.data.backgroundRemoval.automatic) {
+      const cutout = await this.processCutout(encoded, width, height),
+        processed = randomUUID() + ".png";
+      await fs.writeFile(
+        path.join(this.directory, "characters", processed),
+        cutout,
+      );
+      entry = {
+        ...entry,
+        file: processed,
+        originalFile: asset,
+        backgroundRemoved: true,
+      };
+    }
     if (!c) {
       c = {
         id: randomUUID(),
@@ -154,7 +179,7 @@ class Preferences {
       };
       this.data.characters.push(c);
     }
-    c.images[phase] = { file: asset, width, height };
+    c.images[phase] = entry;
     if (phase === "idle") {
       c.width = width;
       c.height = height;
@@ -171,6 +196,61 @@ class Preferences {
     delete c.images[phase];
     await this.save();
     return this.snapshot();
+  }
+  async processCutout(bytes, width, height) {
+    if (!this.processBackground) throw new Error("error.bgUnavailable");
+    const output = Buffer.from(await this.processBackground(bytes));
+    if (
+      output.length < 24 ||
+      output.length > 24 * 1024 * 1024 ||
+      !output
+        .subarray(0, 8)
+        .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) ||
+      output.readUInt32BE(16) !== width ||
+      output.readUInt32BE(20) !== height
+    )
+      throw new Error("error.bgInference");
+    return output;
+  }
+  actionEntry(id, phase) {
+    const c = this.find(id);
+    if (!c) throw new Error("error.characterMissing");
+    if (!PHASES.includes(phase) || !c.images[phase])
+      throw new Error("error.action");
+    return c.images[phase];
+  }
+  assetPath(file) {
+    if (!/^[a-f0-9-]{36}\.png$/i.test(file || ""))
+      throw new Error("error.imageType");
+    return path.join(this.directory, "characters", file);
+  }
+  async removeBackground({ id, phase }) {
+    const entry = this.actionEntry(id, phase),
+      originalFile = entry.originalFile || entry.file,
+      bytes = await fs.readFile(this.assetPath(originalFile)),
+      cutout = await this.processCutout(bytes, entry.width, entry.height),
+      file = randomUUID() + ".png";
+    await fs.writeFile(this.assetPath(file), cutout);
+    Object.assign(entry, { file, originalFile, backgroundRemoved: true });
+    await this.save();
+    return this.snapshot();
+  }
+  async restoreOriginal({ id, phase }) {
+    const entry = this.actionEntry(id, phase);
+    if (!entry.originalFile) throw new Error("error.bgNoOriginal");
+    await fs.access(this.assetPath(entry.originalFile));
+    Object.assign(entry, {
+      file: entry.originalFile,
+      backgroundRemoved: false,
+    });
+    await this.save();
+    return this.snapshot();
+  }
+  async setBackgroundOptions({ automatic }) {
+    if (typeof automatic !== "boolean") throw new Error("error.bgOptions");
+    this.data.backgroundRemoval = { automatic };
+    await this.save();
+    return { backgroundRemoval: this.data.backgroundRemoval };
   }
   async updateCharacter({ id, name, persona }) {
     const c = this.find(id);

@@ -18,6 +18,10 @@ const names = [
   "importActionImage",
   "removeActionImage",
   "desktopControl",
+  "setBackgroundOptions",
+  "removeBackground",
+  "restoreOriginal",
+  "cancelBackgroundRemoval",
 ];
 contextBridge.exposeInMainWorld("animeCodex", {
   ...Object.fromEntries(

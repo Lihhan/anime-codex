@@ -1,0 +1,11 @@
+{
+  "name": "Anime Segmentation ISNet",
+  "repository": "https://huggingface.co/skytnt/anime-seg",
+  "revision": "493cb60893f47441b26ec4fb9a306bce9e342982",
+  "url": "https://huggingface.co/skytnt/anime-seg/resolve/493cb60893f47441b26ec4fb9a306bce9e342982/isnetis.onnx",
+  "filename": "anime-isnet-f15622d8.onnx",
+  "sha256": "f15622d853e8260172812b657053460e20806f04b9e05147d49af7bed31a6e99",
+  "bytes": 176069933,
+  "inputSize": 1024,
+  "license": "Apache-2.0"
+}

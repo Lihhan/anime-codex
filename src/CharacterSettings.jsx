@@ -14,10 +14,29 @@ export function CharacterSettings({
   onSave,
   preview,
   setPreview,
+  backgroundAutomatic,
+  onBackgroundAutomatic,
+  onRemoveBackground,
+  onRestoreOriginal,
 }) {
   return (
     <section className="character-settings">
       <h2>{t("Character library")}</h2>
+      <label className="checkbox-label">
+        <input
+          data-testid="auto-background"
+          type="checkbox"
+          checked={backgroundAutomatic}
+          disabled={loading}
+          onChange={(e) => onBackgroundAutomatic(e.target.checked)}
+        />
+        {t("Automatically remove background on import")}
+      </label>
+      <p>
+        {t(
+          "Local AI processing. First use downloads about 170 MB; your images are never uploaded.",
+        )}
+      </p>
       <label>
         {t("Character library")}
         <select
@@ -121,6 +140,26 @@ export function CharacterSettings({
                 onClick={() => onRemove(action)}
               >
                 {t("Use idle instead")}
+              </button>
+            )}
+            {character?.images?.[action] && (
+              <button
+                data-testid={"background-" + action}
+                disabled={loading || character.images[action].backgroundRemoved}
+                onClick={() => onRemoveBackground(action)}
+              >
+                {character.images[action].backgroundRemoved
+                  ? t("Background removed")
+                  : t("Remove background")}
+              </button>
+            )}
+            {character?.images?.[action]?.canRestore && (
+              <button
+                data-testid={"restore-" + action}
+                disabled={loading}
+                onClick={() => onRestoreOriginal(action)}
+              >
+                {t("Restore original")}
               </button>
             )}
           </section>

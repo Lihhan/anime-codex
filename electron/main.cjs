@@ -13,8 +13,9 @@ const { pathToFileURL } = require("node:url");
 const { Rpc } = require("./rpc.cjs");
 const { Preferences, PHASES } = require("./preferences.cjs");
 const { Desktop } = require("./desktop.cjs");
+const { BackgroundRemoval } = require("./background.cjs");
 const messages = require("../shared/messages.json");
-let preferences, desktop;
+let preferences, desktop, background;
 function t(key) {
   if (
     typeof key === "string" &&
@@ -107,6 +108,18 @@ async function connect(executable) {
   };
 }
 const handlers = {
+  async setBackgroundOptions(args) {
+    return preferences.setBackgroundOptions(args);
+  },
+  async removeBackground(args) {
+    return preferences.removeBackground(args);
+  },
+  async restoreOriginal(args) {
+    return preferences.restoreOriginal(args);
+  },
+  async cancelBackgroundRemoval() {
+    background.cancel();
+  },
   async importActionImage(args = {}) {
     const phase = args.phase || "idle";
     if (!PHASES.includes(phase)) throw new Error("error.action");
@@ -160,6 +173,10 @@ const handlers = {
       ...(await preferences.snapshot()),
       desktop: desktop.snapshot(),
       version: app.getVersion(),
+      background: {
+        ...background.status,
+        modelCached: await background.isCached(),
+      },
     };
   },
   async connect({ executable } = {}) {
@@ -301,9 +318,26 @@ if (process.env.ANIME_CODEX_DATA_DIR) {
   app.setPath("userData", process.env.ANIME_CODEX_DATA_DIR);
 }
 app.whenReady().then(async () => {
+  if (
+    process.env.ANIME_CODEX_MODEL_CACHE &&
+    !path.isAbsolute(process.env.ANIME_CODEX_MODEL_CACHE)
+  )
+    throw new Error("ANIME_CODEX_MODEL_CACHE must be absolute");
+  const workerRoot = app.isPackaged
+    ? path.join(process.resourcesPath, "app.asar.unpacked")
+    : root;
+  background = new BackgroundRemoval({
+    directory:
+      process.env.ANIME_CODEX_MODEL_CACHE ||
+      path.join(app.getPath("userData"), "models"),
+    workerPath: path.join(workerRoot, "electron/background-worker.cjs"),
+    mathPath: path.join(workerRoot, "shared/background-math.cjs"),
+    emit,
+  });
   preferences = await new Preferences(
     app.getPath("userData"),
     nativeImage,
+    (bytes) => background.remove(bytes),
   ).load();
   const area = screen.getPrimaryDisplay().workArea;
   const width = Math.min(1440, area.width),
@@ -370,6 +404,7 @@ app.whenReady().then(async () => {
   win.loadURL(url);
 });
 app.on("window-all-closed", () => {
+  background?.dispose();
   desktop?.dispose();
   globalShortcut.unregisterAll();
   rpc?.close();
