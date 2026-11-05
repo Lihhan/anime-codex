@@ -4,15 +4,20 @@ Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3
 
 ## Automated checks
 
-Latest unit results: **29/29 tests passed**, including Windows executable discovery, foreground-loss rejection, legacy cutout recovery, fresh Rin installation, transparent action assets, restart preservation and adding Rin without replacing an existing custom selection. The production build passed. Source and packaged UI/customization checks and real Codex connection/read/history-resume checks are described below. The dependency audit reported zero vulnerabilities.
+Latest unit results: **34/34 tests passed**, including game rules, typography persistence, touch geometry, Windows executable discovery, foreground-loss rejection, legacy cutout recovery, fresh Rin installation and upgrade-safe custom selection. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+
+The 0.3.0 source play-window smoke check passed font sizing/persistence, touch feedback and opt-out, restricted bridge/data, completing both games, live language refresh and preserving an explicitly marked main-window work fixture. Source UI and customization checks passed. The game fixture is not presented as a real programming task.
+
+The Windows 0.3.0 packaged executable also passed the play-window, main UI and customization checks. This includes minimizing/restoring the game without resetting its matched cards, closing it without clearing the main working fixture, three-language refresh, 22 px preference after restart, and maintaining drag/resize/dock behavior. Real screenshots were refreshed using isolated profiles; the playroom capture precedes all work fixtures.
 
 For 0.2.4, source and packaged UI checks passed the sticky top-right settings close button after scrolling, Escape dismissal, keyboard focus return and unsaved input preservation. The source customization check also passed. Packaged real-inference checks passed for both the anime model and the general fallback on a previously erased photo. Existing real Codex evidence remains version-specific below; this update did not rerun a programming turn.
 
 The 0.2.2 source app and Windows packaged executable both passed the UI/customization checks, including switching from a custom character to Rin and back, preserving that custom selection on restart, and transparent approval-state rendering. The packaged 0.2.2 executable also passed the real local background-removal check with Rin present in the library. Real Codex backend evidence below is from the earlier backend implementation, which this character-library update does not change.
 
-The current unit suite contains 29 tests covering:
+The current unit suite contains 34 tests covering:
 
 - Idle-only fallback for every action; selecting an uploaded action and restoring fallback after removal.
+- Guessing every roster character within ten answers, bounded unknown answers, memory flip/match/lock rules, touch geometry/drag separation, saved font/interaction settings and multilingual game copy.
 - Rejection of empty/near-empty masks, general model preprocessing, and restoration of a legacy blank cutout from its saved original.
 - Bundled Rin installed once, transparent aligned action images, preserved profile edits and upgrade-safe custom selection.
 - Native executable selection precedence, absolute PATH lookup without shell wrappers, desktop discovery with empty PATH, stale saved paths, and actionable errors when no backend exists.
@@ -34,6 +39,8 @@ The 0.2.4 packaged photo regression used the local original corresponding to an 
 
 ## Real backend evidence
 
+For 0.3.0, a real desktop task produced a first-person introduction identifying the configured character as Rin, read the disposable `hello.js` fixture through actual tools, explained its return value, and resumed the saved conversation. The test asserted the first-person pronoun, character name, expected fixture content, actual tool records and no visible errors. The local report recorded four tool records. This was an actual source Electron → preload → App Server → streamed UI/history test, separate from the game fixtures.
+
 For 0.2.3, the connection smoke check deliberately removes PATH and clears CODEX_PATH. It performs a real App Server initialize/account read, confirms native desktop installation discovery, restarts the client, and verifies that the successful path was saved and reused. This check sends no model turn. An initial source restart attempt encountered an unexpected App Server exit; repeating the source check passed both stages. This is recorded separately from the original missing-executable bug, and does not establish why that transient exit happened.
 
 The Windows packaged 0.2.3 executable passed both empty-PATH connection stages and the UI smoke check. Authentication was available on this machine. The test does not claim that an unsigned package will work under every organization's executable restrictions, or that a successful account read proves a programming task completed.
@@ -44,7 +51,7 @@ UI-only approval/action fixtures never count as executed commands. A real turn m
 
 ## Packaging and limitations
 
-Windows 0.2.4 packages are built under `release/v0.2.4/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
+Windows 0.3.0 packages are built under `release/v0.3.0/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
 
 Geometry tests cover multiple logical display areas, including negative coordinates. Not every monitor arrangement, DPI transition, GPU, system voice, accessibility tool or managed Codex policy has been physically tested. Image mode does not deform faces or limbs, generate missing artwork, perform Live2D rendering, or provide phoneme-accurate lip sync.
 

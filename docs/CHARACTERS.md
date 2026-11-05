@@ -43,6 +43,8 @@ Close the settings panel using its sticky top-right ×, or press Escape. Closing
 
 ## Desktop placement
 
+Reading and interaction settings offer 14–24 px conversation text (18 px by default), independently of avatar scaling, and a touch toggle. Tap visible hair, shoulders or hands for a local playful reaction. Dragging more than six pixels moves the character instead. Touch regions assume aligned portraits. Work and approval status remain authoritative. Play with me opens a separate game window; see [play details](PLAY.md).
+
 Drag the character or toolbar handle. Change size with the minus/plus buttons, the Settings slider, or Alt + mouse wheel. Placement and scale are saved after changes. The overlay spans the connected displays' work-area bounds; geometry uses logical desktop coordinates.
 
 On drag release within 18 logical pixels of a screen edge, auto-hide collapses to an edge tab. Hover over or click it to restore. This does not trigger merely because the app starts near an edge. Pending server decisions prevent hiding; newly received approval requests reveal the UI.

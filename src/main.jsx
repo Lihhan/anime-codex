@@ -7,10 +7,22 @@ import "./style.css";
 
 import { ImageCharacter } from "./ImageCharacter";
 import { CharacterSettings } from "./CharacterSettings";
+import { GameApp } from "./GameApp";
+import { resolveAction } from "../shared/character-images.mjs";
+import { touchPoint, isDrag } from "../shared/interactions.mjs";
 
 const api = window.animeCodex;
 const pretty = (v) => JSON.stringify(v, null, 2);
 function App() {
+  const [appearance, setAppearance] = useState({
+    fontSize: 18,
+    interactions: true,
+  });
+  const [reaction, setReaction] = useState(null);
+  const pointerSession = useRef(null),
+    hitMask = useRef(null),
+    reactionTimer = useRef(null),
+    lastReaction = useRef(0);
   const [backgroundOptions, setBackgroundOptions] = useState({
       automatic: false,
     }),
@@ -100,6 +112,7 @@ function App() {
     dockTimer = useRef(null);
   function applyPreferences(result, preserveEdits = false) {
     if (!result) return;
+    if (result.interface) setAppearance(result.interface);
     if (result.backgroundRemoval)
       setBackgroundOptions(result.backgroundRemoval);
     if (result.background) setBackgroundStatus(result.background);
@@ -141,20 +154,58 @@ function App() {
   function dragStart(e) {
     if (e.button !== 0 || e.target.closest("button,input,select,textarea"))
       return;
-    dragging.current = true;
+    pointerSession.current = {
+      x: e.clientX,
+      y: e.clientY,
+      character: e.currentTarget.dataset.testid === "character",
+      dragged: false,
+    };
     e.currentTarget.setPointerCapture(e.pointerId);
-    api
-      .desktopControl({ action: "beginDrag", x: e.clientX, y: e.clientY })
-      .catch((error) => setError(error.message));
   }
   function dragMove(e) {
+    const session = pointerSession.current;
+    if (
+      session &&
+      !session.dragged &&
+      isDrag(session, { x: e.clientX, y: e.clientY })
+    ) {
+      session.dragged = true;
+      dragging.current = true;
+      api
+        .desktopControl({ action: "beginDrag", x: session.x, y: session.y })
+        .catch((error) => setError(error.message));
+    }
     if (dragging.current)
       api
         .desktopControl({ action: "dragMove", x: e.clientX, y: e.clientY })
         .catch(() => {});
   }
-  function dragEnd() {
-    if (!dragging.current) return;
+  function dragEnd(e) {
+    const session = pointerSession.current;
+    pointerSession.current = null;
+    if (!dragging.current) {
+      if (session?.character && e.type !== "pointercancel") {
+        const entry = hitMask.current;
+        if (!entry) return;
+        const point = touchPoint(
+          e.currentTarget.getBoundingClientRect(),
+          entry.width,
+          entry.height,
+          e.clientX,
+          e.clientY,
+        );
+        if (
+          !point ||
+          entry.alpha[
+            (Math.floor(point.y * 128) * 128 + Math.floor(point.x * 128)) * 4 +
+              3
+          ] < 32
+        )
+          return;
+        reactToTouch(point.region);
+      }
+      return;
+    }
     dragging.current = false;
     api
       .desktopControl({ action: "endDrag" })
@@ -166,6 +217,31 @@ function App() {
     onPointerUp: dragEnd,
     onPointerCancel: dragEnd,
   };
+  function updateAppearance(patch) {
+    setAppearance((p) => ({ ...p, ...patch }));
+    api.setInterface(patch).catch((error) => setError(error.message));
+  }
+  function reactToTouch(region) {
+    if (
+      !appearance.interactions ||
+      state.pending.length ||
+      performance.now() - lastReaction.current < 850
+    )
+      return;
+    lastReaction.current = performance.now();
+    clearTimeout(reactionTimer.current);
+    setReaction({
+      region,
+      index: Math.floor(Math.random() * 3),
+      id: performance.now(),
+    });
+    reactionTimer.current = setTimeout(() => setReaction(null), 3000);
+  }
+  useEffect(() => {
+    setReaction(null);
+    clearTimeout(reactionTimer.current);
+  }, [character?.id, appearance.interactions]);
+  useEffect(() => () => clearTimeout(reactionTimer.current), []);
   async function run(fn) {
     if (inflight.current) return;
     inflight.current = true;
@@ -265,7 +341,8 @@ function App() {
     });
   }, []);
   useEffect(() => {
-    bottom.current?.scrollIntoView({ behavior: "smooth" });
+    if (Object.keys(items).length)
+      bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [items]);
   useEffect(() => {
     voiceEnabled.current = voiceOn;
@@ -406,6 +483,32 @@ function App() {
         : !state.busy && text
           ? "listening"
           : state.phase);
+  const visualPhase =
+    reaction && !state.busy && !state.pending.length ? "success" : phase;
+  const imageAction = resolveAction(character?.images, visualPhase);
+  const imageSrc = character?.images?.[imageAction]?.src;
+  useEffect(() => {
+    hitMask.current = null;
+    if (!imageSrc) return;
+    let active = true;
+    const image = new Image();
+    image.onload = () => {
+      if (!active) return;
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = 128;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(image, 0, 0, 128, 128);
+      hitMask.current = {
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        alpha: context.getImageData(0, 0, 128, 128).data,
+      };
+    };
+    image.src = imageSrc;
+    return () => {
+      active = false;
+    };
+  }, [imageSrc]);
   const transcript = Object.values(items).filter((i) =>
     ["userMessage", "agentMessage"].includes(i.type),
   );
@@ -428,6 +531,7 @@ function App() {
   return (
     <div
       style={{
+        "--chat-font-size": `${appearance.fontSize}px`,
         "--panel-x": `${Math.max(16, panelX)}px`,
         "--panel-y": `${panelY}px`,
         "--settings-x": `${avatarX >= 744 ? avatarX - 744 : Math.max(16, Math.min(window.innerWidth - 736, avatarX + avatarWidth + 24))}px`,
@@ -538,6 +642,14 @@ function App() {
           onClick={() => setSettings(!settings)}
         >
           {t("Settings")}
+        </button>
+        <button
+          data-testid="open-play"
+          onClick={() =>
+            api.openPlay().catch((error) => setError(error.message))
+          }
+        >
+          {t("Open playroom")}
         </button>
         <button
           aria-label={t("Smaller")}
@@ -814,6 +926,47 @@ function App() {
               }
               onSave={() => run(saveCurrentCharacter)}
             />
+            <section className="appearance-settings">
+              <h2>{t("Reading and interaction")}</h2>
+              <label>
+                {t("Conversation font size")} ·{" "}
+                <output>{appearance.fontSize}px</output>
+                <input
+                  data-testid="font-size"
+                  type="range"
+                  min="14"
+                  max="24"
+                  step="1"
+                  value={appearance.fontSize}
+                  onChange={(e) =>
+                    updateAppearance({ fontSize: Number(e.target.value) })
+                  }
+                />
+              </label>
+              <label className="checkbox-label">
+                <input
+                  data-testid="touch-enabled"
+                  type="checkbox"
+                  checked={appearance.interactions}
+                  onChange={(e) =>
+                    updateAppearance({ interactions: e.target.checked })
+                  }
+                />
+                {t("Enable playful character reactions")}
+              </label>
+              <p>
+                {t(
+                  "Touch hair, shoulders or hands. Drag to move. Play in a separate window while I work.",
+                )}
+              </p>
+              <button
+                onClick={() =>
+                  api.openPlay().catch((error) => setError(error.message))
+                }
+              >
+                {t("Open playroom")}
+              </button>
+            </section>
             <section className="desktop-settings">
               <h2>{t("Character size")}</h2>
               <label>
@@ -942,6 +1095,17 @@ function App() {
               className={"character " + phase}
               data-testid="character"
               {...dragEvents}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (
+                  event.target === event.currentTarget &&
+                  ["Enter", " "].includes(event.key)
+                ) {
+                  event.preventDefault();
+                  reactToTouch("hair");
+                }
+              }}
               onWheel={(e) => {
                 if (e.altKey || e.ctrlKey)
                   api.desktopControl({
@@ -954,18 +1118,30 @@ function App() {
               aria-label={
                 t("{name}: ", { name: displayName }) + (labels[phase] || phase)
               }
-              onDoubleClick={() => setDialogue(!dialogue)}
+              onDoubleClick={() => {
+                if (!appearance.interactions) setDialogue(!dialogue);
+              }}
               title={t(
-                "Drag to move. Double-click to toggle chat. Alt + wheel to resize.",
+                appearance.interactions
+                  ? "Tap to interact. Drag to move. Alt + wheel to resize."
+                  : "Drag to move. Double-click to toggle chat. Alt + wheel to resize.",
               )}
             >
               {character ? (
-                <ImageCharacter
-                  character={character}
-                  phase={phase}
-                  name={displayName}
-                  t={t}
-                />
+                <div
+                  key={reaction?.id || "rest"}
+                  className={
+                    "interaction-motion " +
+                    (reaction ? "react-" + reaction.region : "")
+                  }
+                >
+                  <ImageCharacter
+                    character={character}
+                    phase={visualPhase}
+                    name={displayName}
+                    t={t}
+                  />
+                </div>
               ) : (
                 <div className="empty-character">
                   <button
@@ -980,6 +1156,24 @@ function App() {
                 </div>
               )}
             </div>
+            {reaction && !state.pending.length && (
+              <div
+                className="touch-bubble"
+                role="status"
+                data-testid="touch-bubble"
+                style={avatarY < 170 ? { top: 10, bottom: "auto" } : undefined}
+              >
+                <strong>{displayName}</strong>
+                <p>{t(`touch.${reaction.region}.${reaction.index}`)}</p>
+                <small>
+                  {t(
+                    state.busy
+                      ? "Local reaction · programming continues"
+                      : "Local character interaction",
+                  )}
+                </small>
+              </div>
+            )}
             <div className="scene-caption">
               <span className="tiny-line" />
               <h2>
@@ -1028,6 +1222,10 @@ function App() {
                   <span className="eyebrow">{t("LET’S MAKE SOMETHING.")}</span>
                   <h2>{t("What would you like to build?")}</h2>
                   <p>
+                    {t("I am {name}. Tell me what you have in mind.", {
+                      name: displayName,
+                    })}
+                    <br />
                     {t("Tell me your idea. We can explore a project")}
                     <br />
                     {t("or make something new together.")}
@@ -1363,4 +1561,10 @@ function App() {
     </div>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(
+  new URLSearchParams(location.search).get("surface") === "play" ? (
+    <GameApp />
+  ) : (
+    <App />
+  ),
+);

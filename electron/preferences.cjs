@@ -19,6 +19,7 @@ class Preferences {
       characters: [],
       desktop: { scale: 1, autoHide: true },
       backgroundRemoval: { automatic: false },
+      interface: { fontSize: 18, interactions: true },
     };
   }
   async load() {
@@ -34,6 +35,15 @@ class Preferences {
         ...saved,
         language: LANGUAGES.includes(saved.language) ? saved.language : "zh",
         desktop: { ...this.data.desktop, ...saved.desktop },
+        interface: {
+          fontSize:
+            Number.isInteger(saved.interface?.fontSize) &&
+            saved.interface.fontSize >= 14 &&
+            saved.interface.fontSize <= 24
+              ? saved.interface.fontSize
+              : 18,
+          interactions: saved.interface?.interactions !== false,
+        },
         backgroundRemoval: {
           automatic: saved.backgroundRemoval?.automatic === true,
         },
@@ -185,6 +195,7 @@ class Preferences {
       desktop: this.data.desktop,
       warning: this.warning,
       backgroundRemoval: this.data.backgroundRemoval,
+      interface: this.data.interface,
     };
   }
   async decodeImage(file) {
@@ -349,6 +360,27 @@ class Preferences {
     this.data.language = language;
     await this.save();
     return { language };
+  }
+  async setInterface(options) {
+    if (
+      !options ||
+      (options.fontSize !== undefined &&
+        (!Number.isInteger(options.fontSize) ||
+          options.fontSize < 14 ||
+          options.fontSize > 24)) ||
+      (options.interactions !== undefined &&
+        typeof options.interactions !== "boolean")
+    )
+      throw new Error("error.interface");
+    this.data.interface = {
+      ...this.data.interface,
+      ...(options.fontSize !== undefined ? { fontSize: options.fontSize } : {}),
+      ...(options.interactions !== undefined
+        ? { interactions: options.interactions }
+        : {}),
+    };
+    await this.save();
+    return { interface: this.data.interface };
   }
 }
 module.exports = { Preferences, PHASES, LANGUAGES };

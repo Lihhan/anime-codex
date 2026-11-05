@@ -1,6 +1,6 @@
 {
   "name": "anime-codex",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "A character-driven Windows desktop client for the real Codex App Server",
   "private": true,
   "type": "module",
@@ -17,7 +17,8 @@
     "smoke:customization": "node scripts/smoke-customization.mjs",
     "smoke:desktop": "node scripts/smoke-desktop-real.mjs",
     "smoke:background": "node scripts/smoke-background.mjs",
-    "smoke:connection": "node scripts/smoke-connection.mjs"
+    "smoke:connection": "node scripts/smoke-connection.mjs",
+    "smoke:play": "node scripts/smoke-play.mjs"
   },
   "build": {
     "appId": "io.animecodex.desktop",
@@ -39,7 +40,7 @@
       "signAndEditExecutable": false
     },
     "directories": {
-      "output": "release/v0.2.4"
+      "output": "release/v0.3.0"
     },
     "asarUnpack": [
       "electron/background-worker.cjs",

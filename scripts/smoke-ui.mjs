@@ -22,6 +22,10 @@ try {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.getByText("今天想做点什么？").waitFor();
+  assert.equal(
+    await page.locator(".messages").evaluate((el) => el.scrollTop),
+    0,
+  );
   const setup = page.getByRole("button", {
     name: "连接 Codex 并选择项目",
     exact: true,

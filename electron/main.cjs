@@ -33,16 +33,16 @@ function t(key) {
   );
 }
 function instructions(persona) {
+  const c = preferences.find(preferences.data.activeCharacter);
+  const name =
+    c?.builtin === "rin" && c.name === "Rin"
+      ? c.localizedNames?.[preferences.data.language] || c.name
+      : c?.name;
   return (
     persona +
     "\n\n" +
-    (preferences.find(preferences.data.activeCharacter)?.name
-      ? "Character display name: " +
-        JSON.stringify(
-          preferences.find(preferences.data.activeCharacter).name,
-        ) +
-        ".\n"
-      : "") +
+    "Address the user naturally in the first person as the configured character. Use I/my rather than narrating the character in the third person. Keep the character's consistent personality, but never invent physical experiences, execution, progress or test results. Tool evidence and permission boundaries remain authoritative.\n" +
+    (name ? "Character display name: " + JSON.stringify(name) + ".\n" : "") +
     {
       zh: "Use natural Simplified Chinese for user-facing replies unless the user asks otherwise.",
       en: "Use natural English for user-facing replies unless the user asks otherwise.",
@@ -67,9 +67,86 @@ let win,
   turn = null,
   starting = false,
   selectedExecutable = null;
+let playWindow = null,
+  appUrl = null;
+function playStatus() {
+  return {
+    working: !!turn || starting,
+    approval: requests.size > 0,
+    connected: !!rpc?.child,
+  };
+}
+async function playSnapshot() {
+  const c = await preferences.character();
+  return {
+    language: preferences.data.language,
+    interface: preferences.data.interface,
+    character: c
+      ? {
+          id: c.id,
+          name: c.name,
+          builtin: c.builtin,
+          localizedNames: c.localizedNames,
+          images: c.images,
+        }
+      : null,
+    status: playStatus(),
+  };
+}
+function openPlay() {
+  if (playWindow && !playWindow.isDestroyed()) {
+    if (playWindow.isMinimized()) playWindow.restore();
+    playWindow.show();
+    playWindow.focus();
+    return;
+  }
+  playWindow = new BrowserWindow({
+    width: 960,
+    height: 790,
+    minWidth: 700,
+    minHeight: 600,
+    parent: win,
+    title: "Anime Codex · Play",
+    backgroundColor: "#171923",
+    show: false,
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: path.join(__dirname, "play-preload.cjs"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+  const child = playWindow;
+  const url = new URL(appUrl);
+  url.searchParams.set("surface", "play");
+  child.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  child.webContents.on("will-navigate", (event, target) => {
+    if (target !== url.href) event.preventDefault();
+  });
+  child.once("ready-to-show", () => {
+    if (!child.isDestroyed()) child.show();
+  });
+  child.on("closed", () => {
+    if (playWindow === child) playWindow = null;
+  });
+  child.loadURL(url.href);
+}
 const requests = new Map();
 function emit(m) {
   if (win && !win.isDestroyed()) win.webContents.send("codex:event", m);
+  if (
+    playWindow &&
+    !playWindow.isDestroyed() &&
+    (m.id !== undefined ||
+      [
+        "turn/started",
+        "turn/completed",
+        "client/disconnected",
+        "serverRequest/resolved",
+      ].includes(m.method))
+  )
+    playWindow.webContents.send("companion:status", playStatus());
 }
 function idle() {
   if (turn || starting || requests.size) throw new Error("error.busy");
@@ -125,6 +202,12 @@ async function connect(executable) {
   };
 }
 const handlers = {
+  async setInterface(args) {
+    return preferences.setInterface(args);
+  },
+  async openPlay() {
+    openPlay();
+  },
   async setBackgroundOptions(args) {
     return preferences.setBackgroundOptions(args);
   },
@@ -405,6 +488,32 @@ app.whenReady().then(async () => {
   const url = dev
     ? "http://127.0.0.1:5173"
     : pathToFileURL(path.join(root, "dist/index.html")).href;
+  appUrl = url;
+  win.on("closed", () => {
+    if (playWindow && !playWindow.isDestroyed()) playWindow.destroy();
+  });
+  ipcMain.handle("companion:call", async (event, method) => {
+    if (
+      !playWindow ||
+      playWindow.isDestroyed() ||
+      event.sender !== playWindow.webContents ||
+      event.senderFrame !== playWindow.webContents.mainFrame
+    )
+      throw new Error(t("error.call"));
+    if (method === "bootstrap") return playSnapshot();
+    if (method === "close") {
+      playWindow.close();
+      return;
+    }
+    if (method === "showMain") {
+      playWindow.minimize();
+      desktop.expand();
+      win.show();
+      win.focus();
+      return;
+    }
+    throw new Error(t("error.call"));
+  });
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   win.webContents.on("will-navigate", (e, target) => {
     if (target !== url) e.preventDefault();
@@ -417,7 +526,23 @@ app.whenReady().then(async () => {
     )
       throw new Error(t("error.call"));
     try {
-      return await handlers[name](args);
+      const result = await handlers[name](args);
+      if (
+        playWindow &&
+        !playWindow.isDestroyed() &&
+        [
+          "setInterface",
+          "setLanguage",
+          "selectCharacter",
+          "updateCharacter",
+          "importActionImage",
+          "removeActionImage",
+          "removeBackground",
+          "restoreOriginal",
+        ].includes(name)
+      )
+        playWindow.webContents.send("companion:refresh");
+      return result;
     } catch (error) {
       throw new Error(t(error.message));
     }

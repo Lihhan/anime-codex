@@ -1,3 +1,14 @@
+## 0.3.0
+
+- Raise conversation text to 18 px by default, with persistent 14–24 px sizing and stronger contrast.
+- Give new/resumed Codex conversations a first-person character voice while preserving execution evidence.
+- Add opt-out hair/shoulder/hand reactions, alpha-aware taps, drag separation and reduced-motion support.
+- Add an independent, restricted play window with real work/approval status.
+- Add a bounded offline character guessing game and six-pair memory game.
+- Keep programming turns and approval ownership unchanged while playing or switching windows.
+- Translate new controls, reactions and games into Chinese, English and Japanese.
+- Validate first-person Rin dialogue with a real Codex file-read/history task.
+
 ## 0.2.4
 
 - Add a sticky top-right close button and Escape dismissal to Character and connection settings, preserving unsaved input and returning keyboard focus.

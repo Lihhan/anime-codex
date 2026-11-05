@@ -1,6 +1,8 @@
 const { contextBridge, ipcRenderer } = require("electron");
 const names = [
   "bootstrap",
+  "setInterface",
+  "openPlay",
   "connect",
   "chooseExecutable",
   "chooseWorkspace",

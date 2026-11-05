@@ -12,8 +12,8 @@ await fs.writeFile(
   "export function greet(name) { return `你好，${name}！`; }\n",
 );
 const app = await electron.launch({
-  executablePath: electronPath,
-  args: ["."],
+  executablePath: process.env.ANIME_CODEX_EXECUTABLE || electronPath,
+  args: process.env.ANIME_CODEX_EXECUTABLE ? [] : ["."],
   env: {
     ...process.env,
     ANIME_CODEX_DEV: "0",
@@ -38,7 +38,7 @@ try {
   await page
     .getByTestId("message-input")
     .fill(
-      '读取 hello.js，用简短自然的中文解释它做什么，并给出 greet("世界") 的返回值。请实际读取文件，不要修改任何文件。',
+      '先用一句自然的中文以第一人称介绍你自己和角色名，再实际读取 hello.js，简短解释它做什么，并给出 greet("世界") 的返回值。不要修改任何文件。',
     );
   await page.getByRole("button", { name: "发送 ↗" }).click();
   await page
@@ -67,6 +67,11 @@ try {
   if (!response.join("").includes("世界"))
     console.log(JSON.stringify({ response, errors: visibleErrors }));
   assert.ok(response.join("").includes("世界"));
+  assert.ok(
+    response.join("").includes("我"),
+    "Expected first-person character voice",
+  );
+  assert.match(response.join(""), /凛|Rin/);
   assert.equal(await page.locator(".error").count(), 0);
   assert.ok((await page.locator(".tool").count()) > 0);
   await page.screenshot({ path: "test-results/desktop-real.png" });

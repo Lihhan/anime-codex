@@ -1454,3 +1454,155 @@ body {
 .character-settings > .checkbox-label input {
   width: auto;
 }
+/* Conversation typography is independent of avatar scale and monitor DPI. */
+.conversation {
+  font-size: var(--chat-font-size, 18px);
+  color: #f0edf7;
+}
+.desktop-overlay:not(.workbench-open) .conversation {
+  background: #1b1c27fc;
+}
+.conversation .message-body,
+.conversation .composer textarea,
+.conversation .welcome p,
+.conversation .suggestions button {
+  font-size: var(--chat-font-size, 18px);
+  line-height: 1.8;
+}
+.conversation .welcome {
+  margin-top: 20px;
+}
+.conversation .welcome h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 14px 0;
+}
+.conversation .welcome p {
+  color: #c5c1d4;
+}
+.conversation .welcome > .eyebrow {
+  font-size: 13px;
+}
+.conversation .message-author,
+.conversation-title {
+  font-size: 16px;
+}
+.conversation .message-author small,
+.conversation .composer-bottom > span,
+.conversation .privacy,
+.conversation .welcome p.hint,
+.conversation .muted {
+  font-size: 12px;
+  color: #b3adbf;
+}
+.conversation .send,
+.conversation .stop,
+.conversation .working {
+  font-size: 16px;
+}
+.conversation .composer textarea {
+  min-height: 100px;
+}
+.conversation .suggestions {
+  margin-top: 18px;
+}
+.conversation .userMessage {
+  background: #2c2e40;
+  color: #f0edf7;
+}
+.overlay-controls button,
+.overlay-controls select {
+  font-size: 13px;
+}
+.appearance-settings {
+  grid-column: 1 / -1;
+  border-top: 1px solid #48404f;
+  padding-top: 16px;
+}
+.appearance-settings input[type="range"] {
+  padding: 0;
+}
+.interaction-motion {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 85%;
+}
+.interaction-motion.react-hair {
+  animation: pet-sway 750ms ease-in-out;
+}
+.interaction-motion.react-shoulders {
+  animation: tickle-giggle 650ms ease-in-out;
+}
+.interaction-motion.react-hands {
+  animation: hand-bounce 650ms ease-in-out;
+}
+.touch-bubble {
+  position: absolute;
+  left: 5%;
+  bottom: calc(100% + 12px);
+  width: 90%;
+  max-width: 330px;
+  padding: 14px 16px;
+  background: #30283ff7;
+  color: #f3edf9;
+  border: 1px solid #b49bd0;
+  border-radius: 16px 16px 4px 16px;
+  font-size: 16px;
+  line-height: 1.7;
+  box-shadow: 0 8px 25px #0004;
+  pointer-events: none;
+}
+.touch-bubble strong {
+  font-size: 13px;
+  color: #d9c0f6;
+}
+.touch-bubble p {
+  margin: 5px 0;
+}
+.touch-bubble small {
+  color: #bfb4cc;
+  font-size: 11px;
+}
+@keyframes pet-sway {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  35% {
+    transform: rotate(-2deg);
+  }
+  70% {
+    transform: rotate(1deg);
+  }
+}
+@keyframes tickle-giggle {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px) rotate(-1.5deg);
+  }
+  40%,
+  80% {
+    transform: translateX(4px) rotate(1.5deg);
+  }
+}
+@keyframes hand-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-7px);
+  }
+  70% {
+    transform: translateY(-2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .interaction-motion {
+    animation: none !important;
+  }
+}

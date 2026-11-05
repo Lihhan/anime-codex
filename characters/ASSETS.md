@@ -18,4 +18,6 @@ The discarded procedural rig, face editor and skin experiments are not part of t
 
 ## Repository demonstration captures
 
+`docs/images/playroom.png` is a real 0.3.0 game-window capture using bundled Rin, an English disposable profile and an adjusted 22 px font. It is captured before work-status fixtures are injected and shows local offline play, not an executed programming task. Game icons are system emoji; no franchise artwork is included.
+
 `docs/images/rin-desktop.png` and `docs/images/rin-actions.png` are captured from the actual app by `scripts/capture-rin-demo.mjs` using a disposable profile and English UI. The desktop capture shows the disconnected welcome screen. The action strip retains the visible Preview labels and demonstrates appearance only; it is not evidence of executed tools or successful tasks. The captures include no personal uploads, conversations, credentials or desktop content.

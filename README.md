@@ -16,6 +16,25 @@ Actual application capture, with no project connected. The surrounding area is t
 
 These are the application's explicitly labeled **Preview** states. Real task states follow Codex events. Speaking reuses the listening image; interrupted reuses idle. See [artwork provenance](characters/ASSETS.md).
 
+## Talk and play with Rin
+
+Conversation text now defaults to **18 px**, with a persistent **14–24 px** setting under **Settings → Reading and interaction**. Messages, the composer and welcome text use the same size, with stronger contrast. Avatar scaling does not change text size.
+
+Rin addresses you in the first person. The real Codex backend receives that character-voice instruction for new/resumed conversations; original tool output and execution results stay verbatim. Existing stored replies are not rewritten.
+
+Tap her **hair, shoulders or hands** for a short playful reaction, a smile when available, and a sway, giggle or bounce. Transparent pixels and letterboxing do not respond. Move more than six pixels to drag instead. Reactions have a cooldown, respect reduced motion and can be disabled. Real work poses/status take precedence while programming. These scripted reactions appear outside the programming transcript.
+
+Choose **Play with me** to open a separate, resizable window:
+
+- **Anime character · ten questions:** secretly choose from the displayed 12-character offline roster. Rin asks yes/no/not-sure questions and makes a guess within ten questions. Arbitrary characters outside that roster are not supported yet.
+- **Memory pairs:** find six matching pairs, with feedback, a turn counter and replay.
+
+![Actual Rin playroom before any programming test fixture](docs/images/playroom.png)
+
+Games use the selected character and follow the main UI language and text size. **Show main window** minimizes the game without resetting the round; **Play with me** restores it. Closing a game discards that round while your Codex task continues. The work/approval badge follows real backend status. Approvals remain in the main window and require your decision.
+
+Game dialogue and rules run locally without consuming Codex quota. Its restricted window bridge cannot invoke programming tools, answer approvals or access conversation/personality data. See [game details and roster references](docs/PLAY.md).
+
 ## Your character, your images
 
 **One idle image is enough.** Upload an idle portrait to create a character. Every other image is optional: any action without its own image automatically uses the idle image.
@@ -77,7 +96,7 @@ npm start
 
 The repository is private, so cloning requires GitHub access. Use `npm run dev` for development. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`.
 
-A packaged `Anime Codex 0.2.4.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.4/`.
+A packaged `Anime Codex 0.3.0.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.3.0/`.
 
 ## First use
 
@@ -106,6 +125,7 @@ npm test
 npm run build
 npm run smoke:ui
 npm run smoke:customization
+npm run smoke:play
 # Real handshake/account read with an empty PATH, including restart persistence:
 npm run smoke:connection
 # Optional real local AI check (downloads the model if missing):
