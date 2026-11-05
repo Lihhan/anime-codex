@@ -19,19 +19,16 @@ const app = await electron.launch({
 try {
   const page = await app.firstWindow();
   await page.getByText("今天想做点什么？").waitFor();
-  await page.getByRole("button", { name: "连接与角色", exact: true }).click();
-  await page.getByRole("button", { name: "连接 PATH 中的 Codex" }).click();
-  await page
-    .locator(".connection.online")
-    .waitFor({ state: "attached", timeout: 70000 });
   await app.evaluate(({ dialog }, dir) => {
     dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [dir] });
   }, fixture);
-  await page.getByRole("button", { name: "选择项目", exact: true }).click();
+  await page
+    .getByRole("button", { name: "连接 Codex 并选择项目", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "desktop-workspace", exact: true })
     .waitFor();
-  await page.getByRole("button", { name: "连接与角色", exact: true }).click();
+  await page.locator(".setup-guide").waitFor({ state: "hidden" });
   await page
     .getByLabel("给凛的消息")
     .fill(

@@ -15,6 +15,19 @@ try {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.getByText("今天想做点什么？").waitFor();
+  const setup = page.getByRole("button", {
+    name: "连接 Codex 并选择项目",
+    exact: true,
+  });
+  assert.equal(await setup.isEnabled(), true);
+  await page.getByLabel("给凛的消息").fill("尚未连接时尝试发送");
+  await page.getByLabel("给凛的消息").press("Enter");
+  await page
+    .getByRole("alert")
+    .getByText("还未连接 Codex，请点击对话框下方的连接按钮。")
+    .waitFor();
+  assert.equal(await page.locator(".userMessage").count(), 0);
+  await page.getByRole("alert").getByRole("button").click();
   await page.waitForFunction(() =>
     [...document.images].every((i) => i.complete),
   );

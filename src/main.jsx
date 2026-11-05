@@ -170,6 +170,25 @@ function App() {
     setThreads((old) => (cursor ? [...old, ...r.data] : r.data));
     setThreadCursor(r.nextCursor);
   }
+  async function connectBackend(executable) {
+    const r = await api.connect(executable ? { executable } : {});
+    setAccount(r.account?.type || "未登录");
+    if (!r.account && r.requiresOpenaiAuth) {
+      setConnected(false);
+      throw new Error(
+        "Codex 尚未登录。请先在终端运行 codex login，再点击连接。",
+      );
+    }
+    setConnected(true);
+  }
+  async function prepareConversation() {
+    if (!connected) await connectBackend();
+    const directory = await api.chooseWorkspace();
+    if (!directory) return;
+    setWorkspace(directory);
+    reset(null);
+    await refresh();
+  }
   function reset(id) {
     currentThread.current = id;
     setThread(id);
@@ -190,6 +209,14 @@ function App() {
   async function send(e) {
     e.preventDefault();
     if (!text.trim() || state.busy || loading) return;
+    if (!connected || !workspace) {
+      setError(
+        !connected
+          ? "还未连接 Codex，请点击对话框下方的连接按钮。"
+          : "请先选择项目目录，再发送消息。",
+      );
+      return;
+    }
     const value = text;
     await run(async () => {
       let id = thread;
@@ -425,17 +452,7 @@ function App() {
               <p>先在终端运行 codex login。登录信息由官方 Codex 管理。</p>
               <button
                 disabled={connected || loading}
-                onClick={() =>
-                  run(async () => {
-                    const r = await api.connect({});
-                    setConnected(true);
-                    setAccount(r.account?.type || "未登录");
-                    if (!r.account && r.requiresOpenaiAuth)
-                      setError(
-                        "Codex 尚未登录，请先运行 codex login，然后重新打开应用。",
-                      );
-                  })
-                }
+                onClick={() => run(() => connectBackend())}
               >
                 连接 PATH 中的 Codex
               </button>
@@ -444,11 +461,7 @@ function App() {
                 onClick={() =>
                   run(async () => {
                     const executable = await api.chooseExecutable();
-                    if (executable) {
-                      const r = await api.connect({ executable });
-                      setConnected(true);
-                      setAccount(r.account?.type || "未登录");
-                    }
+                    if (executable) await connectBackend(executable);
                   })
                 }
               >
@@ -606,13 +619,35 @@ function App() {
               )}
               <div ref={bottom} />
             </div>
+            {(!connected || !workspace) && (
+              <div className="setup-guide" role="status">
+                <strong>
+                  {!connected ? "尚未连接 Codex" : "Codex 已连接，尚未选择项目"}
+                </strong>
+                <p>
+                  选择项目目录后即可发送消息。当前默认只读，不会自动修改文件。
+                </p>
+                <button
+                  disabled={loading || state.busy}
+                  onClick={() => run(prepareConversation)}
+                >
+                  {loading
+                    ? "正在准备……"
+                    : !connected
+                      ? "连接 Codex 并选择项目"
+                      : "选择项目并开始对话"}
+                </button>
+              </div>
+            )}
             <form className="composer" onSubmit={send}>
               <textarea
                 aria-label="给凛的消息"
                 placeholder={
-                  connected
-                    ? "和凛说说你的想法……"
-                    : "先连接 Codex，再开始我们的对话……"
+                  !connected
+                    ? "可以先输入想法，再点击上方连接按钮……"
+                    : !workspace
+                      ? "请先点击上方按钮选择项目目录……"
+                      : "和凛说说你的想法……"
                 }
                 value={text}
                 disabled={state.busy}
