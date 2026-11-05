@@ -6,6 +6,7 @@
 
 - 七项 Node 测试：并发工具状态、审批优先级、多审批请求、失败和中断、只读/写入边界、阻止永久授权、JSON-lines 握手/双向请求/UTF-8 分段/错误处理。
 - Vite 生产构建。
+- Windows 便携版构建成功；最终无背景版本的 `win-unpacked/Anime Codex.exe` 已启动并通过相同 Electron 界面检查。已比对打包内 main、preload、RPC 桥接和角色配置与最终源码一致。
 - Electron 界面检查：PNG 加载为 1536×1024，renderer 无 require，context isolation 启用，输入建议，审批弹窗，失败显示，透明页面背景与截图角落 alpha=0。
 - 原创透明图集 alpha 检查：RGBA，通道范围 0..254；约 24.1% 像素完全透明，其余包含角色及软边缘。CSS alpha 清理抑制背景残留。
 - **真实 App Server**：本机已有登录；在专用测试目录实际读取 `input.txt`、写入 `output.txt`，随机内容逐字匹配。turn 状态 completed，收到 43 个 agentMessage delta；分页历史返回一轮，恢复同一 threadId 成功。底层报告保存在本地未入库的 `test-results/backend.json`。
