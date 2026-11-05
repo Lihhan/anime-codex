@@ -1,91 +1,52 @@
-# Anime Codex · 凛
+# Anime Codex
 
-Windows 桌面上的二次元编程伙伴。原创角色「凛」直接以无背景角色出现在桌面，用自然中文与你交流；真正读代码、改文件、调用工具的是本机 **Codex App Server**。
+A transparent Windows desktop programming companion powered by the **real Codex App Server**. Upload your own character images, talk naturally, and watch the character change expression as Codex actually works.
 
-默认是无边框透明窗口：角色没有画框、背景或插图卡片。对话可收起，只留下角色与小控制条；需要时展开完整工作台查看线程、进度和 diff。透明空白区支持鼠标穿透，角色和功能面板可以交互；拖动控制条上的「⠿ 凛」移动窗口。可切换置顶、最小化与关闭。当前角色是腰部以上透明立绘，并非全身 Live2D 模型。
+**UI languages:** Simplified Chinese, English and Japanese, selectable from the desktop toolbar. The preference is saved locally. Repository documentation is maintained in English.
 
-![桌面界面](docs/desktop.png)
+## Your character, your images
 
-## 现在能做什么
+**One idle image is enough.** Upload an idle portrait to create a character. Every other image is optional: any action without its own image automatically uses the idle image.
 
-- Electron + React 桌面应用，官方 `codex app-server --listen stdio://` 后端，无模拟成功结果。
-- 原创八状态 PNG 图集：待机、倾听、思考、读代码、执行/敲代码、等待审批、成功、失败。呼吸、轻摆、成功动作与 650ms 表情交叉淡化；系统减少动画设置生效。
-- 固定角色设定，可在界面编辑自然中文性格；直接展示 Codex 原始流式回复，不再调用另一个模型改写执行结果。
-- 按所选项目列出真实线程，分页加载会话与历史；新建、恢复、停止当前任务。
-- 显示工具项目、命令输出、退出码、计划、当轮原始 diff，以及最近 500 条原始事件。
-- 命令和文件修改请求：单次批准或拒绝。用户问题可输入答案；高级权限和 MCP elicitation 保守拒绝，未知请求明确返回不支持。没有自动审批。
-- 可选系统中文 TTS、可替换语音 provider 和音量回调。**未实现 Live2D、精确口型同步、语音输入、情感语音或独立记忆系统。**
+| Action | When it appears |
+|---|---|
+| Idle | Ready, with no active task |
+| Listening | You are typing |
+| Thinking | Codex begins a turn or continues reasoning |
+| Reading | Structured read/search activity |
+| Working | Commands or file modifications |
+| Awaiting approval | A server request needs your decision |
+| Speaking | A streamed reply, or optional TTS playback |
+| Success | The server completes a turn |
+| Sorry / failure | A failed turn or a disconnected backend |
+| Stopped | You interrupt a turn |
 
-角色状态源于服务器事件；「本轮已完成」只表示 Codex turn 完成，不保证所有测试成功。工具退出码和回复中的验证说明仍需阅读。非结构化 shell 命令显示为执行状态，不根据命令字符串猜测读写意图。
+Import PNG, JPEG or WebP files separately for the actions you want. Transparent PNG is recommended for a background-free desktop character. Images retain their original backgrounds; the app does not generate, segment, rig or modify your character's face. There is no automatic default avatar, Face Studio or procedural skin mode.
 
-## Windows 安装与启动
+In **Settings → Character library**, create another character, rename it, edit its personality, replace individual images or restore an optional action to idle fallback. Preview is clearly labeled and does not execute a task. Files are copied locally, not uploaded to Codex or GitHub. See [character setup](docs/CHARACTERS.md).
 
-建议 Windows 11 x64、Node.js 24 LTS（包含 npm）、Git。先安装并登录官方 Codex CLI，或使用已有 Codex 桌面应用附带的原生 `codex.exe`。
+## Desktop behavior
+
+- Drag the character or the dotted toolbar handle to move it.
+- Resize with minus/plus, the Settings slider, or Alt + mouse wheel (50–180%).
+- Drag near any screen edge to collapse to a small tab; hover over or click it to restore.
+- Pending approvals prevent hiding; a new approval request automatically reveals the UI.
+- Toggle always-on-top and transparent-area click-through. `Ctrl + Alt + A` reveals the overlay and restores mouse input.
+- Position, scale, selected character, action images, personality, auto-hide and language survive restarts.
+
+## Real Codex capabilities
+
+The application uses the official `codex app-server --listen stdio://` transport. It preserves streamed replies, persistent threads, tool activity, command output and exit codes, progress, diffs and one-time permission approvals. It displays original Codex text rather than rewriting execution results through a separate character model.
+
+A success image means the server completed the turn; it does not guarantee that all tests passed. Failures, unsupported requests and unverified results remain visible. The character's presentation never grants permissions or substitutes for actual execution evidence.
+
+## Run on Windows
+
+Recommended: Windows 11 x64, Node.js 24 with npm, Git, and an installed official Codex CLI or the native `codex.exe` from Codex desktop.
 
 ```powershell
 codex --version
 codex login
-cd <解压后的 anime-codex 目录>
-npm ci
-npm run build
-npm start
-```
-
-开发时使用 `npm run dev`。首次安装/启动 Electron 会下载运行时，需要网络。依赖版本和完整性摘要已锁定于 `package-lock.json`。如果 npm 提示 Electron 安装脚本未运行，可运行 `node node_modules/electron/install.js`。
-
-如果你拿到了已打包的 `Anime Codex 0.1.0.exe`，可直接运行，无需 Node/npm；**仍需本机 Codex 和登录**。这是未签名的开发版，Windows 可能显示发布者验证提示。没有捆绑账户、密钥或 Codex 二进制。
-
-第一次使用：
-
-最直接的入口是对话框上方的「连接 Codex 并选择项目」：点击后会连接本机 Codex 并打开项目目录选择器。选好目录后即可发送。打开官方 Codex 应用不会自动连接本客户端；没有连接或没有选择目录时，界面会明确提示缺少的步骤。需要手动指定后端或修改角色时，再使用下方设置。
-
-1. 左下角打开「角色与连接设置」，连接 PATH 中的 Codex，或选择官方 `codex.exe`。
-2. 点击左侧「选择一个项目」。应用只接受系统文件夹选择器选中的绝对目录。
-3. 默认只读；要写代码，请在**尚未新建线程时**选择「项目内写入」。该模式允许 Codex 修改选中项目，不会逐文件确认；越界请求由 Codex 的策略处理。想改变模式，重新选择项目并开新会话。
-4. 发送消息。凛随事件切换状态，右侧查看执行证据；审批时检查完整命令、目录、原因再作决定。
-5. 下次选择同一目录，点击左侧历史线程继续。角色设置在恢复线程时重新应用。界面中的临时性格编辑不跨应用重启保存；持久修改请编辑 `characters/rin.json`。
-
-找不到 Codex 时：桌面应用的原生文件通常位于 `%LOCALAPPDATA%\OpenAI\Codex\bin\<版本>\codex.exe`。通过 npm 安装的 `codex.cmd` 是脚本包装，不能作为本应用的原生后端；请选择对应包内的真正 `codex.exe`，或设置进程环境变量 `CODEX_PATH` 为它的完整路径。应用不会经 shell 执行用户输入的可执行文件名。
-
-## 验证与打包
-
-```powershell
-npm test
-npm run build
-npm run smoke:ui
-$env:RUN_REAL_CODEX = '1'
-npm run smoke:backend
-node scripts/smoke-desktop-real.mjs
-npm run dist:win
-```
-
-`smoke:backend` 会消耗真实 Codex 用量：只在 `test-results/backend-workspace` 生成随机输入，让 Codex 读写该目录，再核对文件、流式片段、历史和恢复。测试请求任何额外权限时自动拒绝；不是产品中的自动批准。`smoke:ui` 是 Electron 自动化检查，审批和失败场景使用明确标记的事件夹具，不声称执行了命令。输出不提交进 Git。
-
-打包输出在 `release/`。详情和已完成验证见 [验收记录](docs/VALIDATION.md)。
-
-## 角色素材、语音与 Live2D
-
-默认 `public/characters/rin/sheet.png` 是 1536×1024 的八格 RGBA 透明 PNG（4列×2行，逐行排列），经实际 alpha 通道检查。修改 `characters/rin.json` 的 `states` 可更换状态映射；替换同规格图集后重新构建。渲染层压低极低透明度边缘，避免背景残留；图集只作为被动图片，不能携带脚本。素材来源、生成提示与使用边界见 [ASSETS](characters/ASSETS.md)。
-
-MVP 的 `SystemVoice` 使用系统 `speechSynthesis`，优先本地中文音色；可用声音取决于系统，有些系统可能没有中文 TTS。代码不会主动上传文字到第三方 TTS。当前音量回调是估计节奏，用作将来口型适配的数据，**当前立绘不具备嘴部形变或真实音频分析**。关闭语音或窗口会取消朗读。
-
-要升级真实感，可先换成分层立绘/逐状态嘴型、手部和眨眼序列，再加入 Live2D renderer。具体扩展契约、模型与授权文件要求见 [角色扩展](docs/CHARACTERS.md)。没有把设置中的 `renderer` 改为 Live2D 就自动加载模型的功能。
-
-## 安全边界与限制
-
-Renderer 无 Node 权限；preload 只暴露固定操作，main 验证调用来源、项目目录、线程和审批请求 ID。`contextIsolation`、renderer sandbox、CSP 启用，阻止窗口导航和新开网页。回复使用 React 文本节点，HTML 不执行。权限由真实 Codex 沙箱、配置和组织策略最终决定；本应用不会降级后重试全权限。
-
-只读/项目写入都使用 `on-request` 和用户审批路由；不提供 `danger-full-access`、持久批准或策略修订按钮。角色 developerInstructions 不替换 Codex baseInstructions。高级权限审批暂只可拒绝。认证沿用本机官方 CLI 登录，应用不读取或保存凭据；账户未登录时请在外部终端完成登录后重启应用。
-
-当前项目以本机 `codex-cli 0.166.0-alpha.5.1` 生成的稳定协议字段实现并验证。App Server 会演进，升级后请跑 smoke 检查；不支持的请求会显示并拒绝，不会静默授予权限。后端异常退出会清除前端执行状态并报错，不能保证恢复中断中的工具任务；重新连接后恢复历史线程。
-
-## 开源与 GitHub
-
-项目源码为 MIT；依赖保留各自许可证，素材另见说明。[候选项目评估与来源](docs/REUSE.md)。
-
-仓库已发布到 [Lihhan/anime-codex](https://github.com/Lihhan/anime-codex)，当前为私有仓库，默认分支 `main`。获取源码：
-
-```powershell
 git clone https://github.com/Lihhan/anime-codex.git
 cd anime-codex
 npm ci
@@ -93,4 +54,53 @@ npm run build
 npm start
 ```
 
-不要把 `test-results/`、登录文件、`.env` 或本地 Codex 配置推送到仓库。
+The repository is private, so cloning requires GitHub access. Use `npm run dev` for development. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`.
+
+A packaged `Anime Codex 0.2.0.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.2.0/`.
+
+## First use
+
+1. Pick Chinese, English or Japanese on the bottom toolbar.
+2. Click **Upload idle image** on the character placeholder, or open Settings and select **New character from idle image**. Optional action images can be added later.
+3. Click **Connect to Codex and choose project** above the composer. Select the folder you want Codex to work in. Opening the official Codex app alone does not connect this client.
+4. Send a message. **Show workspace** exposes threads, progress, raw events, command records and diffs.
+5. Read every approval's original command, directory and reason before deciding.
+
+Read-only is the default. To allow edits, choose **Project write** in Settings before starting a new conversation. This permits changes within the selected folder without approving every file; Codex still enforces sandbox and organization policies. Reselect the project and start a new conversation to change permission mode.
+
+If Codex is not on PATH, use **Choose codex.exe and connect**. A common desktop installation path is `%LOCALAPPDATA%\OpenAI\Codex\bin\<version>\codex.exe`. You may instead set `CODEX_PATH` to the native executable. A `codex.cmd` npm wrapper is not the native backend and is not launched through a shell.
+
+## Language and local data
+
+The language selector translates application controls, settings, action labels, local errors and native picker titles. It also sets the response-language preference for new/resumed Codex conversations and the preferred system TTS language. Existing replies, tool output, code, diffs and server-supplied requests remain verbatim. Changing language mid-turn does not rewrite that turn's instructions.
+
+Preferences and copied images live in `%APPDATA%\anime-codex\`. Uploaded images are never sent to Codex or GitHub; your chosen name and personality are included in conversation instructions. Windows voices vary by installation. TTS is optional; image switching is not phoneme-accurate lip synchronization.
+
+## Test and package
+
+```powershell
+npm test
+npm run build
+npm run smoke:ui
+npm run smoke:customization
+$env:RUN_REAL_CODEX = '1'
+npm run smoke:backend
+npm run smoke:desktop
+npm run dist:win
+```
+
+Real-backend tests use your Codex quota. They operate on disposable fixture directories. UI-only action/approval events are explicitly marked test fixtures, not claimed execution results. UI tests use isolated application data directories and do not change your own character library.
+
+See [validation evidence](docs/VALIDATION.md). Windows Actions checks run unit tests, the production build, UI/customization checks and dependency audit. A local pass does not claim that an uninspected remote Actions run passed.
+
+## Boundaries and implementation
+
+Electron main owns the Codex subprocess, native file pickers, validated imports, persistent settings and desktop layout. The renderer has no Node access. Context isolation, renderer sandboxing, CSP, navigation blocking and fixed IPC endpoints remain enabled. Approvals must match a live request ID; there is no permanent or automatic approval path and no silent full-access retry. Advanced permission grants and MCP elicitation currently support conservative refusal only.
+
+The UI uses image crossfades and subtle presentation motion. It does not include a deformable avatar rig, Live2D/Core runtime, face editor, automatic portrait rigging, speech input or emotional voice synthesis. Optional action images are your own artwork; one idle image remains sufficient for every task state.
+
+## License and repository
+
+Code: MIT. Dependencies retain their own licenses. The original, now-unused Rin sample has a [provenance record](characters/ASSETS.md); it is not automatically selected or displayed. Your imported images are not relicensed by this project. See [reuse evaluation](docs/REUSE.md).
+
+Repository: [Lihhan/anime-codex](https://github.com/Lihhan/anime-codex), private, default branch `main`. Do not commit personal images, application data, `test-results/`, credentials, `.env` or local Codex settings.

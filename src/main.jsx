@@ -1,11 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { initialState, reduceEvent, labels } from "../shared/state.mjs";
+import { initialState, reduceEvent } from "../shared/state.mjs";
+import { createTranslator, languages } from "../shared/i18n.mjs";
 import { SystemVoice } from "./voice";
 import "./style.css";
+
+import { ImageCharacter } from "./ImageCharacter";
+import { CharacterSettings } from "./CharacterSettings";
+
 const api = window.animeCodex;
 const pretty = (v) => JSON.stringify(v, null, 2);
 function App() {
+  const [previewPhase, setPreviewPhase] = useState(null);
+  const [language, setLanguage] = useState("zh"),
+    [library, setLibrary] = useState([]),
+    [desktop, setDesktop] = useState(null),
+    [profileName, setProfileName] = useState("");
+  const t = createTranslator(language);
   const [workbench, setWorkbench] = useState(false),
     [dialogue, setDialogue] = useState(true),
     [pinned, setPinned] = useState(true),
@@ -31,12 +42,94 @@ function App() {
     [voiceOn, setVoiceOn] = useState(false),
     [mouth, setMouth] = useState(0),
     [answers, setAnswers] = useState({});
+  const displayName = character?.name || t("Your character");
+  const labels = Object.fromEntries(
+    [
+      "idle",
+      "listening",
+      "thinking",
+      "reading",
+      "coding",
+      "approval",
+      "speaking",
+      "success",
+      "failure",
+      "interrupted",
+    ].map((p) => [p, t("state." + p)]),
+  );
   const voice = useRef(new SystemVoice()),
     voiceEnabled = useRef(false),
     charRef = useRef(null),
     currentThread = useRef(null),
     bottom = useRef(null),
     inflight = useRef(false);
+  const dragging = useRef(false),
+    dockTimer = useRef(null);
+  function applyPreferences(result, preserveEdits = false) {
+    if (!result) return;
+    setLanguage(result.language);
+    setLibrary(result.characters);
+    setCharacter(result.character);
+    if (!preserveEdits) setPersona(result.character?.persona || "");
+    charRef.current = {
+      ...result.character,
+      voice: {
+        rate: 1,
+        pitch: 1,
+        ...result.character?.voice,
+        lang: { zh: "zh-CN", en: "en-US", ja: "ja-JP" }[result.language],
+      },
+    };
+    if (Number.isFinite(result.desktop?.width)) setDesktop(result.desktop);
+  }
+  useEffect(() => {
+    setProfileName(character?.name || "");
+    setPreviewPhase(null);
+  }, [character?.id]);
+  useEffect(() => {
+    if (state.busy || state.pending.length || state.error)
+      setPreviewPhase(null);
+  }, [state.busy, state.pending.length, state.error]);
+  useEffect(() => () => clearTimeout(dockTimer.current), [desktop?.edge]);
+  useEffect(() => {
+    document.documentElement.lang = { zh: "zh-CN", en: "en", ja: "ja" }[
+      language
+    ];
+    document.title = "Anime Codex · " + displayName;
+    if (charRef.current)
+      charRef.current.voice = {
+        ...charRef.current.voice,
+        lang: { zh: "zh-CN", en: "en-US", ja: "ja-JP" }[language],
+      };
+  }, [language, displayName]);
+  function dragStart(e) {
+    if (e.button !== 0 || e.target.closest("button,input,select,textarea"))
+      return;
+    dragging.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    api
+      .desktopControl({ action: "beginDrag", x: e.clientX, y: e.clientY })
+      .catch((error) => setError(error.message));
+  }
+  function dragMove(e) {
+    if (dragging.current)
+      api
+        .desktopControl({ action: "dragMove", x: e.clientX, y: e.clientY })
+        .catch(() => {});
+  }
+  function dragEnd() {
+    if (!dragging.current) return;
+    dragging.current = false;
+    api
+      .desktopControl({ action: "endDrag" })
+      .catch((error) => setError(error.message));
+  }
+  const dragEvents = {
+    onPointerDown: dragStart,
+    onPointerMove: dragMove,
+    onPointerUp: dragEnd,
+    onPointerCancel: dragEnd,
+  };
   async function run(fn) {
     if (inflight.current) return;
     inflight.current = true;
@@ -53,18 +146,22 @@ function App() {
   }
   useEffect(() => {
     if (!api) {
-      setError("请通过 Electron 桌面应用启动；普通浏览器不能连接编程后端。");
+      setError(t("Start the Electron desktop app to connect to Codex."));
       return;
     }
     api
       .bootstrap()
-      .then(({ character: c }) => {
-        setCharacter(c);
-        charRef.current = c;
-        setPersona(c.persona);
-      })
+      .then(applyPreferences)
       .catch((e) => setError(e.message));
     return api.onEvent((e) => {
+      if (e.method === "client/desktop") {
+        setDesktop(e.params);
+        return;
+      }
+      if (e.method === "client/inputRestored") {
+        setClickthrough(false);
+        return;
+      }
       if (
         e.params?.threadId &&
         currentThread.current &&
@@ -137,11 +234,13 @@ function App() {
     if (!api) return;
     let ignored = false;
     const move = (e) => {
-      const target = e.target;
+      if (dragging.current) return;
+      const target =
+        document.elementFromPoint(e.clientX, e.clientY) || e.target;
       const interactive =
         target instanceof Element &&
         target.closest(
-          "button,input,textarea,select,.sidebar,.conversation,.evidence,.settings,.approval,.overlay-controls,.character",
+          "button,input,textarea,select,.sidebar,.conversation,.evidence,.settings,.approval-shade,.overlay-controls,.character,.dock-tab",
         );
       const next = clickthrough && !interactive;
       if (next !== ignored) {
@@ -172,11 +271,11 @@ function App() {
   }
   async function connectBackend(executable) {
     const r = await api.connect(executable ? { executable } : {});
-    setAccount(r.account?.type || "未登录");
+    setAccount(r.account?.type || t("Not signed in"));
     if (!r.account && r.requiresOpenaiAuth) {
       setConnected(false);
       throw new Error(
-        "Codex 尚未登录。请先在终端运行 codex login，再点击连接。",
+        t("Codex is not signed in. Run codex login, then connect again."),
       );
     }
     setConnected(true);
@@ -188,6 +287,23 @@ function App() {
     setWorkspace(directory);
     reset(null);
     await refresh();
+  }
+  async function saveCurrentCharacter() {
+    if (!character) return;
+    applyPreferences(
+      await api.updateCharacter({
+        id: character.id,
+        name: profileName,
+        persona,
+      }),
+    );
+  }
+  async function importAction(phase, id) {
+    const result = await api.importActionImage({ phase, id });
+    if (result) {
+      applyPreferences(result, !!character && id === character.id);
+      if (!state.busy) setPreviewPhase(phase);
+    }
   }
   function reset(id) {
     currentThread.current = id;
@@ -212,8 +328,8 @@ function App() {
     if (!connected || !workspace) {
       setError(
         !connected
-          ? "还未连接 Codex，请点击对话框下方的连接按钮。"
-          : "请先选择项目目录，再发送消息。",
+          ? t("Connect to Codex using the setup button before sending.")
+          : t("Choose a project folder before sending."),
       );
       return;
     }
@@ -236,44 +352,89 @@ function App() {
       }
     });
   }
-  const phase = !state.busy && text ? "listening" : state.phase;
+  const phase =
+    previewPhase ||
+    (state.pending.length
+      ? "approval"
+      : mouth > 0
+        ? "speaking"
+        : !state.busy && text
+          ? "listening"
+          : state.phase);
   const transcript = Object.values(items).filter((i) =>
     ["userMessage", "agentMessage"].includes(i.type),
   );
   const tools = Object.values(items).filter(
     (i) => !["userMessage", "agentMessage", "reasoning"].includes(i.type),
   );
+  const avatarWidth = desktop?.width || 320,
+    avatarHeight = desktop?.height || 426,
+    avatarX = desktop?.x ?? window.innerWidth - 360,
+    avatarY = desktop?.y ?? window.innerHeight - 540;
+  const panelWidth = Math.min(490, window.innerWidth - 32),
+    panelX =
+      avatarX >= panelWidth + 32
+        ? avatarX - panelWidth - 24
+        : Math.min(
+            window.innerWidth - panelWidth - 16,
+            avatarX + avatarWidth + 20,
+          ),
+    panelY = Math.max(16, Math.min(avatarY, window.innerHeight - 730));
   return (
     <div
+      style={{
+        "--panel-x": `${Math.max(16, panelX)}px`,
+        "--panel-y": `${panelY}px`,
+        "--settings-x": `${avatarX >= 744 ? avatarX - 744 : Math.max(16, Math.min(window.innerWidth - 736, avatarX + avatarWidth + 24))}px`,
+      }}
       className={
         "app desktop-overlay " +
         (workbench ? "workbench-open " : "") +
-        (dialogue ? "dialogue-open" : "dialogue-closed")
+        (dialogue ? "dialogue-open" : "dialogue-closed") +
+        (desktop?.edge ? " is-docked" : "")
       }
     >
-      <svg
-        width="0"
-        height="0"
-        aria-hidden="true"
-        style={{ position: "absolute" }}
-      >
-        <defs>
-          <filter id="clean-alpha" colorInterpolationFilters="sRGB">
-            <feComponentTransfer>
-              <feFuncA type="table" tableValues="0 0 0 0 0.15 1 1 1 1" />
-            </feComponentTransfer>
-          </filter>
-        </defs>
-      </svg>
+      {desktop?.edge && (
+        <button
+          className={"dock-tab edge-" + desktop.edge}
+          data-testid="dock-tab"
+          style={{
+            left: desktop.tab.x,
+            top: desktop.tab.y,
+            width: desktop.tab.width,
+            height: desktop.tab.height,
+          }}
+          onClick={() => api.desktopControl({ action: "expand" })}
+          onMouseEnter={() => {
+            dockTimer.current = setTimeout(
+              () => api.desktopControl({ action: "expand" }),
+              350,
+            );
+          }}
+          onMouseLeave={() => clearTimeout(dockTimer.current)}
+          aria-label={t("Show character")}
+        >
+          {displayName} ◂
+        </button>
+      )}
       <div className="overlay-controls">
-        <span className="drag-handle" title="拖动整个角色窗口">
-          ⠿ 凛
+        <span
+          className="drag-handle"
+          {...dragEvents}
+          title={t("Drag to move the character")}
+        >
+          {t("⠿ {name}", { name: displayName })}
         </span>
-        <button onClick={() => setDialogue(!dialogue)}>
-          {dialogue ? "收起对话" : "和凛说话"}
+        <button
+          data-testid="toggle-chat"
+          onClick={() => setDialogue(!dialogue)}
+        >
+          {dialogue
+            ? t("Hide chat")
+            : t("Chat with {name}", { name: displayName })}
         </button>
         <button onClick={() => setWorkbench(!workbench)}>
-          {workbench ? "收起工作台" : "展开工作台"}
+          {workbench ? t("Hide workspace") : t("Show workspace")}
         </button>
         <button
           disabled={!connected || state.busy || loading}
@@ -289,31 +450,80 @@ function App() {
           }
           title={workspace}
         >
-          {workspace ? workspace.split(/[\\/]/).at(-1) : "选择项目"}
+          {workspace ? workspace.split(/[\\/]/).at(-1) : t("Choose project")}
         </button>
-        <button onClick={() => setSettings(!settings)}>连接与角色</button>
+        <button
+          data-testid="settings-toggle"
+          onClick={() => setSettings(!settings)}
+        >
+          {t("Settings")}
+        </button>
+        <button
+          aria-label={t("Smaller")}
+          onClick={() =>
+            api.desktopControl({
+              action: "scale",
+              value: (desktop?.scale || 1) - 0.1,
+            })
+          }
+        >
+          −
+        </button>
+        <span className="scale-indicator">
+          {Math.round((desktop?.scale || 1) * 100)}%
+        </span>
+        <button
+          aria-label={t("Larger")}
+          onClick={() =>
+            api.desktopControl({
+              action: "scale",
+              value: (desktop?.scale || 1) + 0.1,
+            })
+          }
+        >
+          ＋
+        </button>
+        <select
+          data-testid="language-select"
+          aria-label={t("Language")}
+          value={language}
+          onChange={(e) =>
+            run(async () => {
+              const result = await api.setLanguage({
+                language: e.target.value,
+              });
+              setLanguage(result.language);
+            })
+          }
+        >
+          {Object.entries(languages).map(([code, name]) => (
+            <option key={code} value={code}>
+              {name}
+            </option>
+          ))}
+        </select>
         <button
           onClick={() => {
             setPinned(!pinned);
             api.windowControl({ action: "alwaysOnTop", value: !pinned });
           }}
         >
-          {pinned ? "已置顶" : "置顶"}
+          {pinned ? t("Pinned") : t("Pin")}
         </button>
         <button
-          title="透明区域可直接操作桌面"
+          title={t("Pass clicks through transparent areas")}
           onClick={() => setClickthrough(!clickthrough)}
         >
-          {clickthrough ? "穿透开" : "穿透关"}
+          {clickthrough ? t("Click-through on") : t("Click-through off")}
         </button>
         <button
-          aria-label="最小化"
+          aria-label={t("Minimize")}
           onClick={() => api.windowControl({ action: "minimize" })}
         >
           —
         </button>
         <button
-          aria-label="关闭应用"
+          aria-label={t("Close app")}
           onClick={() => api.windowControl({ action: "close" })}
         >
           ×
@@ -323,11 +533,12 @@ function App() {
         <a className="brand" href="#">
           <span className="brand-icon">✧</span>
           <div>
-            ANIME CODEX<small>YOUR IDEAS, OUR NEXT CHAPTER</small>
+            {t("ANIME CODEX")}
+            <small>{t("YOUR IDEAS, OUR NEXT CHAPTER")}</small>
           </div>
         </a>
         <div className="side-section">
-          <span className="eyebrow">WORKSPACE</span>
+          <span className="eyebrow">{t("WORKSPACE")}</span>
           <button
             className="project"
             disabled={!connected || state.busy || loading}
@@ -344,9 +555,11 @@ function App() {
           >
             <span>▧</span>
             <span>
-              {workspace ? workspace.split(/[\\/]/).at(-1) : "选择一个项目"}
+              {workspace
+                ? workspace.split(/[\\/]/).at(-1)
+                : t("Choose a project")}
               <small title={workspace}>
-                {workspace || "代码与故事开始的地方"}
+                {workspace || t("Where your project begins")}
               </small>
             </span>
             <span>⌄</span>
@@ -363,12 +576,12 @@ function App() {
             })
           }
         >
-          ＋ 开启新对话
+          {t("＋ New conversation")}
         </button>
         <div className="thread-head">
-          <span className="eyebrow">CONVERSATIONS</span>
+          <span className="eyebrow">{t("CONVERSATIONS")}</span>
           <button
-            aria-label="刷新会话"
+            aria-label={t("Refresh conversations")}
             disabled={!workspace || loading}
             onClick={() => run(() => refresh())}
           >
@@ -391,51 +604,56 @@ function App() {
               }
             >
               <span>◇</span>
-              {t.name || t.preview || "新对话"}
+              {t.name || t.preview || t("New conversation")}
             </button>
           ))}
           {threadCursor && (
             <button onClick={() => run(() => refresh(threadCursor))}>
-              加载更多会话
+              {t("Load more conversations")}
             </button>
           )}
           {!threads.length && (
             <p className="muted">
-              这里会留下我们一起
+              {t("Keep a record of what")}
               <br />
-              解决问题的记录。
+              {t("we build together.")}
             </p>
           )}
         </nav>
         <div className="side-bottom">
           <span className={"connection " + (connected ? "online" : "")}>
-            ● {connected ? "Codex 已连接" : "Codex 未连接"}
+            ● {connected ? t("Codex connected") : t("Codex disconnected")}
           </span>
           <small>{account}</small>
           <button onClick={() => setSettings(!settings)}>
-            ⚙ 角色与连接设置
+            {t("⚙ Character and connection settings")}
           </button>
-          <p>角色陪你交流 · 执行由 Codex 完成</p>
+          <p>{t("Your character speaks. Codex executes.")}</p>
         </div>
       </aside>
       <main>
         <header>
           <div>
-            <span className="eyebrow">A LITTLE PRESENCE. REAL PROGRESS.</span>
+            <span className="eyebrow">
+              {t("A LITTLE PRESENCE. REAL PROGRESS.")}
+            </span>
             <h1>
-              和凛一起，写下下一步<span className="header-star">✧</span>
+              {t("Take the next step with {name}", { name: displayName })}
+              <span className="header-star">✧</span>
             </h1>
           </div>
           <div className="header-actions">
             <span className="pill">
-              {mode === "read-only" ? "只读模式" : "项目内写入"}
+              {mode === "read-only"
+                ? t("Read-only mode")
+                : t("Project write access")}
             </span>
             <button
               className={voiceOn ? "active" : ""}
               onClick={() => setVoiceOn(!voiceOn)}
             >
               {" "}
-              {voiceOn ? "◖ 语音开启" : "◖ 语音关闭"}
+              {voiceOn ? t("◖ Voice on") : t("◖ Voice off")}
             </button>
           </div>
         </header>
@@ -447,14 +665,85 @@ function App() {
         )}
         {settings && (
           <section className="settings">
+            <CharacterSettings
+              t={t}
+              character={character}
+              library={library}
+              profileName={profileName}
+              setProfileName={setProfileName}
+              loading={loading}
+              busy={state.busy}
+              preview={previewPhase}
+              setPreview={setPreviewPhase}
+              onSelect={(id) =>
+                run(async () =>
+                  applyPreferences(await api.selectCharacter({ id })),
+                )
+              }
+              onImport={(phase, id) => run(() => importAction(phase, id))}
+              onRemove={(phase) =>
+                run(async () =>
+                  applyPreferences(
+                    await api.removeActionImage({ id: character.id, phase }),
+                    true,
+                  ),
+                )
+              }
+              onSave={() => run(saveCurrentCharacter)}
+            />
+            <section className="desktop-settings">
+              <h2>{t("Character size")}</h2>
+              <label>
+                {t("Character size")} ·{" "}
+                {Math.round((desktop?.scale || 1) * 100)}%
+                <input
+                  data-testid="character-scale"
+                  type="range"
+                  min="50"
+                  max="180"
+                  step="5"
+                  value={Math.round((desktop?.scale || 1) * 100)}
+                  onChange={(e) =>
+                    api.desktopControl({
+                      action: "scale",
+                      value: Number(e.target.value) / 100,
+                    })
+                  }
+                />
+              </label>
+              <label className="checkbox-label">
+                <input
+                  data-testid="auto-hide"
+                  type="checkbox"
+                  checked={desktop?.autoHide ?? true}
+                  onChange={(e) =>
+                    api.desktopControl({
+                      action: "autoHide",
+                      value: e.target.checked,
+                    })
+                  }
+                />
+                {t("Auto-hide at screen edges")}
+              </label>
+              <button onClick={() => api.desktopControl({ action: "reset" })}>
+                {t("Reset position and size")}
+              </button>
+              <p>
+                {t(
+                  "Drag the character to move it. Alt + wheel resizes it. Click the edge tab to restore.",
+                )}
+              </p>
+            </section>
             <div>
-              <h2>连接与角色</h2>
-              <p>先在终端运行 codex login。登录信息由官方 Codex 管理。</p>
+              <h2>{t("Settings")}</h2>
+              <p>
+                {t("Run codex login first. Official Codex manages sign-in.")}
+              </p>
               <button
                 disabled={connected || loading}
                 onClick={() => run(() => connectBackend())}
               >
-                连接 PATH 中的 Codex
+                {t("Connect to Codex on PATH")}
               </button>
               <button
                 disabled={connected || loading}
@@ -465,28 +754,29 @@ function App() {
                   })
                 }
               >
-                选择 codex.exe 并连接
+                {t("Choose codex.exe and connect")}
               </button>
             </div>
             <label>
-              新建 / 恢复会话的权限
+              {t("Permissions for new or resumed conversations")}
               <select
                 disabled={state.busy || !!thread}
                 value={mode}
                 onChange={(e) => setMode(e.target.value)}
               >
-                <option value="read-only">只读（默认）</option>
+                <option value="read-only">{t("Read-only (default)")}</option>
                 <option value="workspace-write">
-                  项目内写入（可修改选中目录）
+                  {t("Project write (can modify the selected folder)")}
                 </option>
               </select>
               <small>
-                切换权限前请先选择项目，开始新会话。项目写入不会逐文件询问，越界操作仍由
-                Codex 审批。
+                {t(
+                  "Choose a project and start a new conversation to change permissions. Project writes are not approved file by file; Codex handles boundary approvals.",
+                )}
               </small>
             </label>
             <label className="persona">
-              凛的性格 · 应用于新建 / 恢复会话
+              {t("Personality for new or resumed conversations")}
               <textarea
                 value={persona}
                 maxLength={12000}
@@ -494,16 +784,32 @@ function App() {
               />
             </label>
             <p>
-              语音使用系统 TTS；可用中文声音取决于
-              Windows。示例口型为近似节奏动画，不是音素同步。
+              {t(
+                "Voice uses system TTS. Available voices depend on Windows. Accurate lip sync is not implemented.",
+              )}
             </p>
           </section>
         )}
         <div className="workspace-grid">
-          <section className="scene">
+          <section
+            className="scene"
+            style={{
+              left: avatarX,
+              top: avatarY,
+              right: "auto",
+              bottom: "auto",
+              width: avatarWidth,
+              height: avatarHeight + 28,
+            }}
+          >
             <div className="scene-top">
-              <span className="eyebrow">RIN / 凛</span>
-              <span className="scene-chip">{labels[phase] || phase}</span>
+              <span className="eyebrow">
+                {t("{name}", { name: displayName })}
+              </span>
+              <span className="scene-chip">
+                {previewPhase ? t("Preview") + " · " : ""}
+                {labels[phase] || phase}
+              </span>
             </div>
             <div className="orbit orbit-one" />
             <div className="orbit orbit-two" />
@@ -511,32 +817,55 @@ function App() {
             <span className="decor decor-two">＋</span>
             <div
               className={"character " + phase}
+              data-testid="character"
+              {...dragEvents}
+              onWheel={(e) => {
+                if (e.altKey || e.ctrlKey)
+                  api.desktopControl({
+                    action: "scale",
+                    value:
+                      (desktop?.scale || 1) + (e.deltaY < 0 ? 0.05 : -0.05),
+                  });
+              }}
               style={{ "--mouth": mouth }}
-              aria-label={"凛：" + (labels[phase] || phase)}
+              aria-label={
+                t("{name}: ", { name: displayName }) + (labels[phase] || phase)
+              }
               onDoubleClick={() => setDialogue(!dialogue)}
-              title="双击显示或收起对话；使用上方 ⠿ 拖动窗口"
+              title={t(
+                "Drag to move. Double-click to toggle chat. Alt + wheel to resize.",
+              )}
             >
-              {character &&
-                Array.from({ length: 8 }, (_, index) => (
-                  <div
-                    key={index}
-                    className={
-                      "sprite " +
-                      (character.states[phase] === index ? "visible" : "")
-                    }
-                    style={{
-                      backgroundImage: `url(${character.sheet})`,
-                      backgroundPosition: `${((index % 4) * 100) / 3}% ${Math.floor(index / 4) * 100}%`,
-                    }}
-                  />
-                ))}
+              {character ? (
+                <ImageCharacter
+                  character={character}
+                  phase={phase}
+                  name={displayName}
+                  t={t}
+                />
+              ) : (
+                <div className="empty-character">
+                  <button
+                    data-testid="import-first-idle"
+                    onClick={() => run(() => importAction("idle", null))}
+                  >
+                    {t("Upload idle image")}
+                  </button>
+                  <p>
+                    {t("One idle image is enough. Other actions are optional.")}
+                  </p>
+                </div>
+              )}
             </div>
             <div className="scene-caption">
               <span className="tiny-line" />
               <h2>
-                凛 <small>RIN</small>
+                {t("{name} #2", { name: displayName })}
+                <small>{t("CHARACTER")}</small>
               </h2>
-              <p>{character?.subtitle || "把想法，一起变成现实。"}</p>
+              <p>
+                {character?.subtitle || t("Turn ideas into reality together.")}
+              </p>
               <div className="status-dots">
                 <i />
                 <i />
@@ -545,16 +874,21 @@ function App() {
             </div>
             <div className="scene-foot">
               <span>
-                ✦ {state.busy ? "正在陪你处理这件事" : "准备好迎接下一个想法"}
+                ✦{" "}
+                {state.busy
+                  ? t("Working on this with you")
+                  : t("Ready for your next idea")}
               </span>
               <span>01 — ∞</span>
             </div>
           </section>
           <section className="conversation">
             <div className="conversation-title">
-              <span>我们的对话</span>
+              <span>{t("Our conversation")}</span>
               <span className="muted">
-                {thread ? "线程 " + thread.slice(0, 8) : "新的篇章"}
+                {thread
+                  ? t("Thread ") + thread.slice(0, 8)
+                  : t("A new chapter")}
               </span>
             </div>
             <div className="messages" aria-live="polite">
@@ -563,23 +897,23 @@ function App() {
                   disabled={loading}
                   onClick={() => run(() => history(thread, historyCursor))}
                 >
-                  加载更早的记录
+                  {t("Load earlier history")}
                 </button>
               )}
               {!transcript.length && (
                 <div className="welcome">
-                  <span className="eyebrow">LET’S MAKE SOMETHING.</span>
-                  <h2>今天想做点什么？</h2>
+                  <span className="eyebrow">{t("LET’S MAKE SOMETHING.")}</span>
+                  <h2>{t("What would you like to build?")}</h2>
                   <p>
-                    把想法告诉我吧。我们可以从读懂一个项目开始，
+                    {t("Tell me your idea. We can explore a project")}
                     <br />
-                    也可以一起做出一个小小的新东西。
+                    {t("or make something new together.")}
                   </p>
                   <div className="suggestions">
                     {[
-                      "先帮我了解这个项目的结构",
-                      "检查当前修改，找出潜在问题",
-                      "帮我实现一个新功能",
+                      t("Help me understand this project"),
+                      t("Review my changes for potential issues"),
+                      t("Help me build a new feature"),
                     ].map((s) => (
                       <button key={s} onClick={() => setText(s)}>
                         {s}
@@ -588,16 +922,20 @@ function App() {
                     ))}
                   </div>
                   <p className="hint">
-                    这是一段欢迎语。连接后，回复和执行事件均来自真实 Codex。
+                    {t(
+                      "This is a welcome message. Connected replies and execution events come from real Codex.",
+                    )}
                   </p>
                 </div>
               )}
               {transcript.map((i) => (
                 <article className={"message " + i.type} key={i.id}>
                   <div className="message-author">
-                    {i.type === "userMessage" ? "你" : character?.name}
+                    {i.type === "userMessage" ? t("You") : character?.name}
                     <small>
-                      {i.type === "agentMessage" ? "CODEX · 原始回复" : ""}
+                      {i.type === "agentMessage"
+                        ? t("CODEX · ORIGINAL RESPONSE")
+                        : ""}
                     </small>
                   </div>
                   <div className="message-body">
@@ -622,32 +960,37 @@ function App() {
             {(!connected || !workspace) && (
               <div className="setup-guide" role="status">
                 <strong>
-                  {!connected ? "尚未连接 Codex" : "Codex 已连接，尚未选择项目"}
+                  {!connected
+                    ? t("Not connected to Codex")
+                    : t("Codex connected; choose a project")}
                 </strong>
                 <p>
-                  选择项目目录后即可发送消息。当前默认只读，不会自动修改文件。
+                  {t(
+                    "Choose a project folder to send messages. The default mode is read-only.",
+                  )}
                 </p>
                 <button
                   disabled={loading || state.busy}
                   onClick={() => run(prepareConversation)}
                 >
                   {loading
-                    ? "正在准备……"
+                    ? t("Getting ready…")
                     : !connected
-                      ? "连接 Codex 并选择项目"
-                      : "选择项目并开始对话"}
+                      ? t("Connect to Codex and choose project")
+                      : t("Choose project and start chatting")}
                 </button>
               </div>
             )}
             <form className="composer" onSubmit={send}>
               <textarea
-                aria-label="给凛的消息"
+                data-testid="message-input"
+                aria-label={t("Message for {name}", { name: displayName })}
                 placeholder={
                   !connected
-                    ? "可以先输入想法，再点击上方连接按钮……"
+                    ? t("Write your idea, then connect using the button above…")
                     : !workspace
-                      ? "请先点击上方按钮选择项目目录……"
-                      : "和凛说说你的想法……"
+                      ? t("Choose a project using the button above…")
+                      : t("Tell {name} your idea…", { name: displayName })
                 }
                 value={text}
                 disabled={state.busy}
@@ -666,8 +1009,8 @@ function App() {
               <div className="composer-bottom">
                 <span>
                   {state.busy
-                    ? "任务执行中，可随时停止"
-                    : "Enter 发送 · Shift + Enter 换行"}
+                    ? t("Task running; you can stop at any time")
+                    : t("Enter to send · Shift + Enter for a new line")}
                 </span>
                 {state.busy ? (
                   <button
@@ -675,7 +1018,7 @@ function App() {
                     className="stop"
                     onClick={() => run(() => api.interrupt())}
                   >
-                    ■ 停止
+                    {t("■ Stop")}
                   </button>
                 ) : (
                   <button
@@ -684,25 +1027,27 @@ function App() {
                       !connected || !workspace || !text.trim() || loading
                     }
                   >
-                    发送 ↗
+                    {t("Send ↗")}
                   </button>
                 )}
               </div>
             </form>
             <div className="privacy">
-              执行结果以右侧记录为准 · 不会自动批准权限请求
+              {t(
+                "Check execution records · Permissions are never automatically approved",
+              )}
             </div>
           </section>
           <aside className="evidence">
             <div className="evidence-title">
-              <span>工作记录</span>
-              <span className="live">● LIVE</span>
+              <span>{t("Execution records")}</span>
+              <span className="live">{t("● LIVE")}</span>
             </div>
             <div className="tabs">
               {[
-                ["activity", "进度"],
+                ["activity", t("Progress")],
                 ["diff", "Diff"],
-                ["events", "事件"],
+                ["events", t("Events")],
               ].map(([k, v]) => (
                 <button
                   key={k}
@@ -721,7 +1066,9 @@ function App() {
                     <div>
                       {labels[state.phase]}
                       <small>
-                        {state.busy ? "来自 Codex 事件" : "等待下一步"}
+                        {state.busy
+                          ? t("From Codex events")
+                          : t("Waiting for the next step")}
                       </small>
                     </div>
                   </div>
@@ -733,11 +1080,11 @@ function App() {
                   {!tools.length && (
                     <div className="empty-evidence">
                       <span>⌘</span>
-                      <p>让每一步都有迹可循</p>
+                      <p>{t("Every step has a record")}</p>
                       <small>
-                        工具调用、命令输出与代码改动
+                        {t("Tool calls, command output and changes")}
                         <br />
-                        会在这里实时显示。
+                        {t("appear here as they happen.")}
                       </small>
                     </div>
                   )}
@@ -752,7 +1099,7 @@ function App() {
                         <div>
                           {i.command || i.tool || i.type}
                           <small>
-                            {i.status || "记录"}
+                            {i.status ? t("status." + i.status) : t("Recorded")}
                             {i.exitCode !== null && i.exitCode !== undefined
                               ? ` · exit ${i.exitCode}`
                               : ""}
@@ -767,13 +1114,17 @@ function App() {
               {tab === "diff" && (
                 <pre className="diff">
                   {state.diff ||
-                    "本轮尚未收到 diff。历史文件修改可在进度中的 fileChange 记录查看。"}
+                    t(
+                      "No diff received for this turn. Open fileChange records to inspect earlier edits.",
+                    )}
                 </pre>
               )}
               {tab === "events" && (
                 <>
                   <p className="muted">
-                    最近 500 条原始协议事件；更多记录由 Codex 线程保存。
+                    {t(
+                      "The latest 500 raw events. Codex stores additional thread history.",
+                    )}
                   </p>
                   {logs.map((e, i) => (
                     <details key={i} className="event">
@@ -787,13 +1138,13 @@ function App() {
               )}
             </div>
             <div className="boundary">
-              <span>◇ 执行边界</span>
+              <span>{t("◇ Execution boundaries")}</span>
               <p>
                 {mode === "read-only"
-                  ? "当前为只读。"
-                  : "Codex 可以修改选中的项目。"}
+                  ? t("Read-only access.")
+                  : t("Codex may modify the selected project.")}
                 <br />
-                审批决定由你作出。失败会如实显示。
+                {t("You decide approvals. Failures are shown honestly.")}
               </p>
             </div>
           </aside>
@@ -805,11 +1156,15 @@ function App() {
             className="approval"
             role="dialog"
             aria-modal="true"
-            aria-label="Codex 请求"
+            aria-label={t("Codex request")}
           >
-            <span className="eyebrow">YOUR DECISION MATTERS</span>
-            <h2>这一步，需要你的决定</h2>
-            <p>凛会等你。以下是 Codex 发来的原始请求。</p>
+            <span className="eyebrow">{t("YOUR DECISION MATTERS")}</span>
+            <h2>{t("This step needs your decision")}</h2>
+            <p>
+              {t("{name} will wait. This is the original request from Codex.", {
+                name: displayName,
+              })}
+            </p>
             <h3>{state.pending[0].method}</h3>
             <pre>{pretty(state.pending[0].params)}</pre>
             {state.pending[0].method === "item/tool/requestUserInput" &&
@@ -854,7 +1209,7 @@ function App() {
                         )
                       }
                     >
-                      {d === "accept" ? "仅批准这一次" : "拒绝"}
+                      {d === "accept" ? t("Approve once") : t("Decline")}
                     </button>
                   ))
               ) : (
@@ -865,15 +1220,19 @@ function App() {
                   }
                 >
                   {state.pending[0].method === "item/tool/requestUserInput"
-                    ? "提交回答"
-                    : "拒绝 / 不授予权限"}
+                    ? t("Submit answers")
+                    : t("Decline / grant no permissions")}
                 </button>
               )}
               <button onClick={() => run(() => api.interrupt())}>
-                停止任务
+                {t("Stop task")}
               </button>
             </div>
-            <small>未知请求只会拒绝；本 MVP 不提供永久授权或自动批准。</small>
+            <small>
+              {t(
+                "Unknown requests can only be declined. No permanent or automatic approvals.",
+              )}
+            </small>
             {error && <p className="error">{error}</p>}
           </section>
         </div>

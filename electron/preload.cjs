@@ -12,6 +12,12 @@ const names = [
   "interrupt",
   "answer",
   "windowControl",
+  "setLanguage",
+  "selectCharacter",
+  "updateCharacter",
+  "importActionImage",
+  "removeActionImage",
+  "desktopControl",
 ];
 contextBridge.exposeInMainWorld("animeCodex", {
   ...Object.fromEntries(

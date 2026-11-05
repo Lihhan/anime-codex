@@ -18,7 +18,13 @@ export class SystemVoice {
     utterance.voice =
       speechSynthesis
         .getVoices()
-        .find((v) => v.lang.startsWith("zh") && v.localService) || null;
+        .find(
+          (v) =>
+            v.lang
+              .toLowerCase()
+              .startsWith(config.lang.split("-")[0].toLowerCase()) &&
+            v.localService,
+        ) || null;
     this.done = onEnd;
     utterance.onstart = () => {
       this.timer = setInterval(

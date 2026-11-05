@@ -31,7 +31,7 @@ class Rpc extends EventEmitter {
     child.on("error", fail);
     child.stdin.on("error", fail);
     child.on("exit", (code) =>
-      fail(new Error(`Codex App Server 已退出 (${code})`)),
+      fail(new Error(`error.rpcDisconnected:${code}`)),
     );
     child.stderr.on("data", (b) => this.emit("diagnostic", b.toString()));
     createInterface({ input: child.stdout }).on("line", (line) => {
@@ -39,7 +39,7 @@ class Rpc extends EventEmitter {
       try {
         m = JSON.parse(line);
       } catch {
-        return this.emit("diagnostic", "非 JSON 协议行，已忽略");
+        return this.emit("diagnostic", "Non-JSON protocol line ignored");
       }
       if (m.method) this.emit("event", m);
       else {
@@ -68,7 +68,7 @@ class Rpc extends EventEmitter {
     }
   }
   send(m) {
-    if (!this.child?.stdin.writable) throw new Error("Codex 尚未连接");
+    if (!this.child?.stdin.writable) throw new Error("error.notConnected");
     this.child.stdin.write(JSON.stringify(m) + "\n");
   }
   request(method, params = {}) {
@@ -76,7 +76,7 @@ class Rpc extends EventEmitter {
       const id = ++this.next;
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new Error(`请求超时: ${method}`));
+        reject(new Error(`error.rpcTimeout:${method}`));
       }, 60000);
       this.pending.set(id, { resolve, reject, timer });
       try {

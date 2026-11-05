@@ -4,10 +4,17 @@ import fs from "node:fs/promises";
 import assert from "node:assert/strict";
 import path from "node:path";
 await fs.mkdir("test-results", { recursive: true });
+const dataDirectory = await fs.mkdtemp(
+  path.resolve("test-results/ui-profile-"),
+);
 const app = await electron.launch({
   executablePath: process.env.ANIME_CODEX_EXECUTABLE || electronPath,
   args: process.env.ANIME_CODEX_EXECUTABLE ? [] : ["."],
-  env: { ...process.env, ANIME_CODEX_DEV: "0" },
+  env: {
+    ...process.env,
+    ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_DATA_DIR: dataDirectory,
+  },
   timeout: 30000,
 });
 try {
@@ -20,11 +27,11 @@ try {
     exact: true,
   });
   assert.equal(await setup.isEnabled(), true);
-  await page.getByLabel("给凛的消息").fill("尚未连接时尝试发送");
-  await page.getByLabel("给凛的消息").press("Enter");
+  await page.getByTestId("message-input").fill("尚未连接时尝试发送");
+  await page.getByTestId("message-input").press("Enter");
   await page
     .getByRole("alert")
-    .getByText("还未连接 Codex，请点击对话框下方的连接按钮。")
+    .getByText("还未连接 Codex，请点击对话框上方的连接按钮。")
     .waitFor();
   assert.equal(await page.locator(".userMessage").count(), 0);
   await page.getByRole("alert").getByRole("button").click();
@@ -50,10 +57,10 @@ try {
   );
   await page.getByRole("button", { name: "先帮我了解这个项目的结构" }).click();
   assert.equal(
-    await page.getByLabel("给凛的消息").inputValue(),
+    await page.getByTestId("message-input").inputValue(),
     "先帮我了解这个项目的结构",
   );
-  await page.getByLabel("给凛的消息").fill("");
+  await page.getByTestId("message-input").fill("");
   await page.screenshot({
     path: "test-results/desktop.png",
     omitBackground: true,
@@ -74,7 +81,7 @@ try {
     path: "test-results/character-only.png",
     omitBackground: true,
   });
-  await page.getByRole("button", { name: "和凛说话", exact: true }).click();
+  await page.getByTestId("toggle-chat").click();
   // Inject protocol events through the real main->preload channel. This is a UI fixture, not an execution result.
   await app.evaluate(({ BrowserWindow }) => {
     const w = BrowserWindow.getAllWindows()[0];
@@ -115,7 +122,7 @@ try {
   await page.getByText("Fixture failure; no command executed").waitFor();
   assert.deepEqual(errors, []);
   console.log(
-    "Electron UI: layout, sprite, isolated renderer, input, approval dialog and failure passed.",
+    "Electron UI: layout, images, isolated renderer, input, approval dialog and failure passed.",
   );
 } finally {
   await app.close();

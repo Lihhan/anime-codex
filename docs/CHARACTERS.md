@@ -1,43 +1,53 @@
-# 角色扩展契约
+# Character images and desktop controls
 
-当前只安装 sprite renderer。角色事件模型位于 `shared/state.mjs`，原始协议数据仍保留，不把工具输出变成人设台词。
+## Start with one idle image
 
-| 状态 | 事件或输入依据 | 映射格 |
+Choose **Upload idle image** on the empty desktop character area, or **Settings → Character library → New character from idle image**. The filename supplies an initial name; edit it and the personality in Settings, then save.
+
+No built-in character is automatically selected. Create multiple characters from your own idle portraits and switch them from the library. The app does not synthesize missing pictures. It uses the idle image whenever an action image is absent.
+
+| Slot | Source | Missing-image behavior |
 |---|---|---|
-| idle | 初始/新会话 | 0 |
-| listening | 用户正在输入，未执行任务 | 1 |
-| thinking | turn/started、审批结束且无工具 | 2 |
-| reading | commandActions 全部为 read/listFiles/search；或搜索/MCP工具 | 3 |
-| coding | fileChange；其他命令 | 4 |
-| approval | 有尚未 resolved 的服务器请求，优先级最高 | 5 |
-| success | turn/completed 且 status=completed | 6 |
-| failure | turn 失败或后端断开 | 7 |
-| speaking | agentMessage/delta，无待决审批 | 1 |
-| interrupted | turn status=interrupted | 建议映射 idle（本版已配置） |
+| `idle` | Required first image | Replace it instead of removing it |
+| `listening` | Typing a message | Idle |
+| `thinking` | Turn start / reasoning | Idle |
+| `reading` | Structured reading/search events | Idle |
+| `coding` | Working / commands / file changes | Idle |
+| `approval` | Pending server decision | Idle |
+| `speaking` | Streamed reply or optional voice playback | Idle |
+| `success` | Completed turn | Idle |
+| `failure` | Sorry / error / backend disconnected | Idle |
+| `interrupted` | Stopped turn | Idle |
 
-MCP 工具仅表示正在处理信息，不能保证它只读；真实请求与输出始终在证据面板。一个工具结束后仍可能有并发工具运行，状态机保留 active item 集合。完成和失败状态保留，直到新输入或新任务，避免瞬间跳回待机。
+A single idle image therefore covers all ten states. Adding an action changes only that state. **Use idle instead** removes an optional assignment. The task-status label continues to report the real state even if all states share one picture.
 
-替换现有素材：同规格八格图集写入 `public/characters/rin/sheet.png`，修改 `characters/rin.json` 的 persona、name、states，执行 build。角色配置由 main 从受信任本地文件读取；不允许对话内容动态加载远程模型或 JS。现有界面标题中的「凛」是固定设计文案，完整更名还需修改 `src/main.jsx` 和 HTML 标题。
+## Import and preview
 
-Live2D 扩展建议以独立 `CharacterStage` 组件实现：
+Each action accepts one PNG, JPEG or WebP, up to 15 MB and 8192 pixels per side. The main process checks signatures and dimensions, decodes the selected file and stores a PNG copy. SVG/HTML, scripts, remote image URLs and executable avatar packs are not accepted.
 
-```ts
-interface CharacterRenderer {
-  mount(element: HTMLElement): Promise<void>;
-  transition(state: string, options: { durationMs: number }): void;
-  setMouthOpen(value: number): void; // clamp 0..1
-  setGaze(x: number, y: number): void;
-  dispose(): void;
-}
-interface VoiceProvider {
-  speak(text: string, config: unknown,
-    onLevel: (level: number) => void, onEnd: () => void): void;
-  stop(): void;
-}
-```
+Use transparent PNG for a background-free appearance. Existing backgrounds remain intact. For smooth transitions, keep your character's identity, canvas dimensions, size and baseline consistent across images. Different dimensions are contained within the idle image's aspect-ratio area; images are never stretched to change their proportions.
 
-本版已实现 `SystemVoice` 的 provider 形状和节奏回调；还没有实现上述 Live2D renderer。真正口型应从本地音频 RMS/音素时间线驱动 `ParamMouthOpenY`，暂停/失败/打断时归零，不能把字符流速度当作准确音素。
+Click a slot thumbnail to preview that action. The desktop label explicitly says **Preview**. Previewing never starts a task or invents a result. New activity or an approval clears the preview so genuine task state stays visible. Images crossfade rather than being randomly selected.
 
-至少需要具有再分发权限的 `.model3.json`、`.moc3`、纹理 PNG、physics、motions、expressions，以及各文件作者/许可；再单独取得适用的 Cubism Core 和 SDK 发布许可。将模型整理成待机/思考/阅读/打字/等待/成功/失败动作组，指定 blend-in/out、动作优先级和眨眼排斥规则。保持审批优先级，工作动作不能遮挡权限弹窗。无模型时继续显示 PNG，不应假称 Live2D 已加载。
+This format uses separate action files, not a sprite-sheet editor, face customizer or deformable rig. Uploading an illustration does not automatically animate its limbs or remove its background.
 
-可提升项：分层发丝物理、头部视线、自然眨眼、工作手势、表情 hysteresis、本地低延迟中文 TTS、音素口型、跨回合的显式用户偏好。任何记忆应由用户可查看和清除，不能用随机亲密台词代替任务事件。
+## Desktop placement
+
+Drag the character or toolbar handle. Change size with the minus/plus buttons, the Settings slider, or Alt + mouse wheel. Placement and scale are saved after changes. The overlay spans the connected displays' work-area bounds; geometry uses logical desktop coordinates.
+
+On drag release within 18 logical pixels of a screen edge, auto-hide collapses to an edge tab. Hover over or click it to restore. This does not trigger merely because the app starts near an edge. Pending server decisions prevent hiding; newly received approval requests reveal the UI.
+
+Disable auto-hide or reset position/size in Settings. `Ctrl + Alt + A` reveals the character and restores mouse input if click-through makes interaction difficult. Reduced-motion settings disable animation.
+
+## Storage and privacy
+
+The default directory is `%APPDATA%\anime-codex\`:
+
+- `preferences.json`: language, selected character, names, personalities, action assignments, position, scale and auto-hide.
+- `characters/`: copied and normalized image files with generated filenames.
+
+Imports do not depend on the original source file after copying. Images are provided to the renderer as data URLs; the renderer cannot open arbitrary filesystem paths. Replacing/removing an assignment may leave an unused local copy; assets are not automatically uploaded or committed. Close the app and rename `preferences.json` to recover defaults without deleting copied images.
+
+Tests use a separate `ANIME_CODEX_DATA_DIR` and leave your real preferences untouched. Legacy imported image profiles can be read as idle-only characters; old procedural-character settings are ignored.
+
+Images remain local. Character name and personality instructions are sent to Codex for new/resumed conversations. Language selection changes the UI immediately and persists; the response-language preference applies to new/resumed conversations. Existing messages and tool evidence are never translated or rewritten.

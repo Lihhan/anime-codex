@@ -1,28 +1,32 @@
-# MVP 验收记录
+# Validation record
 
-日期：2026-11-05。平台：本机 Windows x64，Node 24，Electron 45.2.3，Codex CLI `0.166.0-alpha.5.1`。下列是实际运行结果，不把 UI 夹具视为代理执行证据。
+Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3 and Codex CLI `0.166.0-alpha.5.1`.
 
-## 已通过
+## Automated checks
 
-- 七项 Node 测试：并发工具状态、审批优先级、多审批请求、失败和中断、只读/写入边界、阻止永久授权、JSON-lines 握手/双向请求/UTF-8 分段/错误处理。
-- Vite 生产构建。
-- Windows 便携版构建成功；最终无背景版本的 `win-unpacked/Anime Codex.exe` 已启动并通过相同 Electron 界面检查。已比对打包内 main、preload、RPC 桥接和角色配置与最终源码一致。
-- Electron 界面检查：PNG 加载为 1536×1024，renderer 无 require，context isolation 启用，输入建议，审批弹窗，失败显示，透明页面背景与截图角落 alpha=0。
-- 原创透明图集 alpha 检查：RGBA，通道范围 0..254；约 24.1% 像素完全透明，其余包含角色及软边缘。CSS alpha 清理抑制背景残留。
-- **真实 App Server**：本机已有登录；在专用测试目录实际读取 `input.txt`、写入 `output.txt`，随机内容逐字匹配。turn 状态 completed，收到 43 个 agentMessage delta；分页历史返回一轮，恢复同一 threadId 成功。底层报告保存在本地未入库的 `test-results/backend.json`。
-- **真实桌面完整链路**：Electron UI → preload → main → App Server。通过界面连接、选择测试目录、提交「实际读取 hello.js 并解释 greet」任务，收到了真实工具记录和包含「世界」的回复；恢复所选线程后回复仍存在。脚本 `scripts/smoke-desktop-real.mjs` 实际通过。
-- 依赖审计已将构建链中的 minimatch 固定到 11.0.1，最新一次 npm audit 为 0 个漏洞。构建依赖仍可能有弃用提示，不表示应用执行失败。
+Latest local results: **15/15 unit tests passed**, production build passed, source and packaged Electron UI checks passed, image customization/restart checks passed, and the real desktop Codex read/history-resume check passed. The dependency audit reported zero vulnerabilities. The Windows portable build completed successfully.
 
-## 场景性质
+The current unit suite contains 15 tests covering:
 
-`smoke-ui` 的审批和失败事件明确使用测试夹具，只验证视图；没有执行示例审批命令。真实文件工具与真实 UI 往返由两个独立真实后端检查验证。高级权限请求、MCP elicitation、新协议请求暂只可保守拒绝，未验证其接受流程，也没有向用户提供接受按钮。
+- Idle-only fallback for every action; selecting an uploaded action and restoring fallback after removal.
+- Import copying, optional action assignment, profile/language persistence and missing original files.
+- Rejection of non-images, truncated/oversized headers, unsupported actions and invalid profile selection.
+- Desktop geometry, scale limits, negative monitor coordinates, all four docking edges and approval-aware hiding.
+- Translation catalog completeness and interpolation across Chinese, English and Japanese.
+- Codex event reduction, approval precedence, failure/interruption, permission limits, JSON-lines transport, UTF-8 framing and bidirectional requests.
 
-窗口是透明无边框、可置顶的 Electron 桌面窗口；空白穿透使用 Windows `setIgnoreMouseEvents` 的鼠标移动转发。自动化核对透明像素和功能操作，未覆盖每种多屏/DPI/显卡/辅助技术组合。控制条可关闭穿透以便排查。当前固定窗口尺寸上限随主屏工作区适配，未提供任意缩放或跨屏布局记忆。
+The Electron UI check covers setup guidance, renderer isolation, input, transparent pixels, approval dialogs and failure display. The customization check exercises native image imports, per-action slots, idle fallback, action preview, real event-to-image mapping using marked fixtures, three languages, pointer dragging, scaling, docking/restoring on all four edges and application restart persistence. Simple colored PNGs are test data, not distributed character artwork.
 
-未测试的功能不会标记通过：Live2D、精确口型、情感 TTS、语音输入、官方应用原生线程联动、断线时恢复仍在执行的工具、企业环境所有权限策略、签名安装程序与自动更新。
+## Real backend evidence
 
-## 发布状态
+The real backend smoke check has verified file reads/writes with matching random fixture content, streamed deltas, stored history and resuming the same thread. The real desktop check has verified the UI → preload → main → App Server path: it asks Codex to read a fixture, receives tool records and original replies, and restores the conversation history. Latest raw local reports are in ignored `test-results/` files.
 
-Windows 便携版由 `npm run dist:win` 生成。开发运行和打包运行均使用同一固定 preload/main 桥接。应用不带 Codex 或凭据，需要本机官方 Codex 登录。
+UI-only approval/action fixtures never count as executed commands. A real turn may fail for a backend, authentication, policy or environment reason; the app displays that failure instead of claiming success. GitHub Actions results are not inferred from local checks.
 
-用户已完成 GitHub 设备登录授权；私有仓库 [Lihhan/anime-codex](https://github.com/Lihhan/anime-codex) 已创建，源码、锁文件、测试、中文说明、原创 PNG 和许可记录均已通过 Git 推送到 `main`。本地分支 `codex/mvp` 跟踪 `origin/main`。自动化测试配置随源码提交；本记录中的通过结果指本机实际验证，不把尚未核实的 GitHub Actions 结果标记通过。
+## Packaging and limitations
+
+Windows packages are built under `release/v0.2.0/`, separately from the earlier development build. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
+
+Geometry tests cover multiple logical display areas, including negative coordinates. Not every monitor arrangement, DPI transition, GPU, system voice, accessibility tool or managed Codex policy has been physically tested. Image mode does not deform faces or limbs, generate missing artwork, perform Live2D rendering, or provide phoneme-accurate lip sync.
+
+The repository is private at [Lihhan/anime-codex](https://github.com/Lihhan/anime-codex). Personal image imports, app data and raw test output are excluded from Git. Repository documentation is English; application-owned UI supports Chinese, English and Japanese.

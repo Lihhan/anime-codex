@@ -14,7 +14,13 @@ await fs.writeFile(
 const app = await electron.launch({
   executablePath: electronPath,
   args: ["."],
-  env: { ...process.env, ANIME_CODEX_DEV: "0" },
+  env: {
+    ...process.env,
+    ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_DATA_DIR: await fs.mkdtemp(
+      path.resolve("test-results/real-ui-profile-"),
+    ),
+  },
 });
 try {
   const page = await app.firstWindow();
@@ -30,7 +36,7 @@ try {
     .waitFor();
   await page.locator(".setup-guide").waitFor({ state: "hidden" });
   await page
-    .getByLabel("给凛的消息")
+    .getByTestId("message-input")
     .fill(
       '读取 hello.js，用简短自然的中文解释它做什么，并给出 greet("世界") 的返回值。请实际读取文件，不要修改任何文件。',
     );
@@ -44,6 +50,22 @@ try {
   const response = await page
     .locator(".agentMessage .message-body")
     .allTextContents();
+  const visibleErrors = await page.locator(".error").allTextContents();
+  await fs.writeFile(
+    "test-results/real-desktop-latest.json",
+    JSON.stringify(
+      {
+        testedAt: new Date().toISOString(),
+        response,
+        errors: visibleErrors,
+        toolCount: await page.locator(".tool").count(),
+      },
+      null,
+      2,
+    ),
+  );
+  if (!response.join("").includes("世界"))
+    console.log(JSON.stringify({ response, errors: visibleErrors }));
   assert.ok(response.join("").includes("世界"));
   assert.equal(await page.locator(".error").count(), 0);
   assert.ok((await page.locator(".tool").count()) > 0);

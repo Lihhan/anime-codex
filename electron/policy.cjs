@@ -1,10 +1,10 @@
 const path = require("node:path");
 function threadOptions(cwd, persona, mode = "read-only") {
-  if (!path.isAbsolute(cwd)) throw new Error("请选择绝对路径的项目目录");
+  if (!path.isAbsolute(cwd)) throw new Error("error.project");
   if (!["read-only", "workspace-write"].includes(mode))
-    throw new Error("不支持的权限模式");
+    throw new Error("error.permissionMode");
   if (typeof persona !== "string" || persona.length > 12000)
-    throw new Error("角色设定过长");
+    throw new Error("error.personaLength");
   return {
     cwd,
     sandbox: mode,
@@ -19,14 +19,14 @@ const approvalMethods = [
 ];
 function approvalResult(request, decision) {
   if (!approvalMethods.includes(request.method))
-    throw new Error("此请求需要专用回复");
+    throw new Error("error.approvalType");
   if (!["accept", "decline", "cancel"].includes(decision))
-    throw new Error("只支持单次批准、拒绝或取消");
+    throw new Error("error.approvalDecision");
   if (
     request.params.availableDecisions &&
     !request.params.availableDecisions.includes(decision)
   )
-    throw new Error("服务器未提供此决定");
+    throw new Error("error.unavailableDecision");
   return { decision };
 }
 module.exports = { threadOptions, approvalMethods, approvalResult };

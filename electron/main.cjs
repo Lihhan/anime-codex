@@ -1,8 +1,57 @@
-const { app, BrowserWindow, ipcMain, dialog, screen } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  screen,
+  nativeImage,
+  globalShortcut,
+} = require("electron");
 const path = require("node:path");
-const fs = require("node:fs/promises");
+
 const { pathToFileURL } = require("node:url");
 const { Rpc } = require("./rpc.cjs");
+const { Preferences, PHASES } = require("./preferences.cjs");
+const { Desktop } = require("./desktop.cjs");
+const messages = require("../shared/messages.json");
+let preferences, desktop;
+function t(key) {
+  if (
+    typeof key === "string" &&
+    key.startsWith("error.") &&
+    key.includes(":")
+  ) {
+    const at = key.indexOf(":");
+    return t(key.slice(0, at)) + " (" + key.slice(at + 1) + ")";
+  }
+  return (
+    messages[preferences?.data.language || "zh"]?.[key] ??
+    messages.en[key] ??
+    key
+  );
+}
+function instructions(persona) {
+  return (
+    persona +
+    "\n\n" +
+    (preferences.find(preferences.data.activeCharacter)?.name
+      ? "Character display name: " +
+        JSON.stringify(
+          preferences.find(preferences.data.activeCharacter).name,
+        ) +
+        ".\n"
+      : "") +
+    {
+      zh: "Use natural Simplified Chinese for user-facing replies unless the user asks otherwise.",
+      en: "Use natural English for user-facing replies unless the user asks otherwise.",
+      ja: "Use natural Japanese for user-facing replies unless the user asks otherwise.",
+    }[preferences.data.language]
+  );
+}
+function threadConfiguration(cwd, persona, mode) {
+  const options = threadOptions(cwd, persona, mode);
+  return { ...options, developerInstructions: instructions(persona) };
+}
 const {
   threadOptions,
   approvalMethods,
@@ -21,11 +70,10 @@ function emit(m) {
   if (win && !win.isDestroyed()) win.webContents.send("codex:event", m);
 }
 function idle() {
-  if (turn || starting || requests.size)
-    throw new Error("请等待本轮结束，或先停止任务");
+  if (turn || starting || requests.size) throw new Error("error.busy");
 }
 function knownThread(id) {
-  if (!thread || id !== thread) throw new Error("线程不匹配");
+  if (!thread || id !== thread) throw new Error("error.thread");
 }
 async function connect(executable) {
   idle();
@@ -34,6 +82,7 @@ async function connect(executable) {
   rpc.on("event", (m) => {
     if (m.id !== undefined) {
       requests.set(String(m.id), m);
+      desktop.expand();
     }
     if (m.method === "turn/started") turn = m.params.turn.id;
     if (m.method === "serverRequest/resolved")
@@ -48,7 +97,7 @@ async function connect(executable) {
     turn = null;
     starting = false;
     requests.clear();
-    emit({ method: "client/disconnected", params: { message } });
+    emit({ method: "client/disconnected", params: { message: t(message) } });
   });
   await rpc.start();
   const account = await rpc.request("account/read", { refreshToken: false });
@@ -58,19 +107,58 @@ async function connect(executable) {
   };
 }
 const handlers = {
+  async importActionImage(args = {}) {
+    const phase = args.phase || "idle";
+    if (!PHASES.includes(phase)) throw new Error("error.action");
+    const d = await dialog.showOpenDialog(win, {
+      title: t("Upload image") + " · " + t("action." + phase),
+      properties: ["openFile"],
+      filters: [
+        {
+          name: t("Character image"),
+          extensions: ["png", "jpg", "jpeg", "webp"],
+        },
+      ],
+    });
+    if (d.canceled) return null;
+    const result = await preferences.importActionImage(
+      { ...args, phase },
+      d.filePaths[0],
+    );
+    desktop.setCharacter(result.character);
+    return result;
+  },
+  async removeActionImage(args) {
+    return preferences.removeActionImage(args);
+  },
+  async setLanguage({ language }) {
+    return preferences.setLanguage(language);
+  },
+  async selectCharacter({ id }) {
+    const result = await preferences.selectCharacter(id);
+    desktop.setCharacter(result.character);
+    return result;
+  },
+  async updateCharacter(profile) {
+    const result = await preferences.updateCharacter(profile);
+    desktop.setCharacter(result.character);
+    return result;
+  },
+  async desktopControl(args) {
+    return desktop.control(args);
+  },
   async windowControl({ action, value } = {}) {
     if (action === "close") win.close();
     else if (action === "minimize") win.minimize();
     else if (action === "alwaysOnTop") win.setAlwaysOnTop(!!value, "floating");
     else if (action === "passthrough")
-      win.setIgnoreMouseEvents(!!value, { forward: true });
-    else throw new Error("无效窗口操作");
+      win.setIgnoreMouseEvents(!!value && !desktop.drag, { forward: true });
+    else throw new Error("error.windowAction");
   },
   async bootstrap() {
     return {
-      character: JSON.parse(
-        await fs.readFile(path.join(root, "characters/rin.json"), "utf8"),
-      ),
+      ...(await preferences.snapshot()),
+      desktop: desktop.snapshot(),
       version: app.getVersion(),
     };
   },
@@ -81,12 +169,12 @@ const handlers = {
         !path.isAbsolute(executable) ||
         !/\.exe$/i.test(executable))
     )
-      throw new Error("请通过文件选择器选择官方 codex.exe");
+      throw new Error("error.executable");
     return connect(executable);
   },
   async chooseExecutable() {
     const d = await dialog.showOpenDialog(win, {
-      title: "选择官方 codex.exe",
+      title: t("Pick official codex.exe"),
       properties: ["openFile"],
       filters: [{ name: "Codex", extensions: ["exe"] }],
     });
@@ -96,7 +184,7 @@ const handlers = {
   async chooseWorkspace() {
     idle();
     const d = await dialog.showOpenDialog(win, {
-      title: "选择 Codex 可以工作的项目",
+      title: t("Choose the project Codex may work on"),
       properties: ["openDirectory"],
     });
     if (d.canceled) return null;
@@ -106,12 +194,12 @@ const handlers = {
   },
   async newThread({ persona, mode }) {
     idle();
-    if (!cwd) throw new Error("请先选择项目");
+    if (!cwd) throw new Error("error.project");
     starting = true;
     try {
       const r = await rpc.request(
         "thread/start",
-        threadOptions(cwd, persona, mode),
+        threadConfiguration(cwd, persona, mode),
       );
       thread = r.thread.id;
       return r;
@@ -134,12 +222,12 @@ const handlers = {
       threadId: id,
       includeTurns: false,
     });
-    if (meta.thread.cwd !== cwd) throw new Error("该线程不属于当前项目");
+    if (meta.thread.cwd !== cwd) throw new Error("error.projectThread");
     starting = true;
     try {
       const r = await rpc.request("thread/resume", {
         threadId: id,
-        ...threadOptions(cwd, persona, mode),
+        ...threadConfiguration(cwd, persona, mode),
         excludeTurns: true,
       });
       thread = r.thread.id;
@@ -162,7 +250,7 @@ const handlers = {
     knownThread(id);
     idle();
     if (typeof text !== "string" || !text.trim() || text.length > 100000)
-      throw new Error("请输入有效消息");
+      throw new Error("error.message");
     starting = true;
     try {
       const r = await rpc.request("turn/start", {
@@ -181,7 +269,7 @@ const handlers = {
   },
   async answer({ id, decision, answers }) {
     const r = requests.get(String(id));
-    if (!r) throw new Error("该请求已失效");
+    if (!r) throw new Error("error.requestExpired");
     let result;
     if (approvalMethods.includes(r.method))
       result = approvalResult(r, decision);
@@ -190,7 +278,7 @@ const handlers = {
       for (const q of r.params.questions) {
         const answer = answers?.[q.id];
         if (typeof answer !== "string" || !answer.trim())
-          throw new Error("请回答每个问题");
+          throw new Error("error.answers");
         result.answers[q.id] = { answers: [answer] };
       }
     } else if (r.method === "item/permissions/requestApproval")
@@ -207,7 +295,16 @@ const handlers = {
     emit({ method: "serverRequest/resolved", params: { requestId: r.id } });
   },
 };
-app.whenReady().then(() => {
+if (process.env.ANIME_CODEX_DATA_DIR) {
+  if (!path.isAbsolute(process.env.ANIME_CODEX_DATA_DIR))
+    throw new Error("ANIME_CODEX_DATA_DIR must be absolute");
+  app.setPath("userData", process.env.ANIME_CODEX_DATA_DIR);
+}
+app.whenReady().then(async () => {
+  preferences = await new Preferences(
+    app.getPath("userData"),
+    nativeImage,
+  ).load();
   const area = screen.getPrimaryDisplay().workArea;
   const width = Math.min(1440, area.width),
     height = Math.min(950, area.height);
@@ -230,6 +327,25 @@ app.whenReady().then(() => {
       sandbox: true,
     },
   });
+  desktop = new Desktop({
+    win,
+    screen,
+    preferences,
+    emit,
+    canHide: () => requests.size === 0,
+  });
+  desktop.resizeSurface();
+  desktop.setCharacter(preferences.find(preferences.data.activeCharacter));
+  globalShortcut.register("CommandOrControl+Alt+A", () => {
+    desktop.expand();
+    win.setIgnoreMouseEvents(false);
+    win.show();
+    win.focus();
+    emit({ method: "client/inputRestored", params: {} });
+  });
+  win.on("blur", () => {
+    if (desktop.drag) desktop.control({ action: "endDrag" }).catch(() => {});
+  });
   const dev = process.env.ANIME_CODEX_DEV === "1";
   const url = dev
     ? "http://127.0.0.1:5173"
@@ -244,12 +360,18 @@ app.whenReady().then(() => {
       e.senderFrame !== win.webContents.mainFrame ||
       !Object.hasOwn(handlers, name)
     )
-      throw new Error("无效调用");
-    return handlers[name](args);
+      throw new Error(t("error.call"));
+    try {
+      return await handlers[name](args);
+    } catch (error) {
+      throw new Error(t(error.message));
+    }
   });
   win.loadURL(url);
 });
 app.on("window-all-closed", () => {
+  desktop?.dispose();
+  globalShortcut.unregisterAll();
   rpc?.close();
   app.quit();
 });
