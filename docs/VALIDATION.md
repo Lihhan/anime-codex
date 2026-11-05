@@ -25,4 +25,4 @@
 
 Windows 便携版由 `npm run dist:win` 生成。开发运行和打包运行均使用同一固定 preload/main 桥接。应用不带 Codex 或凭据，需要本机官方 Codex 登录。
 
-GitHub 连接尚未授权，未创建远程仓库、未推送；没有可确认的仓库链接。本地源代码、锁文件、测试、中文说明、原创 PNG 和许可记录均可提交到新仓库。
+用户已完成 GitHub 设备登录授权；私有仓库 [Lihhan/anime-codex](https://github.com/Lihhan/anime-codex) 已创建，源码、锁文件、测试、中文说明、原创 PNG 和许可记录均已通过 Git 推送到 `main`。本地分支 `codex/mvp` 跟踪 `origin/main`。自动化测试配置随源码提交；本记录中的通过结果指本机实际验证，不把尚未核实的 GitHub Actions 结果标记通过。

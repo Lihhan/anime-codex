@@ -81,11 +81,14 @@ Renderer 无 Node 权限；preload 只暴露固定操作，main 验证调用来�
 
 项目源码为 MIT；依赖保留各自许可证，素材另见说明。[候选项目评估与来源](docs/REUSE.md)。
 
-本地已经准备好 Git 仓库；远程发布需要 GitHub 仓库写入权限。未完成授权前，没有远程仓库链接。授权后可使用 GitHub CLI：
+仓库已发布到 [Lihhan/anime-codex](https://github.com/Lihhan/anime-codex)，当前为私有仓库，默认分支 `main`。获取源码：
 
 ```powershell
-gh auth login
-gh repo create anime-codex --private --source . --remote origin --push
+git clone https://github.com/Lihhan/anime-codex.git
+cd anime-codex
+npm ci
+npm run build
+npm start
 ```
 
-默认建议私有仓库；要公开，请按你的实际发布意图选择。不要把 `test-results/`、登录文件、`.env` 或本地 Codex 配置推送到仓库。
+不要把 `test-results/`、登录文件、`.env` 或本地 Codex 配置推送到仓库。
