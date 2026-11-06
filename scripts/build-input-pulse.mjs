@@ -23,3 +23,21 @@ execFileSync(
   ["--force", "--sign", "-", "build/native/input-pulse-mac"],
   { stdio: "inherit" },
 );
+
+execFileSync(
+  "/usr/bin/swiftc",
+  [
+    "electron/native/speech.swift",
+    "-O",
+    "-target",
+    (arch === "x64" ? "x86_64" : arch) + "-apple-macosx14.0",
+    "-o",
+    "build/native/speech-mac",
+  ],
+  { stdio: "inherit" },
+);
+execFileSync(
+  "/usr/bin/codesign",
+  ["--force", "--sign", "-", "build/native/speech-mac"],
+  { stdio: "inherit" },
+);

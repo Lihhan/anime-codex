@@ -83,6 +83,25 @@ class Preferences {
           "Preferences could not be loaded; defaults were restored.";
     }
     await this.ensureBuiltin();
+    // One-time retirement requested for the legacy Ke Jie library entry. Keep
+    // assets/history intact and archive the profile before changing selection.
+    if (!this.data.keJieRetirementV1) {
+      for (const c of [...this.data.characters]) {
+        const names = [c.name, ...Object.values(c.localizedNames || {})];
+        if (
+          names.some(
+            (n) =>
+              typeof n === "string" &&
+              ["柯洁", "ke jie", "kejie"].includes(
+                n.normalize("NFKC").trim().toLowerCase(),
+              ),
+          )
+        )
+          await this.archiveCharacter(c, "legacy-ke-jie-retirement");
+      }
+      this.data.keJieRetirementV1 = true;
+      await this.save();
+    }
     const recovered = await this.recoverEmptyCutouts();
     if (!this.find(this.data.activeCharacter))
       this.data.activeCharacter = this.builtin?.profile.id || null;
@@ -206,6 +225,34 @@ class Preferences {
   }
   find(id) {
     return this.data.characters.find((c) => c.id === id);
+  }
+  async archiveCharacter(character, reason) {
+    const directory = path.join(this.directory, "removed-characters");
+    await fs.mkdir(directory, { recursive: true });
+    await fs.writeFile(
+      path.join(directory, randomUUID() + ".json"),
+      JSON.stringify(
+        { reason, removedAt: new Date().toISOString(), character },
+        null,
+        2,
+      ),
+      { mode: 0o600 },
+    );
+    this.data.characters = this.data.characters.filter(
+      (c) => c.id !== character.id,
+    );
+    if (this.data.activeCharacter === character.id)
+      this.data.activeCharacter =
+        this.builtin?.profile.id || this.data.characters[0]?.id || null;
+  }
+  async removeCharacter({ id }) {
+    const character = this.find(id);
+    if (!character) throw Error("error.characterMissing");
+    if (this.builtins.some((b) => b.profile.id === id))
+      throw Error("内置角色不能删除；可以删除自己的角色副本。");
+    await this.archiveCharacter(character, "user-removal");
+    await this.save();
+    return this.snapshot();
   }
   async recoverEmptyCutouts() {
     let recovered = 0;

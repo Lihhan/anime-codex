@@ -1349,3 +1349,8 @@ html.companion-mode #root {
  .pet-carry.motion-carried {transform:translateY(-4px);transition:none;}
  .motion-carried .pet-carry-swing,.pet-carry.motion-landing {animation:none;}
 }
+/* The same bounded gaze response applies to portraits and sprite packs. Keep
+   it inside the carry wrapper so hit areas, dragging and atlas coordinates do not move. */
+.pet-gaze {position:absolute;inset:0;pointer-events:none;transform-origin:50% 30%;transform:perspective(700px) rotateY(calc(var(--gaze-x,0) * 7deg)) rotateX(calc(var(--gaze-y,0) * -4deg)) rotate(calc(var(--gaze-x,0) * 2deg));transition:transform .22s ease-out;}
+.pet-body .image-stack {rotate:0deg;}
+@media (prefers-reduced-motion:reduce) {.pet-gaze {transform:none;transition:none;}}

@@ -54,6 +54,12 @@ try {
       path = process.getBuiltinModule("path");
     const { probe } = require(path.join(root, "scripts/native-probe.cjs"));
     const { InputPulse } = require(path.join(root, "electron/input-pulse.cjs"));
+    const { NativeSpeech } = require(path.join(root, "electron/speech.cjs"));
+    const speechProbe = new NativeSpeech();
+    const speechVoices = await speechProbe.voices();
+    speechProbe.stop();
+    if (!Array.isArray(speechVoices))
+      throw Error("Packaged system voice enumeration failed.");
     const pulse = new InputPulse(
       path.join(app.getPath("userData"), "counter-probe"),
       () => {},
@@ -75,6 +81,8 @@ try {
     return {
       version: app.getVersion(),
       inputCounter,
+      systemSpeech: true,
+      installedVoiceCount: speechVoices.length,
       ...(await probe(
         require(
           path.join(root, "electron/inference-runtime.cjs"),

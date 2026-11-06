@@ -1,0 +1,5 @@
+{
+  "natural": { "label": "自然原声", "rate": 1, "pitch": 1 },
+  "soft": { "label": "轻柔甜声", "rate": 0.94, "pitch": 1.12 },
+  "bright": { "label": "元气女声", "rate": 1.06, "pitch": 1.18 }
+}

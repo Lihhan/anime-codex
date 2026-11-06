@@ -1,6 +1,6 @@
 {
   "name": "anime-codex",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "A character-driven Windows and macOS desktop client for the real Codex App Server",
   "private": true,
   "type": "module",
@@ -39,7 +39,8 @@
     "smoke:companion": "node scripts/smoke-companion.mjs",
     "smoke:companion-real": "node scripts/smoke-companion-real.mjs",
     "smoke:input": "node scripts/smoke-input-pulse.mjs",
-    "smoke:portable-real": "node scripts/smoke-portable-real.mjs"
+    "smoke:portable-real": "node scripts/smoke-portable-real.mjs",
+    "smoke:settings": "node scripts/smoke-settings.mjs"
   },
   "build": {
     "appId": "io.animecodex.desktop",
@@ -77,7 +78,7 @@
       "artifactName": "Anime-Codex-${version}-win-x64.${ext}"
     },
     "directories": {
-      "output": "release/v0.8.0"
+      "output": "release/v0.8.1"
     },
     "asarUnpack": [
       "electron/background-worker.cjs",
@@ -121,6 +122,10 @@
         {
           "from": "build/native/input-pulse-mac",
           "to": "helpers/input-pulse"
+        },
+        {
+          "from": "build/native/speech-mac",
+          "to": "helpers/speech"
         }
       ]
     }

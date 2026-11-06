@@ -1,6 +1,9 @@
 const { contextBridge, ipcRenderer, webUtils } = require("electron");
 const names = [
   "companionCursor",
+  "companionVoices",
+  "companionSpeak",
+  "companionSpeechStop",
   "companionState",
   "companionChat",
   "companionStop",
@@ -48,6 +51,7 @@ const names = [
   "setLanguage",
   "selectCharacter",
   "updateCharacter",
+  "removeCharacter",
   "importActionImage",
   "removeActionImage",
   "desktopControl",

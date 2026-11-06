@@ -5,7 +5,9 @@ import {
   advanceTour,
 } from "../shared/pet-life.mjs";
 import { sizeValue, stepMotion } from "../shared/pet-motion.mjs";
+import { gazeAt } from "../shared/pet-gaze.mjs";
 import personalities from "../shared/companion-personality.json";
+import voicePresets from "../shared/voice-presets.json";
 import { CompanionIcon } from "./CompanionIcon";
 import appearances from "../shared/pet-appearances.json";
 import { PetSprite } from "./PetSprite";
@@ -93,6 +95,7 @@ export function CompanionApp() {
     [game, setGame] = useState(null),
     [models, setModels] = useState([]),
     [loadingModels, setLoadingModels] = useState(false),
+    [systemVoices, setSystemVoices] = useState([]),
     [memoryText, setMemoryText] = useState(""),
     [taskText, setTaskText] = useState(""),
     [checkCommand, setCheckCommand] = useState(""),
@@ -100,7 +103,7 @@ export function CompanionApp() {
     [resumeText, setResumeText] = useState({}),
     [fileBusy, setFileBusy] = useState(false),
     [settingsBusy, setSettingsBusy] = useState(false),
-    [lean, setLean] = useState(0),
+    [gaze, setGaze] = useState({ x: 0, y: 0 }),
     [pulse, setPulse] = useState(0),
     [mini, setMini] = useState(false);
   const velocity = useRef({ x: 42, y: 0 }),
@@ -109,6 +112,7 @@ export function CompanionApp() {
   const petWidth = 220 * petScale,
     petHeight = 205 * petScale + 70;
   const behaviorRef = useRef(personalities.default),
+    previousQuiet = useRef(false),
     nextActivity = useRef(Date.now() + 8000),
     lastTouchLine = useRef(-1);
   const activityRef = useRef(activity),
@@ -207,11 +211,12 @@ export function CompanionApp() {
       !tourSteps[tourStep]
     )
       return;
-    const speech = new SpeechSynthesisUtterance(tourSteps[tourStep].text);
-    speech.lang = "zh-CN";
-    speechSynthesis.cancel();
-    speechSynthesis.speak(speech);
-    return () => speechSynthesis.cancel();
+    void run(() =>
+      api.companionSpeak({ text: tourSteps[tourStep].text, lang: "zh-CN" }),
+    );
+    return () => {
+      void api.companionSpeechStop();
+    };
   }, [tourStep, boot?.character?.id, settings.voice, settings.quiet]);
   useEffect(() => {
     localStorage.setItem("companion.tour.v1", String(tourStep));
@@ -312,18 +317,42 @@ export function CompanionApp() {
     }
     lastReport.current = report?.id || "none";
     const latest = state?.messages.filter((m) => m.role === "assistant").at(-1);
-    if (latest && settings.voice && spoken.current !== latest.id) {
-      if (spoken.current) {
-        const utterance = new SpeechSynthesisUtterance(
-          latest.text.slice(0, 600),
+    if (
+      latest &&
+      settings.voice &&
+      !settings.quiet &&
+      spoken.current !== latest.id
+    ) {
+      // Do not read saved history on startup. Every genuinely new reply is read,
+      // including the first one when the history was initially empty.
+      if (spoken.current !== null)
+        void run(() =>
+          api.companionSpeak({
+            text: latest.text.slice(0, 2000),
+            lang:
+              { zh: "zh-CN", en: "en-US", ja: "ja-JP" }[boot?.language] ||
+              "zh-CN",
+            rate: character?.voice?.rate || 1,
+          }),
         );
-        utterance.lang = "zh-CN";
-        speechSynthesis.cancel();
-        speechSynthesis.speak(utterance);
-      }
-      spoken.current = latest.id;
     }
-  }, [state?.messages?.at(-1)?.id, panel]);
+    if (state) spoken.current = latest?.id || "empty";
+  }, [state?.messages?.at(-1)?.id, settings.voice, settings.quiet]);
+  useEffect(() => {
+    if (!settings.voice || settings.quiet) void api.companionSpeechStop();
+  }, [settings.voice, settings.quiet]);
+  useEffect(() => {
+    if (settings.quiet) {
+      clearTimeout(activityTimer.current);
+      setPreview(null);
+      setActivity("sleep");
+    } else if (!settings.wander && activityRef.current === "walk") {
+      clearTimeout(activityTimer.current);
+      setActivity("idle");
+    } else if (previousQuiet.current && activityRef.current === "sleep")
+      setActivity("idle");
+    previousQuiet.current = !!settings.quiet;
+  }, [settings.quiet, settings.wander]);
   useEffect(() => {
     const timer = setInterval(async () => {
       const s = stateRef.current;
@@ -456,15 +485,23 @@ export function CompanionApp() {
     settings.quiet,
   ]);
   useEffect(() => {
-    if (!settings.cursor || settings.quiet) return;
+    if (!settings.cursor || settings.quiet || dragging || mini) {
+      setGaze({ x: 0, y: 0 });
+      return;
+    }
     let mounted = true;
     const timer = setInterval(() => {
       api
         .companionCursor()
         .then((p) => {
           if (mounted)
-            setLean(
-              Math.max(-5, Math.min(5, (p.x - renderPosition.x - 100) / 120)),
+            setGaze(
+              gazeAt(p, {
+                x: renderPosition.x,
+                y: renderPosition.y,
+                width: petWidth,
+                height: petHeight,
+              }),
             );
         })
         .catch(() => {});
@@ -473,7 +510,16 @@ export function CompanionApp() {
       mounted = false;
       clearInterval(timer);
     };
-  }, [settings.cursor, settings.quiet, renderPosition.x]);
+  }, [
+    settings.cursor,
+    settings.quiet,
+    renderPosition.x,
+    renderPosition.y,
+    petWidth,
+    petHeight,
+    dragging,
+    mini,
+  ]);
   function toggleQuick(tab) {
     setSizeCardAnchor(null);
     lastInteraction.current = Date.now();
@@ -723,7 +769,8 @@ export function CompanionApp() {
         style={{
           left: renderPosition.x,
           top: renderPosition.y,
-          "--cursor-lean": lean + "deg",
+          "--gaze-x": gaze.x,
+          "--gaze-y": gaze.y,
           transition: "none",
           width: petWidth,
           height: petHeight,
@@ -835,34 +882,41 @@ export function CompanionApp() {
             style={{ "--carry-lean": `${carryLean}deg` }}
           >
             <div className="pet-carry-swing">
-              {chibi ? (
-                <PetSprite
-                  activity={
-                    (carryMotion === "carried" ? "drag" : null) ||
-                    preview ||
-                    (workPhase
-                      ? workPhase === "coding"
-                        ? "office"
-                        : "read"
-                      : activity === "working"
-                        ? "office"
-                        : activity === "play"
-                          ? "gaming"
-                          : activity)
-                  }
-                  name={name}
-                  pack={animationPack}
-                  facing={facing}
-                  onTransition={setTransitioning}
-                />
-              ) : (
-                <ImageCharacter
-                  character={character}
-                  phase={phase}
-                  name={name}
-                  t={(x) => x}
-                />
-              )}
+              <div
+                className="pet-gaze"
+                data-testid="pet-gaze"
+                data-gaze-x={gaze.x}
+                data-gaze-y={gaze.y}
+              >
+                {chibi ? (
+                  <PetSprite
+                    activity={
+                      (carryMotion === "carried" ? "drag" : null) ||
+                      preview ||
+                      (workPhase
+                        ? workPhase === "coding"
+                          ? "office"
+                          : "read"
+                        : activity === "working"
+                          ? "office"
+                          : activity === "play"
+                            ? "gaming"
+                            : activity)
+                    }
+                    name={name}
+                    pack={animationPack}
+                    facing={facing}
+                    onTransition={setTransitioning}
+                  />
+                ) : (
+                  <ImageCharacter
+                    character={character}
+                    phase={phase}
+                    name={name}
+                    t={(x) => x}
+                  />
+                )}
+              </div>
             </div>
           </div>
           {["eat", "restore"].includes(activity) && (
@@ -879,7 +933,7 @@ export function CompanionApp() {
           {activity === "pet" && <span className="pet-emote">♡</span>}
           {activity === "eat" && <span className="pet-emote">▤ → ✦</span>}
         </div>
-        {settings.keyboard && !mini && (
+        {settings.keyboard && !settings.quiet && !mini && (
           <div className="pet-keyboard" key={pulse}>
             <span>⌨</span>
             {pulse > 0 && <i>♪</i>}
@@ -1741,7 +1795,9 @@ export function CompanionApp() {
                         run(() => api.companionReveal({ id: m.id }))
                       }
                     >
-                      在 Finder 中查看
+                      {boot.platform === "win32"
+                        ? "在文件资源管理器中查看"
+                        : "在 Finder 中查看"}
                     </button>
                   )}
                 </div>
@@ -1766,7 +1822,7 @@ export function CompanionApp() {
                   ["cursor", "视线跟随鼠标"],
                   ["keyboard", "跟随全局键鼠节奏（只读取计数）"],
                   ["wander", "在桌面散步"],
-                  ["proactive", "偶尔邀请互动（至少间隔 12 分钟）"],
+                  ["proactive", "偶尔邀请互动（至少间隔 35 分钟）"],
                   ["quiet", "安静休息，不显示日常气泡"],
                   ["voice", "用系统语音读出新回复"],
                 ].map(([key, label]) => (
@@ -1786,6 +1842,126 @@ export function CompanionApp() {
                   {settingsBusy
                     ? "正在应用设置并启动键鼠反馈…"
                     : "主动邀请和动作由本地逻辑驱动，不会在后台反复调用模型。"}
+                </small>
+                <label>
+                  语音风格
+                  <select
+                    aria-label="语音风格"
+                    disabled={settingsBusy}
+                    value={settings.voiceStyle || "soft"}
+                    onChange={(e) => {
+                      const preset = voicePresets[e.target.value];
+                      if (preset)
+                        void saveSettings({
+                          voiceStyle: e.target.value,
+                          voiceRate: preset.rate,
+                          voicePitch: preset.pitch,
+                        });
+                    }}
+                  >
+                    {Object.entries(voicePresets).map(([key, p]) => (
+                      <option key={key} value={key}>
+                        {p.label}
+                      </option>
+                    ))}
+                    <option value="custom">自定义调音</option>
+                  </select>
+                </label>
+                <label>
+                  语速 {Math.round((settings.voiceRate || 1) * 100)}%
+                  <input
+                    aria-label="语音速度"
+                    type="range"
+                    min="0.75"
+                    max="1.25"
+                    step="0.01"
+                    disabled={settingsBusy}
+                    value={settings.voiceRate || 1}
+                    onChange={(e) =>
+                      saveSettings({
+                        voiceStyle: "custom",
+                        voiceRate: Number(e.target.value),
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  音高 {Math.round((settings.voicePitch || 1) * 100)}%
+                  <input
+                    aria-label="语音音高"
+                    type="range"
+                    min="0.8"
+                    max="1.35"
+                    step="0.01"
+                    disabled={settingsBusy}
+                    value={settings.voicePitch || 1}
+                    onChange={(e) =>
+                      saveSettings({
+                        voiceStyle: "custom",
+                        voicePitch: Number(e.target.value),
+                      })
+                    }
+                  />
+                </label>
+                <button
+                  onClick={() =>
+                    run(async () =>
+                      setSystemVoices(await api.companionVoices()),
+                    )
+                  }
+                >
+                  读取本机声线
+                </button>
+                <label>
+                  系统声线
+                  <select
+                    aria-label="系统声线"
+                    value={settings.voiceName || ""}
+                    disabled={settingsBusy}
+                    onChange={(e) =>
+                      saveSettings({ voiceName: e.target.value })
+                    }
+                  >
+                    <option value="">自动选择对应语言的女声</option>
+                    {settings.voiceName &&
+                      !systemVoices.some(
+                        (v) => (v.id || v.name) === settings.voiceName,
+                      ) && (
+                        <option value={settings.voiceName}>
+                          {settings.voiceName}
+                        </option>
+                      )}
+                    {systemVoices.map((v) => (
+                      <option key={v.id || v.name} value={v.id || v.name}>
+                        {v.name} · {v.lang}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  disabled={settings.quiet}
+                  onClick={() =>
+                    run(() =>
+                      api.companionSpeak({
+                        text:
+                          {
+                            zh: "你好，语音测试完成。",
+                            en: "Hello. Voice test complete.",
+                            ja: "こんにちは。音声テストです。",
+                          }[boot.language] || "你好，语音测试完成。",
+                        lang:
+                          { zh: "zh-CN", en: "en-US", ja: "ja-JP" }[
+                            boot.language
+                          ] || "zh-CN",
+                        preview: true,
+                      }),
+                    )
+                  }
+                >
+                  试听当前声线
+                </button>
+                <small>
+                  甜声是本机女声的语速与音高调节，不是原角色配音。效果取决于系统声线；缺少对应语言语音包会显示错误。
                 </small>
               </div>
               <div className="companion-card">
@@ -1864,6 +2040,25 @@ export function CompanionApp() {
                   ))}
                 </select>
                 <p>每个角色保存自己的对话和记忆。任务继续在后台运行。</p>
+                {!character.builtin && (
+                  <button
+                    data-testid="remove-character"
+                    disabled={
+                      state.busy ||
+                      active.some((t) => t.characterId === character.id)
+                    }
+                    onClick={() =>
+                      run(async () => {
+                        await api.removeCharacter({ id: character.id });
+                        await refresh();
+                        setHistory(null);
+                        setBubble("");
+                      })
+                    }
+                  >
+                    移出角色库（保留历史和备份）
+                  </button>
+                )}
                 <label className="pet-size-control">
                   角色大小 <output>{Math.round(petScale * 100)}%</output>
                   <input
@@ -1974,7 +2169,10 @@ export function CompanionApp() {
               <div className="companion-card">
                 <h3>窗口与常驻</h3>
                 <p>
-                  收起面板后角色继续留在桌面。菜单栏可以随时唤出；快捷键 ⌘⌥A。
+                  收起面板后角色继续留在桌面。
+                  {boot.platform === "win32" ? "系统托盘" : "菜单栏"}
+                  可以随时唤出；快捷键{" "}
+                  {boot.platform === "win32" ? "Ctrl+Alt+A" : "⌘⌥A"}。
                 </p>
                 <button onClick={() => api.windowControl({ action: "close" })}>
                   暂时隐藏角色

@@ -1049,7 +1049,314 @@
     }
   },
   "rin": {
-    "themeHue": 165
+    "themeHue": 165,
+    "chibi": {
+      "columns": 4,
+      "rows": 4,
+      "aspect": 1,
+      "clips": {
+        "idle": {
+          "src": "./characters/rin/complete-v1/daily.png",
+          "row": 0,
+          "durations": [
+            900,
+            900,
+            900,
+            900
+          ]
+        },
+        "read": {
+          "src": "./characters/rin/complete-v1/daily.png",
+          "row": 1,
+          "durations": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        "meal": {
+          "src": "./characters/rin/complete-v1/daily.png",
+          "row": 2,
+          "durations": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        "sleep": {
+          "src": "./characters/rin/complete-v1/daily.png",
+          "row": 3,
+          "durations": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        "gaming": {
+          "src": "./characters/rin/complete-v1/play.png",
+          "row": 0,
+          "durations": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        "office": {
+          "src": "./characters/rin/complete-v1/play.png",
+          "row": 1,
+          "durations": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        "pet": {
+          "src": "./characters/rin/complete-v1/play.png",
+          "row": 2,
+          "durations": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        "attention": {
+          "src": "./characters/rin/complete-v1/play.png",
+          "row": 3,
+          "durations": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        "walk_right": {
+          "src": "./characters/rin/complete-v1/run.png",
+          "row": 0,
+          "durations": [
+            130,
+            130,
+            130,
+            130
+          ]
+        },
+        "walk_left": {
+          "src": "./characters/rin/complete-v1/run.png",
+          "row": 1,
+          "durations": [
+            130,
+            130,
+            130,
+            130
+          ]
+        },
+        "walk_up": {
+          "src": "./characters/rin/complete-v1/run.png",
+          "row": 2,
+          "durations": [
+            130,
+            130,
+            130,
+            130
+          ]
+        },
+        "walk_down": {
+          "src": "./characters/rin/complete-v1/run.png",
+          "row": 3,
+          "durations": [
+            130,
+            130,
+            130,
+            130
+          ]
+        },
+        "exit_read": {
+          "src": "./characters/rin/complete-v1/exit.png",
+          "row": 0,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "exit_meal": {
+          "src": "./characters/rin/complete-v1/exit.png",
+          "row": 1,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "exit_gaming": {
+          "src": "./characters/rin/complete-v1/exit.png",
+          "row": 2,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "exit_office": {
+          "src": "./characters/rin/complete-v1/exit.png",
+          "row": 3,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "enter_read": {
+          "src": "./characters/rin/complete-v1/enter.png",
+          "row": 0,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "enter_meal": {
+          "src": "./characters/rin/complete-v1/enter.png",
+          "row": 1,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "enter_gaming": {
+          "src": "./characters/rin/complete-v1/enter.png",
+          "row": 2,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "enter_office": {
+          "src": "./characters/rin/complete-v1/enter.png",
+          "row": 3,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "enter_sleep": {
+          "src": "./characters/rin/complete-v1/change.png",
+          "row": 0,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "exit_sleep": {
+          "src": "./characters/rin/complete-v1/change.png",
+          "row": 1,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "enter_walk": {
+          "src": "./characters/rin/complete-v1/change.png",
+          "row": 2,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "exit_walk": {
+          "src": "./characters/rin/complete-v1/change.png",
+          "row": 3,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "enter_pet": {
+          "src": "./characters/rin/complete-v1/social.png",
+          "row": 0,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "exit_pet": {
+          "src": "./characters/rin/complete-v1/social.png",
+          "row": 1,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "enter_attention": {
+          "src": "./characters/rin/complete-v1/social.png",
+          "row": 2,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "exit_attention": {
+          "src": "./characters/rin/complete-v1/social.png",
+          "row": 3,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "eat": {
+          "src": "./characters/rin/complete-v1/daily.png",
+          "row": 2,
+          "durations": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        "working": {
+          "src": "./characters/rin/complete-v1/play.png",
+          "row": 1,
+          "durations": [
+            500,
+            500,
+            500,
+            500
+          ]
+        }
+      }
+    }
   },
   "nahida": {
     "themeHue": 105

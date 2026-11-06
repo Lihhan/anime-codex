@@ -1,0 +1,1088 @@
+{
+  "pipeline": "CharacterStudio.produce",
+  "contract": "shared/pet-production.cjs",
+  "profileBasis": "Existing builtin persona and original portrait; no persona replacement",
+  "generatedAt": "2026-11-06T18:08:57.685Z",
+  "frames": 112,
+  "structuralValidationOnly": true,
+  "sheets": {
+    "daily": {
+      "sha256": "6f9895a81687434d9dd4d040938f0a08307a703ac79c4e1eab52b92273f7a17c",
+      "originalSha256": "47a097c8fcf701c4b160c6b52aacae809b2da7ac5055e79121777616740311ae",
+      "qa": {
+        "width": 1256,
+        "height": 1256,
+        "frames": 16,
+        "boxes": [
+          {
+            "minX": 71,
+            "minY": 14,
+            "maxX": 261,
+            "maxY": 304
+          },
+          {
+            "minX": 71,
+            "minY": 13,
+            "maxX": 260,
+            "maxY": 304
+          },
+          {
+            "minX": 62,
+            "minY": 14,
+            "maxX": 267,
+            "maxY": 304
+          },
+          {
+            "minX": 68,
+            "minY": 16,
+            "maxX": 260,
+            "maxY": 304
+          },
+          {
+            "minX": 62,
+            "minY": 18,
+            "maxX": 267,
+            "maxY": 302
+          },
+          {
+            "minX": 63,
+            "minY": 18,
+            "maxX": 268,
+            "maxY": 302
+          },
+          {
+            "minX": 63,
+            "minY": 17,
+            "maxX": 267,
+            "maxY": 302
+          },
+          {
+            "minX": 63,
+            "minY": 19,
+            "maxX": 268,
+            "maxY": 302
+          },
+          {
+            "minX": 58,
+            "minY": 19,
+            "maxX": 265,
+            "maxY": 304
+          },
+          {
+            "minX": 59,
+            "minY": 19,
+            "maxX": 265,
+            "maxY": 304
+          },
+          {
+            "minX": 58,
+            "minY": 19,
+            "maxX": 265,
+            "maxY": 304
+          },
+          {
+            "minX": 59,
+            "minY": 19,
+            "maxX": 266,
+            "maxY": 304
+          },
+          {
+            "minX": 15,
+            "minY": 73,
+            "maxX": 296,
+            "maxY": 291
+          },
+          {
+            "minX": 14,
+            "minY": 70,
+            "maxX": 296,
+            "maxY": 291
+          },
+          {
+            "minX": 15,
+            "minY": 66,
+            "maxX": 296,
+            "maxY": 291
+          },
+          {
+            "minX": 16,
+            "minY": 76,
+            "maxX": 296,
+            "maxY": 291
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "type": "userMessage"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageGeneration",
+          "status": "completed"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "agentMessage"
+        }
+      ]
+    },
+    "play": {
+      "sha256": "c3c4531797eb53389ab0db3a3005f6c02f1f949d155c0f3d2d14a9e8d1166daf",
+      "originalSha256": "706299a976bfd3e4739df4015ab4354ead666556f76f86a1652f4916a1175fa3",
+      "qa": {
+        "width": 1256,
+        "height": 1256,
+        "frames": 16,
+        "boxes": [
+          {
+            "minX": 50,
+            "minY": 12,
+            "maxX": 277,
+            "maxY": 298
+          },
+          {
+            "minX": 49,
+            "minY": 15,
+            "maxX": 277,
+            "maxY": 298
+          },
+          {
+            "minX": 53,
+            "minY": 16,
+            "maxX": 282,
+            "maxY": 298
+          },
+          {
+            "minX": 50,
+            "minY": 14,
+            "maxX": 277,
+            "maxY": 298
+          },
+          {
+            "minX": 47,
+            "minY": 10,
+            "maxX": 276,
+            "maxY": 300
+          },
+          {
+            "minX": 48,
+            "minY": 12,
+            "maxX": 273,
+            "maxY": 300
+          },
+          {
+            "minX": 48,
+            "minY": 12,
+            "maxX": 277,
+            "maxY": 300
+          },
+          {
+            "minX": 48,
+            "minY": 10,
+            "maxX": 277,
+            "maxY": 300
+          },
+          {
+            "minX": 70,
+            "minY": 11,
+            "maxX": 264,
+            "maxY": 300
+          },
+          {
+            "minX": 68,
+            "minY": 17,
+            "maxX": 266,
+            "maxY": 300
+          },
+          {
+            "minX": 68,
+            "minY": 20,
+            "maxX": 271,
+            "maxY": 300
+          },
+          {
+            "minX": 68,
+            "minY": 9,
+            "maxX": 266,
+            "maxY": 300
+          },
+          {
+            "minX": 63,
+            "minY": 11,
+            "maxX": 269,
+            "maxY": 300
+          },
+          {
+            "minX": 61,
+            "minY": 15,
+            "maxX": 267,
+            "maxY": 300
+          },
+          {
+            "minX": 64,
+            "minY": 10,
+            "maxX": 263,
+            "maxY": 300
+          },
+          {
+            "minX": 62,
+            "minY": 10,
+            "maxX": 270,
+            "maxY": 300
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "type": "userMessage"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "imageGeneration",
+          "status": "completed"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "failed"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "agentMessage"
+        }
+      ]
+    },
+    "run": {
+      "sha256": "4226c5e588fcc85be3cf5c11f554ea20f89d25ee27c1e33a6b81fea820f5831c",
+      "originalSha256": "50777d272184daeb71b391e417cb81aa9720d0d883e603995358e60837836287",
+      "qa": {
+        "width": 1256,
+        "height": 1256,
+        "frames": 16,
+        "boxes": [
+          {
+            "minX": 81,
+            "minY": 32,
+            "maxX": 249,
+            "maxY": 299
+          },
+          {
+            "minX": 81,
+            "minY": 31,
+            "maxX": 234,
+            "maxY": 297
+          },
+          {
+            "minX": 62,
+            "minY": 31,
+            "maxX": 227,
+            "maxY": 297
+          },
+          {
+            "minX": 66,
+            "minY": 31,
+            "maxX": 214,
+            "maxY": 296
+          },
+          {
+            "minX": 96,
+            "minY": 29,
+            "maxX": 262,
+            "maxY": 289
+          },
+          {
+            "minX": 90,
+            "minY": 28,
+            "maxX": 249,
+            "maxY": 290
+          },
+          {
+            "minX": 80,
+            "minY": 28,
+            "maxX": 246,
+            "maxY": 289
+          },
+          {
+            "minX": 81,
+            "minY": 28,
+            "maxX": 239,
+            "maxY": 290
+          },
+          {
+            "minX": 80,
+            "minY": 22,
+            "maxX": 245,
+            "maxY": 283
+          },
+          {
+            "minX": 80,
+            "minY": 23,
+            "maxX": 241,
+            "maxY": 287
+          },
+          {
+            "minX": 64,
+            "minY": 23,
+            "maxX": 236,
+            "maxY": 287
+          },
+          {
+            "minX": 72,
+            "minY": 23,
+            "maxX": 237,
+            "maxY": 287
+          },
+          {
+            "minX": 68,
+            "minY": 16,
+            "maxX": 265,
+            "maxY": 289
+          },
+          {
+            "minX": 65,
+            "minY": 17,
+            "maxX": 261,
+            "maxY": 289
+          },
+          {
+            "minX": 55,
+            "minY": 16,
+            "maxX": 256,
+            "maxY": 290
+          },
+          {
+            "minX": 60,
+            "minY": 16,
+            "maxX": 258,
+            "maxY": 289
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "type": "userMessage"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageGeneration",
+          "status": "completed"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "imageGeneration",
+          "status": "completed"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "agentMessage"
+        }
+      ]
+    },
+    "exit": {
+      "sha256": "e43b56b75c5118b99d910962769fd701bb82f7f5ff631642f1e066786f4f3f8e",
+      "originalSha256": "8e0be27eb6512e0696f3cd70cbd60f843f726cf1a58d2537e952ce1636821eba",
+      "qa": {
+        "width": 1256,
+        "height": 1256,
+        "frames": 16,
+        "boxes": [
+          {
+            "minX": 64,
+            "minY": 28,
+            "maxX": 269,
+            "maxY": 298
+          },
+          {
+            "minX": 67,
+            "minY": 30,
+            "maxX": 264,
+            "maxY": 299
+          },
+          {
+            "minX": 62,
+            "minY": 22,
+            "maxX": 261,
+            "maxY": 298
+          },
+          {
+            "minX": 62,
+            "minY": 17,
+            "maxX": 240,
+            "maxY": 299
+          },
+          {
+            "minX": 64,
+            "minY": 28,
+            "maxX": 268,
+            "maxY": 298
+          },
+          {
+            "minX": 67,
+            "minY": 32,
+            "maxX": 266,
+            "maxY": 298
+          },
+          {
+            "minX": 51,
+            "minY": 20,
+            "maxX": 271,
+            "maxY": 298
+          },
+          {
+            "minX": 63,
+            "minY": 17,
+            "maxX": 240,
+            "maxY": 298
+          },
+          {
+            "minX": 69,
+            "minY": 31,
+            "maxX": 275,
+            "maxY": 297
+          },
+          {
+            "minX": 66,
+            "minY": 33,
+            "maxX": 271,
+            "maxY": 297
+          },
+          {
+            "minX": 65,
+            "minY": 25,
+            "maxX": 263,
+            "maxY": 297
+          },
+          {
+            "minX": 63,
+            "minY": 17,
+            "maxX": 240,
+            "maxY": 299
+          },
+          {
+            "minX": 65,
+            "minY": 31,
+            "maxX": 279,
+            "maxY": 298
+          },
+          {
+            "minX": 69,
+            "minY": 32,
+            "maxX": 272,
+            "maxY": 297
+          },
+          {
+            "minX": 49,
+            "minY": 21,
+            "maxX": 280,
+            "maxY": 297
+          },
+          {
+            "minX": 63,
+            "minY": 17,
+            "maxX": 240,
+            "maxY": 298
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "type": "userMessage"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageGeneration",
+          "status": "completed"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "agentMessage"
+        }
+      ]
+    },
+    "enter": {
+      "sha256": "15e53d74c4b363a86a24eecd7214b3d9ee589240e301bcba9cc23577883f7e17",
+      "originalSha256": "a55bbf6d14510fe4e3c1422fd2af7e2ac00d4c614ecbe1b070541ff3c1ba9343",
+      "qa": {
+        "width": 1256,
+        "height": 1256,
+        "frames": 16,
+        "boxes": [
+          {
+            "minX": 111,
+            "minY": 63,
+            "maxX": 248,
+            "maxY": 303
+          },
+          {
+            "minX": 99,
+            "minY": 98,
+            "maxX": 239,
+            "maxY": 303
+          },
+          {
+            "minX": 83,
+            "minY": 111,
+            "maxX": 233,
+            "maxY": 303
+          },
+          {
+            "minX": 71,
+            "minY": 120,
+            "maxX": 226,
+            "maxY": 304
+          },
+          {
+            "minX": 103,
+            "minY": 58,
+            "maxX": 246,
+            "maxY": 292
+          },
+          {
+            "minX": 88,
+            "minY": 67,
+            "maxX": 236,
+            "maxY": 292
+          },
+          {
+            "minX": 79,
+            "minY": 82,
+            "maxX": 231,
+            "maxY": 292
+          },
+          {
+            "minX": 75,
+            "minY": 94,
+            "maxX": 227,
+            "maxY": 293
+          },
+          {
+            "minX": 104,
+            "minY": 44,
+            "maxX": 249,
+            "maxY": 268
+          },
+          {
+            "minX": 96,
+            "minY": 49,
+            "maxX": 237,
+            "maxY": 268
+          },
+          {
+            "minX": 75,
+            "minY": 66,
+            "maxX": 225,
+            "maxY": 268
+          },
+          {
+            "minX": 70,
+            "minY": 77,
+            "maxX": 227,
+            "maxY": 268
+          },
+          {
+            "minX": 75,
+            "minY": 31,
+            "maxX": 274,
+            "maxY": 262
+          },
+          {
+            "minX": 76,
+            "minY": 36,
+            "maxX": 244,
+            "maxY": 262
+          },
+          {
+            "minX": 65,
+            "minY": 49,
+            "maxX": 220,
+            "maxY": 262
+          },
+          {
+            "minX": 69,
+            "minY": 60,
+            "maxX": 219,
+            "maxY": 262
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "type": "userMessage"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageGeneration",
+          "status": "completed"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "imageGeneration",
+          "status": "completed"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "agentMessage"
+        }
+      ]
+    },
+    "change": {
+      "sha256": "563a50a428dea11bbb6e17af9bf421a1546804b9cb9ed9277a434fff9c86dd73",
+      "originalSha256": "40bcddefdff143532f42e6908e872f614445fde925c00917c2da1f894d49a40e",
+      "qa": {
+        "width": 1256,
+        "height": 1256,
+        "frames": 16,
+        "boxes": [
+          {
+            "minX": 76,
+            "minY": 19,
+            "maxX": 269,
+            "maxY": 302
+          },
+          {
+            "minX": 55,
+            "minY": 50,
+            "maxX": 253,
+            "maxY": 298
+          },
+          {
+            "minX": 30,
+            "minY": 80,
+            "maxX": 269,
+            "maxY": 292
+          },
+          {
+            "minX": 17,
+            "minY": 115,
+            "maxX": 275,
+            "maxY": 292
+          },
+          {
+            "minX": 25,
+            "minY": 114,
+            "maxX": 284,
+            "maxY": 292
+          },
+          {
+            "minX": 44,
+            "minY": 60,
+            "maxX": 267,
+            "maxY": 295
+          },
+          {
+            "minX": 62,
+            "minY": 27,
+            "maxX": 255,
+            "maxY": 294
+          },
+          {
+            "minX": 67,
+            "minY": 9,
+            "maxX": 245,
+            "maxY": 294
+          },
+          {
+            "minX": 79,
+            "minY": 10,
+            "maxX": 254,
+            "maxY": 295
+          },
+          {
+            "minX": 69,
+            "minY": 15,
+            "maxX": 256,
+            "maxY": 297
+          },
+          {
+            "minX": 62,
+            "minY": 13,
+            "maxX": 260,
+            "maxY": 297
+          },
+          {
+            "minX": 64,
+            "minY": 10,
+            "maxX": 263,
+            "maxY": 280
+          },
+          {
+            "minX": 72,
+            "minY": 11,
+            "maxX": 271,
+            "maxY": 287
+          },
+          {
+            "minX": 73,
+            "minY": 13,
+            "maxX": 256,
+            "maxY": 293
+          },
+          {
+            "minX": 68,
+            "minY": 11,
+            "maxX": 252,
+            "maxY": 293
+          },
+          {
+            "minX": 67,
+            "minY": 9,
+            "maxX": 246,
+            "maxY": 293
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "type": "userMessage"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageGeneration",
+          "status": "completed"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "agentMessage"
+        }
+      ]
+    },
+    "social": {
+      "sha256": "d3d46dab7b6f002000d7185397ed8e9e632bd785efd4c98f7454483c7b1c4fc7",
+      "originalSha256": "71f516d13ca37469225dc0d7a3cb94cbc8a889514d9e8fea6b16b0473172ead9",
+      "qa": {
+        "width": 1256,
+        "height": 1256,
+        "frames": 16,
+        "boxes": [
+          {
+            "minX": 74,
+            "minY": 11,
+            "maxX": 265,
+            "maxY": 306
+          },
+          {
+            "minX": 69,
+            "minY": 15,
+            "maxX": 257,
+            "maxY": 306
+          },
+          {
+            "minX": 68,
+            "minY": 20,
+            "maxX": 263,
+            "maxY": 306
+          },
+          {
+            "minX": 66,
+            "minY": 20,
+            "maxX": 260,
+            "maxY": 306
+          },
+          {
+            "minX": 70,
+            "minY": 19,
+            "maxX": 264,
+            "maxY": 305
+          },
+          {
+            "minX": 62,
+            "minY": 11,
+            "maxX": 266,
+            "maxY": 305
+          },
+          {
+            "minX": 67,
+            "minY": 6,
+            "maxX": 263,
+            "maxY": 305
+          },
+          {
+            "minX": 66,
+            "minY": 8,
+            "maxX": 262,
+            "maxY": 305
+          },
+          {
+            "minX": 82,
+            "minY": 9,
+            "maxX": 265,
+            "maxY": 306
+          },
+          {
+            "minX": 70,
+            "minY": 8,
+            "maxX": 268,
+            "maxY": 306
+          },
+          {
+            "minX": 65,
+            "minY": 11,
+            "maxX": 271,
+            "maxY": 306
+          },
+          {
+            "minX": 70,
+            "minY": 15,
+            "maxX": 268,
+            "maxY": 306
+          },
+          {
+            "minX": 69,
+            "minY": 15,
+            "maxX": 268,
+            "maxY": 304
+          },
+          {
+            "minX": 73,
+            "minY": 14,
+            "maxX": 269,
+            "maxY": 304
+          },
+          {
+            "minX": 65,
+            "minY": 9,
+            "maxX": 267,
+            "maxY": 304
+          },
+          {
+            "minX": 67,
+            "minY": 6,
+            "maxX": 265,
+            "maxY": 304
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "type": "userMessage"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "imageView"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "agentMessage"
+        },
+        {
+          "type": "imageGeneration",
+          "status": "completed"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "commandExecution",
+          "status": "failed"
+        },
+        {
+          "type": "reasoning"
+        },
+        {
+          "type": "commandExecution",
+          "status": "completed"
+        },
+        {
+          "type": "agentMessage"
+        }
+      ]
+    }
+  },
+  "referenceSha256": "09f22147fc09d9c572987c241718ea4649e7b5dac4464596368f61690b382446"
+}

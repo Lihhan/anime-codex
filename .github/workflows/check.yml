@@ -17,6 +17,7 @@ jobs:
       - run: npm run build
       - run: npm run smoke:native
       - run: npm run smoke:input
+      - run: npm run smoke:settings
       - run: npm run smoke:companion
       - run: node scripts/smoke-quick.mjs
       - run: npm run smoke:ui
@@ -32,12 +33,12 @@ jobs:
       - name: Check packaged Windows UI, inference, counters and recovery
         run: node scripts/smoke-mac-packaged.mjs
         env:
-          ANIME_CODEX_EXECUTABLE: ${{ github.workspace }}/release/v0.8.0/win-unpacked/Anime Codex.exe
+          ANIME_CODEX_EXECUTABLE: ${{ github.workspace }}/release/v0.8.1/win-unpacked/Anime Codex.exe
           RUN_PACKAGED_BACKGROUND: "1"
       - uses: actions/upload-artifact@v4
         with:
           name: Anime-Codex-win-x64
-          path: release/v0.8.0/*.exe
+          path: release/v0.8.1/*.exe
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
