@@ -1,4 +1,4 @@
-import {selectSettingsTab} from "./settings-navigation.mjs";
+import { selectSettingsTab, toggleSettings } from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import { useChatLayout } from "./ui-layout.mjs";
@@ -55,8 +55,8 @@ try {
     .waitFor();
   assert.equal(await page.locator(".userMessage").count(), 0);
   await page.getByRole("alert").getByRole("button").click();
-  await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"character");
+  await toggleSettings(page);
+  await selectSettingsTab(page, "character");
   await page.locator(".settings").evaluate((el) => {
     el.scrollTop = el.scrollHeight;
   });
@@ -68,13 +68,13 @@ try {
       .evaluate((el) => el === document.activeElement),
     true,
   );
-  await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"character");
+  await toggleSettings(page);
+  await selectSettingsTab(page, "character");
   await page.getByTestId("character-name").fill("Draft name");
   await page.keyboard.press("Escape");
   await page.getByRole("dialog").waitFor({ state: "hidden" });
-  await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"character");
+  await toggleSettings(page);
+  await selectSettingsTab(page, "character");
   assert.equal(
     await page.getByTestId("character-name").inputValue(),
     "Draft name",

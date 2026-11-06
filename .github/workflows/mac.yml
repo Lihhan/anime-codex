@@ -52,6 +52,7 @@ jobs:
       - run: npm test
       - run: npm run smoke:native
       - run: npm run build
+      - run: node scripts/build-input-pulse.mjs ${{ matrix.arch }}
       - run: npm run smoke:companion
       - run: node scripts/smoke-quick.mjs
       - run: npm run smoke:gal

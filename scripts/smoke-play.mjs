@@ -1,4 +1,4 @@
-import {selectSettingsTab} from "./settings-navigation.mjs";
+import { selectSettingsTab, toggleSettings } from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import { useChatLayout } from "./ui-layout.mjs";
@@ -33,8 +33,8 @@ try {
       .evaluate((el) => getComputedStyle(el).fontSize),
     "18px",
   );
-  await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"appearance");
+  await toggleSettings(page);
+  await selectSettingsTab(page, "appearance");
   await page.getByTestId("font-size").focus();
   await page.getByTestId("font-size").press("End");
   await page.getByTestId("font-size").press("ArrowLeft");
@@ -50,15 +50,15 @@ try {
   await page.mouse.click(b.x + b.width * 0.5, b.y + b.height * 0.18);
   await page.getByTestId("touch-bubble").waitFor();
   assert.equal(await page.locator(".react-hair").count(), 1);
-  await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"appearance");
+  await toggleSettings(page);
+  await selectSettingsTab(page, "appearance");
   await page.getByTestId("touch-enabled").uncheck();
   await page.getByTestId("touch-bubble").waitFor({ state: "detached" });
   await page.getByTestId("settings-close").click();
   await page.mouse.click(b.x + b.width * 0.5, b.y + b.height * 0.18);
   assert.equal(await page.getByTestId("touch-bubble").count(), 0);
-  await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"appearance");
+  await toggleSettings(page);
+  await selectSettingsTab(page, "appearance");
   await page.getByTestId("touch-enabled").check();
   await page.getByTestId("settings-close").click();
   const next = app.waitForEvent("window");

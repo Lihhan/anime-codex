@@ -1,4 +1,4 @@
-import {selectSettingsTab} from "./settings-navigation.mjs";
+import { selectSettingsTab, toggleSettings } from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import { useChatLayout } from "./ui-layout.mjs";
@@ -41,8 +41,8 @@ try {
   await page
     .getByRole("heading", { name: "今日は何をつくりますか？" })
     .waitFor();
-  await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"character");
+  await toggleSettings(page);
+  await selectSettingsTab(page, "character");
   await page.getByRole("heading", { name: "キャラクターライブラリ" }).waitFor();
   await page.getByTestId("language-select").selectOption("en");
   await page
@@ -147,8 +147,8 @@ try {
     path: "test-results/action-library.png",
     omitBackground: true,
   });
-  await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"character");
+  await toggleSettings(page);
+  await selectSettingsTab(page, "character");
   await app.evaluate(({ BrowserWindow }) => {
     const w = BrowserWindow.getAllWindows()[0];
     w.webContents.send("codex:event", {
@@ -234,8 +234,8 @@ try {
   await page.getByTestId("language-select").selectOption("ja");
   await page.waitForFunction(() => document.documentElement.lang === "ja");
   if (!(await page.getByTestId("character-select").isVisible()))
-    await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"character");
+    await toggleSettings(page);
+  await selectSettingsTab(page, "character");
   await page
     .getByTestId("character-select")
     .selectOption("ef1143cb-cddb-4d71-8f82-9bf4b8cfd7d2");

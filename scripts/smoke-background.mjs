@@ -1,4 +1,4 @@
-import {selectSettingsTab} from "./settings-navigation.mjs";
+import { selectSettingsTab, toggleSettings } from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import fs from "node:fs/promises";
@@ -75,8 +75,8 @@ try {
   const page = await app.firstWindow();
   await page.getByTestId("character-images").waitFor();
   await page.getByTestId("language-select").selectOption("en");
-  await page.getByTestId("settings-toggle").click();
-  await selectSettingsTab(page,"character");
+  await toggleSettings(page);
+  await selectSettingsTab(page, "character");
   await page.getByTestId("auto-background").click();
   await page.waitForFunction(
     () => document.querySelector('[data-testid="auto-background"]').checked,
@@ -89,9 +89,13 @@ try {
   }, pickedFile);
   await page.getByTestId("new-image-character").click();
   await page.locator(".background-progress").waitFor({ timeout: 30000 });
+  await page.getByTestId("settings-close").click();
   await page.getByTestId("toggle-chat").click();
   assert.equal(await page.locator(".conversation").isVisible(), false);
   await page.getByTestId("toggle-chat").click();
+  await page.locator(".background-progress").waitFor({ state: "hidden" });
+  await toggleSettings(page);
+  await selectSettingsTab(page, "character");
   await page.getByTestId("restore-idle").waitFor({ timeout: 180000 });
   await page.locator(".background-progress").waitFor({ state: "hidden" });
   const processedModel = (

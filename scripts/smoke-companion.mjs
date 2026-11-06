@@ -22,14 +22,14 @@ try {
   await page.getByTestId("companion-app").waitFor({ timeout: 30000 });
   const pet = page.getByTestId("pet-body");
   await pet.waitFor();
-  if (await page.getByRole("button", {name:"稍后再认识"}).count())
-    await page.getByRole("button", {name:"稍后再认识"}).click();
+  if (await page.getByRole("button", { name: "稍后再认识" }).count())
+    await page.getByRole("button", { name: "稍后再认识" }).click();
   await pet.hover();
   await page.getByTitle("聊天", { exact: true }).click();
   await page.locator(".compact-input").waitFor();
   await pet.hover();
-  await page.getByTitle("设置", {exact:true}).click();
-  await page.getByRole("button", {name:"角色、模型与更多设置 ↗"}).click();
+  await page.getByTitle("设置", { exact: true }).click();
+  await page.getByRole("button", { name: "角色、模型与更多设置 ↗" }).click();
   await page.getByTestId("companion-panel").waitFor();
   await page.screenshot({ path: "test-results/companion-chat.png" });
   await page
@@ -51,7 +51,9 @@ try {
     .getByText("设置", { exact: true })
     .click();
   await page.screenshot({ path: "test-results/companion-settings.png" });
-  await page.getByLabel("跟随全局键鼠节奏（只读取计数）").click();
+  await page
+    .getByLabel("跟随全局键鼠节奏（只读取计数）")
+    .click({ timeout: 90000 });
   await page.waitForFunction(
     async () =>
       (await window.animeCodex.companionState()).settings.keyboard === true,
@@ -59,7 +61,9 @@ try {
     { timeout: 70000 },
   );
   await page.locator(".pet-keyboard").waitFor();
-  await page.getByLabel("跟随全局键鼠节奏（只读取计数）").click();
+  await page
+    .getByLabel("跟随全局键鼠节奏（只读取计数）")
+    .click({ timeout: 90000 });
   await page.waitForFunction(
     async () =>
       (await window.animeCodex.companionState()).settings.keyboard === false,

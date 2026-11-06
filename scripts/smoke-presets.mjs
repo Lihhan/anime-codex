@@ -1,4 +1,4 @@
-import { selectSettingsTab } from "./settings-navigation.mjs";
+import { selectSettingsTab, toggleSettings } from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import fs from "node:fs/promises";
@@ -41,7 +41,7 @@ try {
       },
     }),
   );
-  await page.getByTestId("settings-toggle").click();
+  await toggleSettings(page);
   await selectSettingsTab(page, "character");
   assert.equal(
     await page.locator(".preset-gallery button").count(),
@@ -77,7 +77,7 @@ try {
       await page.getByTestId("gal-line").locator("span").first().textContent(),
       profile.greetings.en,
     );
-    await page.getByTestId("settings-toggle").click();
+    await toggleSettings(page);
     await selectSettingsTab(page, "character");
   }
   await app.evaluate(({ BrowserWindow }) =>

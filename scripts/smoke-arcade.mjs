@@ -1,4 +1,4 @@
-import { selectSettingsTab } from "./settings-navigation.mjs";
+import { selectSettingsTab, toggleSettings } from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import fs from "node:fs/promises";
@@ -43,7 +43,7 @@ try {
       filePaths: [file],
     });
   }, file);
-  await page.getByTestId("settings-toggle").click();
+  await toggleSettings(page);
   await selectSettingsTab(page, "character");
   await page.getByTestId("upload-idle").click();
   await page.waitForFunction(() =>
