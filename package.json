@@ -46,6 +46,16 @@
       "target": "portable",
       "signAndEditExecutable": false,
       "files": [
+        "dist/**/*",
+        "electron/**/*",
+        "shared/**/*",
+        "characters/**/*",
+        "package.json",
+        "third_party/**/*",
+        "THIRD_PARTY_NOTICES.md",
+        "!node_modules/onnxruntime-node/bin/napi-v6/linux/**",
+        "!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**",
+        "scripts/native-probe.cjs",
         "!node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
         "!node_modules/onnxruntime-node-intel/**"
       ]
@@ -74,6 +84,16 @@
       "hardenedRuntime": false,
       "notarize": false,
       "files": [
+        "dist/**/*",
+        "electron/**/*",
+        "shared/**/*",
+        "characters/**/*",
+        "package.json",
+        "third_party/**/*",
+        "THIRD_PARTY_NOTICES.md",
+        "!node_modules/onnxruntime-node/bin/napi-v6/linux/**",
+        "!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**",
+        "scripts/native-probe.cjs",
         "!node_modules/onnxruntime-node/bin/napi-v6/win32/**",
         "!node_modules/onnxruntime-node-intel/bin/napi-v6/win32/**",
         "!node_modules/onnxruntime-node-intel/bin/napi-v6/linux/**",
