@@ -1,3 +1,11 @@
+## 0.7.1
+
+- Keep a larger, high-contrast recovery tab slightly inside each screen edge.
+- Detect dock hover in the native process, so click-through and missing renderer mouse-enter events cannot strand a collapsed character.
+- Prevent stale click-through requests from disabling input over the recovery tab; restore input on expansion.
+- Restore minimized windows when using the recovery shortcut.
+- Add native-hover, inset geometry and four-edge UI regressions.
+
 ## 0.7.0
 
 - Add protected Furina, Nahida, Kaguya and Iroha Sakayori presets alongside original Rin and custom uploads.

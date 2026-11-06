@@ -28,6 +28,10 @@ class Desktop {
     screen.on("display-added", this.onDisplay);
     screen.on("display-removed", this.onDisplay);
     screen.on("display-metrics-changed", this.onDisplay);
+    // Transparent/click-through windows do not reliably receive mouse-enter.
+    // Keep the recovery target usable without depending on renderer events.
+    this.dockWatch = setInterval(() => this.checkDock(), 100);
+    this.dockWatch.unref?.();
   }
   resizeSurface() {
     this.surface = union(this.screen.getAllDisplays().map((d) => d.workArea));
@@ -54,6 +58,7 @@ class Desktop {
     };
   }
   publish() {
+    this.checkDock();
     this.emit({ method: "client/desktop", params: this.snapshot() });
     return this.snapshot();
   }
@@ -142,13 +147,45 @@ class Desktop {
   }
   expand() {
     this.edge = null;
+    this.dockHoverSince = null;
+    this.win.setIgnoreMouseEvents(false);
     return this.publish();
+  }
+  dockContainsCursor() {
+    if (!this.edge) return false;
+    const point = this.screen.getCursorScreenPoint?.();
+    if (!point) return false;
+    const tab = tabBounds(this.layout, this.area(), this.edge);
+    return (
+      point.x >= tab.x &&
+      point.x < tab.x + tab.width &&
+      point.y >= tab.y &&
+      point.y < tab.y + tab.height
+    );
+  }
+  setPassthrough(value) {
+    this.win.setIgnoreMouseEvents(
+      !!value && !this.drag && !this.dockContainsCursor(),
+      { forward: true },
+    );
+  }
+  checkDock(now = Date.now()) {
+    if (!this.edge || this.win.isDestroyed?.()) return;
+    const inside = this.dockContainsCursor();
+    this.setPassthrough(!inside);
+    if (!inside) {
+      this.dockHoverSince = null;
+      return;
+    }
+    this.dockHoverSince ??= now;
+    if (now - this.dockHoverSince >= 350) this.expand();
   }
   setCharacter(character = {}) {
     this.aspect = (character.width || 360) / (character.height || 480);
     this.setLayout(this.layout);
   }
   dispose() {
+    clearInterval(this.dockWatch);
     for (const event of [
       "display-added",
       "display-removed",

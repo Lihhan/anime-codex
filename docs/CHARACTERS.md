@@ -55,7 +55,7 @@ Reading and interaction settings offer 14–24 px conversation text (18 px by de
 
 Drag the character or toolbar handle. Change size with the minus/plus buttons, the Settings slider, or Alt + mouse wheel. Placement and scale are saved after changes. The overlay spans the connected displays' work-area bounds; geometry uses logical desktop coordinates.
 
-On drag release within 18 logical pixels of a screen edge, auto-hide collapses to an edge tab. Hover over or click it to restore. This does not trigger merely because the app starts near an edge. Pending server decisions prevent hiding; newly received approval requests reveal the UI.
+On drag release within 18 logical pixels of a screen edge, auto-hide collapses to an edge tab. The larger, high-contrast tab sits eight logical pixels inside the work area. Hover over it for about half a second or click it to restore. Native cursor sampling provides recovery even if the transparent renderer misses mouse-enter events. Press **Ctrl+Alt+A** on Windows or **Command+Option+A** on Mac to reveal the app and restore input; this also restores a minimized window. This does not trigger merely because the app starts near an edge. Pending server decisions prevent hiding; newly received approval requests reveal the UI.
 
 Disable auto-hide or reset position/size in Settings. `Ctrl + Alt + A` reveals the character and restores mouse input if click-through makes interaction difficult. Reduced-motion settings disable animation.
 

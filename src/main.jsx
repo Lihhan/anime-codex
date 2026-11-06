@@ -636,8 +636,10 @@ function App() {
           }}
           onMouseLeave={() => clearTimeout(dockTimer.current)}
           aria-label={t("Show character")}
+          title={t("Show character") + " · Ctrl/⌘ + Alt/⌥ + A"}
         >
-          {displayName} ◂
+          {displayName}{" "}
+          {{ left: "▸", right: "◂", top: "▾", bottom: "▴" }[desktop.edge]}
         </button>
       )}
       <div className="overlay-controls">

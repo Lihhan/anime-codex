@@ -1,6 +1,6 @@
 # Install Anime Codex on a Mac
 
-Version 0.7.0 adds native macOS support. Use **macOS 14 or later**. Separate downloads are built for **Apple Silicon (arm64)** and **Intel (x64)**. Build and verification results are recorded in [VALIDATION.md](VALIDATION.md); a CI startup check does not cover every desktop, display arrangement or user account.
+Version 0.7.1 adds native macOS support. Use **macOS 14 or later**. Separate downloads are built for **Apple Silicon (arm64)** and **Intel (x64)**. Build and verification results are recorded in [VALIDATION.md](VALIDATION.md); a CI startup check does not cover every desktop, display arrangement or user account.
 
 ## 1. Install and sign in to Codex
 
@@ -35,10 +35,10 @@ Open **Apple menu → About This Mac**:
 
 | Your Mac shows | Download under release Assets |
 |---|---|
-| Chip: Apple M1, M2, M3 or another Apple chip | `Anime-Codex-0.7.0-mac-arm64.dmg` |
-| Processor: Intel | `Anime-Codex-0.7.0-mac-x64.dmg` |
+| Chip: Apple M1, M2, M3 or another Apple chip | `Anime-Codex-0.7.1-mac-arm64.dmg` |
+| Processor: Intel | `Anime-Codex-0.7.1-mac-x64.dmg` |
 
-Open the [0.7.0 release](https://github.com/Lihhan/anime-codex/releases/tag/v0.7.0), expand **Assets**, then download the matching **.dmg**. The Windows `.exe` and GitHub source archives are not Mac installers. For your own build, use [the source build steps](#build-from-source-on-a-mac).
+Open the [0.7.1 release](https://github.com/Lihhan/anime-codex/releases/tag/v0.7.1), expand **Assets**, then download the matching **.dmg**. The Windows `.exe` and GitHub source archives are not Mac installers. For your own build, use [the source build steps](#build-from-source-on-a-mac).
 
 The repository is private. Sign in to a GitHub account with access before downloading. GitHub may show 404 if you are signed out or lack permission.
 
@@ -124,4 +124,4 @@ npm run dist:mac:arm64
 npm run dist:mac:x64
 ```
 
-The `.dmg` and `.zip` are written to `release/v0.7.0/`. This project does not claim that a Windows cross-build has verified a Mac application. The GitHub **macOS checks and packages** workflow runs on separate Apple Silicon and Intel Macs, checks source UI/native inference, connects a real unauthenticated Codex App Server without using model quota, builds the packages, then checks the packaged application. Signing/notarization with an Apple Developer ID requires your own Apple credentials and is not configured in this development release.
+The `.dmg` and `.zip` are written to `release/v0.7.1/`. This project does not claim that a Windows cross-build has verified a Mac application. The GitHub **macOS checks and packages** workflow runs on separate Apple Silicon and Intel Macs, checks source UI/native inference, connects a real unauthenticated Codex App Server without using model quota, builds the packages, then checks the packaged application. Signing/notarization with an Apple Developer ID requires your own Apple credentials and is not configured in this development release.

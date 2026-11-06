@@ -4,7 +4,7 @@ A transparent Windows and macOS desktop programming companion powered by the **r
 
 **UI languages:** Simplified Chinese, English and Japanese, selectable from the desktop toolbar. The preference is saved locally. Repository documentation is maintained in English.
 
-**Platform support:** Version 0.7.0 supports macOS 14+ builds for Apple Silicon and Intel, alongside Windows x64. Mac packages are ad-hoc signed development builds without Apple notarization; see [Mac installation](docs/MACOS.md). Version-specific verification is recorded in [validation evidence](docs/VALIDATION.md).
+**Platform support:** Version 0.7.1 supports macOS 14+ builds for Apple Silicon and Intel, alongside Windows x64. Mac packages are ad-hoc signed development builds without Apple notarization; see [Mac installation](docs/MACOS.md). Version-specific verification is recorded in [validation evidence](docs/VALIDATION.md).
 
 **Get started:** [Install on a Mac](#install-on-a-mac) · [Install on Windows](#install-on-windows) · [Troubleshooting](#installation-troubleshooting) · [Character features](#meet-rin) · [Build from source](#build-from-source-for-developers)
 
@@ -13,7 +13,7 @@ A transparent Windows and macOS desktop programming companion powered by the **r
 **You do not need Node.js, npm or Git to use the downloaded application.**
 
 1. Install the official Codex backend using the [macOS CLI guide](https://learn.chatgpt.com/docs/codex/cli), then run `codex login` in Terminal and complete sign-in. If you already use a native, signed-in Codex CLI, keep that installation.
-2. Open **Apple menu → About This Mac**. Download **[Apple Silicon .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.7.0/Anime-Codex-0.7.0-mac-arm64.dmg)** for an Apple M-series chip, or **[Intel .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.7.0/Anime-Codex-0.7.0-mac-x64.dmg)** for an Intel processor. macOS 14 or later is required. Downloads are private; sign in to an authorized GitHub account.
+2. Open **Apple menu → About This Mac**. Download **[Apple Silicon .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.7.1/Anime-Codex-0.7.1-mac-arm64.dmg)** for an Apple M-series chip, or **[Intel .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.7.1/Anime-Codex-0.7.1-mac-x64.dmg)** for an Intel processor. macOS 14 or later is required. Downloads are private; sign in to an authorized GitHub account.
 3. Open the **.dmg**, drag **Anime Codex.app** into **Applications**, eject the disk image, then open the app from Applications. If Gatekeeper blocks this ad-hoc-signed development build, follow the [documented first-launch steps](docs/MACOS.md#if-macos-blocks-the-first-launch).
 4. Select **English** to match these instructions. Click **Connect and choose project**, then select the folder you want help with.
 5. Type in the input below Rin's bubble and press **Return** or click **Say it**. The default permission is **Read-only**.
@@ -46,17 +46,17 @@ Complete the browser sign-in when asked. The first command should print a versio
 
 ### 2. Download Anime Codex
 
-1. Open [Anime Codex 0.7.0 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.7.0).
+1. Open [Anime Codex 0.7.1 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.7.1).
 2. Expand **Assets** if necessary.
-3. Click **Anime.Codex.0.7.0.exe** and save it somewhere easy to find, such as a new `Anime Codex` folder in Documents.
+3. Click **Anime.Codex.0.7.1.exe** and save it somewhere easy to find, such as a new `Anime Codex` folder in Documents.
 
-**[Download Anime.Codex.0.7.0.exe directly](https://github.com/Lihhan/anime-codex/releases/download/v0.7.0/Anime.Codex.0.7.0.exe)**
+**[Download Anime.Codex.0.7.1.exe directly](https://github.com/Lihhan/anime-codex/releases/download/v0.7.1/Anime.Codex.0.7.1.exe)**
 
 Choose the **.exe**, rather than GitHub's **Source code (zip)** or **Source code (tar.gz)**. Those archives contain code and need the developer build steps below. The repository and downloads are private: sign in to a GitHub account with repository access. A 404 usually means you are signed out or do not have access.
 
 ### 3. Double-click the downloaded file
 
-Close an older Anime Codex instance first, then double-click **Anime.Codex.0.7.0.exe**. This is a **portable application**: there is no installation wizard. Wait for Rin and the bottom toolbar to appear; first launch can take longer while the application extracts its bundled files.
+Close an older Anime Codex instance first, then double-click **Anime.Codex.0.7.1.exe**. This is a **portable application**: there is no installation wizard. Wait for Rin and the bottom toolbar to appear; first launch can take longer while the application extracts its bundled files.
 
 This development build is unsigned. If Windows displays a SmartScreen warning, verify you downloaded it from this repository. If Windows offers **More info → Run anyway**, use that only after verifying the source. Organization-managed computers may require administrator approval; do not disable Windows protection to launch it.
 
@@ -284,7 +284,7 @@ For development with automatic UI reload, use `npm.cmd run dev`. To create a por
 npm.cmd run dist:win
 ```
 
-The current output is `release/v0.7.0/Anime Codex 0.7.0.exe`. The build does not bundle Codex or account credentials. Downloaded releases provide `SHA256SUMS.txt`; you can compare it with `Get-FileHash -Algorithm SHA256 -LiteralPath '.\Anime.Codex.0.7.0.exe'` in the folder containing your downloaded executable.
+The current output is `release/v0.7.1/Anime Codex 0.7.1.exe`. The build does not bundle Codex or account credentials. Downloaded releases provide `SHA256SUMS.txt`; you can compare it with `Get-FileHash -Algorithm SHA256 -LiteralPath '.\Anime.Codex.0.7.1.exe'` in the folder containing your downloaded executable.
 
 ## Test and package
 

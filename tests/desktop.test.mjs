@@ -74,3 +74,70 @@ test("dragging persists position; pending approvals block docking; expand restor
   assert.equal(screen.listenerCount("display-removed"), 0);
   assert.ok(events.length > 0);
 });
+
+test("native dock hover restores input and expands without renderer mouse events", async () => {
+  const screen = new EventEmitter();
+  screen.getPrimaryDisplay = () => ({ workArea: area });
+  screen.getDisplayNearestPoint = () => ({ workArea: area });
+  let cursor = { x: -900, y: 900 },
+    ignored = false;
+  screen.getCursorScreenPoint = () => cursor;
+  const c = new Desktop({
+    screen,
+    win: {
+      getBounds: () => area,
+      setIgnoreMouseEvents: (v) => {
+        ignored = v;
+      },
+    },
+    preferences: {
+      data: { desktop: { scale: 1, autoHide: true } },
+      save: async () => {},
+    },
+    emit: () => {},
+    canHide: () => true,
+  });
+  try {
+    await c.control({ action: "move", x: area.x, y: 200 });
+    assert.equal(c.edge, "left");
+    assert.equal(
+      ignored,
+      true,
+      "desktop outside the tab remains click-through",
+    );
+    const tab = tabBounds(c.layout, area, "left");
+    cursor = { x: tab.x + 5, y: tab.y + 5 };
+    c.checkDock(1000);
+    assert.equal(ignored, false, "native hover makes the tab clickable");
+    c.setPassthrough(true);
+    assert.equal(
+      ignored,
+      false,
+      "a stale renderer request cannot disable the recovery target",
+    );
+    c.checkDock(1349);
+    assert.equal(c.edge, "left");
+    cursor = { x: -900, y: 900 };
+    c.checkDock(1350);
+    cursor = { x: tab.x + 5, y: tab.y + 5 };
+    c.checkDock(1500);
+    c.checkDock(1850);
+    assert.equal(c.edge, null);
+    assert.equal(ignored, false);
+  } finally {
+    c.dispose();
+  }
+});
+
+test("recovery tabs stay inset on every edge and fit very small work areas", () => {
+  for (const work of [area, { x: -5, y: -10, width: 30, height: 25 }]) {
+    for (const edge of ["left", "right", "top", "bottom"]) {
+      const tab = tabBounds({ x: work.x - 100, y: work.y + 5000 }, work, edge);
+      assert.ok(tab.x >= work.x && tab.y >= work.y);
+      assert.ok(tab.x + tab.width <= work.x + work.width);
+      assert.ok(tab.y + tab.height <= work.y + work.height);
+      if (work.width > 100)
+        assert.ok(tab.x > work.x && tab.x + tab.width < work.x + work.width);
+    }
+  }
+});

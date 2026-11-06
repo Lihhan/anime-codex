@@ -53,6 +53,7 @@ jobs:
       - run: npm run smoke:native
       - run: npm run build
       - run: npm run smoke:gal
+      - run: npm run smoke:dock
       - run: npm run smoke:presets
       - run: npm run smoke:ui
       - name: Install official Codex for a real unauthenticated handshake

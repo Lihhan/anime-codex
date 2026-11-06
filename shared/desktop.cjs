@@ -45,21 +45,31 @@ function union(areas) {
 }
 function tabBounds(layout, area, edge) {
   const horizontal = edge === "top" || edge === "bottom",
-    width = horizontal ? 140 : 44,
-    height = horizontal ? 38 : 140;
+    width = Math.min(area.width, horizontal ? 152 : 52),
+    height = Math.min(area.height, horizontal ? 44 : 152),
+    insetX = Math.min(8, Math.max(0, (area.width - width) / 2)),
+    insetY = Math.min(8, Math.max(0, (area.height - height) / 2));
   return {
     x:
       edge === "left"
-        ? area.x
+        ? area.x + insetX
         : edge === "right"
-          ? area.x + area.width - width
-          : clamp(layout.x, area.x, area.x + area.width - width),
+          ? area.x + area.width - width - insetX
+          : clamp(
+              layout.x,
+              area.x + insetX,
+              area.x + area.width - width - insetX,
+            ),
     y:
       edge === "top"
-        ? area.y
+        ? area.y + insetY
         : edge === "bottom"
-          ? area.y + area.height - height
-          : clamp(layout.y, area.y, area.y + area.height - height),
+          ? area.y + area.height - height - insetY
+          : clamp(
+              layout.y,
+              area.y + insetY,
+              area.y + area.height - height - insetY,
+            ),
     width,
     height,
   };

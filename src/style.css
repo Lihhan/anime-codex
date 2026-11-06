@@ -1276,11 +1276,12 @@ body {
 .dock-tab {
   position: fixed;
   z-index: 20;
-  background: #252235ed;
+  background: #352b49;
   color: #eee3ff;
   border: 1px solid #bca1e1;
   box-shadow: 0 2px 15px #0004;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 600;
   overflow: hidden;
   white-space: nowrap;
 }

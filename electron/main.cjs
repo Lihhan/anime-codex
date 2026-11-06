@@ -277,8 +277,7 @@ const handlers = {
     if (action === "close") win.close();
     else if (action === "minimize") win.minimize();
     else if (action === "alwaysOnTop") win.setAlwaysOnTop(!!value, "floating");
-    else if (action === "passthrough")
-      win.setIgnoreMouseEvents(!!value && !desktop.drag, { forward: true });
+    else if (action === "passthrough") desktop.setPassthrough(value);
     else throw new Error("error.windowAction");
   },
   async bootstrap() {
@@ -497,6 +496,7 @@ app.whenReady().then(async () => {
   globalShortcut.register("CommandOrControl+Alt+A", () => {
     desktop.expand();
     win.setIgnoreMouseEvents(false);
+    if (win.isMinimized()) win.restore();
     win.show();
     win.focus();
     emit({ method: "client/inputRestored", params: {} });

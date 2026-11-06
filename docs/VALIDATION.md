@@ -4,7 +4,11 @@ Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3
 
 ## Automated checks
 
-Latest unit results: **55/55 tests passed**, including native Mac executable discovery/validation, one-shot inference-process retirement, exact Unicode dialogue pagination, turn isolation, layout persistence, pixel-beagle frame/alpha validation, animation selection, action-game physics, original Rin protection, earlier game rules, typography, touch geometry, foreground-loss rejection and upgrade-safe character preservation. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+Latest unit results: **57/57 tests passed**, including native Mac executable discovery/validation, one-shot inference-process retirement, exact Unicode dialogue pagination, turn isolation, layout persistence, pixel-beagle frame/alpha validation, animation selection, action-game physics, original Rin protection, earlier game rules, typography, touch geometry, foreground-loss rejection and upgrade-safe character preservation. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+
+## Version 0.7.1: dock recovery
+
+All 57 unit tests passed locally. Added tests verify inset tabs on every edge and tiny/negative-coordinate work areas, native hover recovery without renderer events, timer reset on leaving the tab, and refusal of stale click-through requests over the recovery target. The source Electron regression verifies visible, hit-testable tabs on all four edges, then substitutes native cursor positions without dispatching renderer hover events: each tab expands and restores input. This reproduces the missing-event recovery path, not a claim that every user disappearance has the same cause. The first isolated UI launch closed before rendering; a fresh run passed all four edges.
 
 ## Version 0.7.0: character presets
 
@@ -44,7 +48,7 @@ For 0.2.4, source and packaged UI checks passed the sticky top-right settings cl
 
 The 0.2.2 source app and Windows packaged executable both passed the UI/customization checks, including switching from a custom character to Rin and back, preserving that custom selection on restart, and transparent approval-state rendering. The packaged 0.2.2 executable also passed the real local background-removal check with Rin present in the library. Real Codex backend evidence below is from the earlier backend implementation, which this character-library update does not change.
 
-The current unit suite contains 55 tests covering:
+The current unit suite contains 57 tests covering:
 
 - Idle-only fallback for every action; selecting an uploaded action and restoring fallback after removal.
 - Charged-hop limits, precise landings/streaks, reachable platform generation, misses, running jump/crouch collisions, bounded deterministic frame stepping, pause behavior and legacy original-Rin copy/restore migration.
