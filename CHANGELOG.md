@@ -1,5 +1,9 @@
-## 0.7.1
+## 0.7.0 — in-place update
 
+- Allow ordinary chat without choosing a project; connect automatically on first send and preserve drafts on failure.
+- Separate chat and project histories, with an explicit Return to chat control.
+- Restrict ordinary chat to read-only, no escalation, disabled shell and disabled inherited integrations.
+- Use a dedicated native recovery window alongside the main-window fallback tab.
 - Keep a larger, high-contrast recovery tab slightly inside each screen edge.
 - Detect dock hover in the native process, so click-through and missing renderer mouse-enter events cannot strand a collapsed character.
 - Prevent stale click-through requests from disabling input over the recovery tab; restore input on expansion.

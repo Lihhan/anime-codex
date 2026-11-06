@@ -95,3 +95,17 @@ if (process.env.RUN_PACKAGED_BACKGROUND === "1") {
     );
   });
 }
+
+const { spawn: spawnDock } = await import("node:child_process");
+await new Promise((resolve, reject) => {
+  const child = spawnDock(process.execPath, ["scripts/smoke-dock.mjs"], {
+    stdio: "inherit",
+    env: { ...process.env, ANIME_CODEX_EXECUTABLE: executable },
+  });
+  child.once("error", reject);
+  child.once("exit", (code) =>
+    code === 0
+      ? resolve()
+      : reject(new Error("Packaged dock recovery failed: " + code)),
+  );
+});

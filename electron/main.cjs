@@ -9,12 +9,14 @@ const {
   utilityProcess,
 } = require("electron");
 const path = require("node:path");
+const fs = require("node:fs/promises");
 
 const { pathToFileURL } = require("node:url");
 const { Rpc } = require("./rpc.cjs");
 const { resolveCodex, isCodexExecutable } = require("./codex-executable.cjs");
 const { Preferences, PHASES } = require("./preferences.cjs");
 const { Desktop } = require("./desktop.cjs");
+const { createDockWindow } = require("./dock-window.cjs");
 const { BackgroundRemoval } = require("./background.cjs");
 const { createBackgroundProcess } = require("./background-process.cjs");
 const messages = require("../shared/messages.json");
@@ -55,12 +57,25 @@ function instructions(persona) {
     }[preferences.data.language]
   );
 }
-function threadConfiguration(cwd, persona, mode) {
-  const options = threadOptions(cwd, persona, mode);
-  return { ...options, developerInstructions: instructions(persona) };
+async function threadConfiguration(directory, persona, mode) {
+  const options = cwd
+    ? threadOptions(directory, persona, mode)
+    : chatOptions(
+        directory,
+        persona,
+        (await rpc.request("config/read", { includeLayers: false })).config,
+      );
+  return {
+    ...options,
+    developerInstructions: instructions(options.developerInstructions),
+  };
+}
+function conversationDirectory() {
+  return cwd || path.join(app.getPath("userData"), "chat");
 }
 const {
   threadOptions,
+  chatOptions,
   approvalMethods,
   approvalResult,
 } = require("./policy.cjs");
@@ -322,14 +337,20 @@ const handlers = {
     thread = null;
     return cwd;
   },
+  async clearWorkspace() {
+    idle();
+    cwd = null;
+    thread = null;
+  },
   async newThread({ persona, mode }) {
     idle();
-    if (!cwd) throw new Error("error.project");
+    const directory = conversationDirectory();
+    if (!cwd) await fs.mkdir(directory, { recursive: true });
     starting = true;
     try {
       const r = await rpc.request(
         "thread/start",
-        threadConfiguration(cwd, persona, mode),
+        await threadConfiguration(directory, persona, mode),
       );
       thread = r.thread.id;
       return r;
@@ -338,9 +359,9 @@ const handlers = {
     }
   },
   async listThreads({ cursor = null } = {}) {
-    if (!cwd) return { data: [], nextCursor: null };
+    if (!rpc?.child) return { data: [], nextCursor: null };
     return rpc.request("thread/list", {
-      cwd,
+      cwd: conversationDirectory(),
       limit: 30,
       cursor,
       sortKey: "updated_at",
@@ -352,12 +373,13 @@ const handlers = {
       threadId: id,
       includeTurns: false,
     });
-    if (meta.thread.cwd !== cwd) throw new Error("error.projectThread");
+    if (path.resolve(meta.thread.cwd) !== path.resolve(conversationDirectory()))
+      throw new Error("error.projectThread");
     starting = true;
     try {
       const r = await rpc.request("thread/resume", {
         threadId: id,
-        ...threadConfiguration(cwd, persona, mode),
+        ...(await threadConfiguration(conversationDirectory(), persona, mode)),
         excludeTurns: true,
       });
       thread = r.thread.id;
@@ -490,6 +512,19 @@ app.whenReady().then(async () => {
     preferences,
     emit,
     canHide: () => requests.size === 0,
+    recovery: createDockWindow({
+      BrowserWindow,
+      parent: win,
+      expand: () => desktop.expand(),
+      label: () => {
+        const c = preferences.find(preferences.data.activeCharacter);
+        return (
+          (c?.builtin ? c.localizedNames?.[preferences.data.language] : null) ||
+          c?.name ||
+          "Anime Codex"
+        );
+      },
+    }),
   });
   desktop.resizeSurface();
   desktop.setCharacter(preferences.find(preferences.data.activeCharacter));
@@ -510,6 +545,7 @@ app.whenReady().then(async () => {
     : pathToFileURL(path.join(root, "dist/index.html")).href;
   appUrl = url;
   win.on("closed", () => {
+    desktop?.dispose();
     if (playWindow && !playWindow.isDestroyed()) playWindow.destroy();
   });
   ipcMain.handle("companion:call", async (event, method) => {

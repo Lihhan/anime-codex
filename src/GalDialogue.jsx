@@ -66,7 +66,7 @@ export function GalDialogue({
     return () => clearInterval(timer);
   }, [characters.length, line, reduced]);
   const complete = visible >= characters.length,
-    ready = connected && workspace && !busy && !pending && !loading;
+    ready = !busy && !pending && !loading;
   function advance() {
     if (!complete) setVisible(characters.length);
     else if (index < pages.length - 1) {

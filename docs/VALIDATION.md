@@ -4,13 +4,19 @@ Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3
 
 ## Automated checks
 
-Latest unit results: **57/57 tests passed**, including native Mac executable discovery/validation, one-shot inference-process retirement, exact Unicode dialogue pagination, turn isolation, layout persistence, pixel-beagle frame/alpha validation, animation selection, action-game physics, original Rin protection, earlier game rules, typography, touch geometry, foreground-loss rejection and upgrade-safe character preservation. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+Latest unit results: **58/58 tests passed**, including native Mac executable discovery/validation, one-shot inference-process retirement, exact Unicode dialogue pagination, turn isolation, layout persistence, pixel-beagle frame/alpha validation, animation selection, action-game physics, original Rin protection, earlier game rules, typography, touch geometry, foreground-loss rejection and upgrade-safe character preservation. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
 
-## Version 0.7.1: dock recovery
+## Version 0.7.0: in-place chat and dock update
 
-All 57 unit tests passed locally. Added tests verify inset tabs on every edge and tiny/negative-coordinate work areas, native hover recovery without renderer events, timer reset on leaving the tab, and refusal of stale click-through requests over the recovery target. The source Electron regression verifies visible, hit-testable tabs on all four edges, then substitutes native cursor positions without dispatching renderer hover events: each tab expands and restores input. This reproduces the missing-event recovery path, not a claim that every user disappearance has the same cause. The first isolated UI launch closed before rendering; a fresh run passed all four edges.
+All 58 unit tests passed locally. Added tests verify inset tabs on every edge and tiny/negative-coordinate work areas, native hover recovery without renderer events, timer reset on leaving the tab, and refusal of stale click-through requests over the recovery target. The source Electron regression verifies visible, hit-testable tabs on all four edges, then substitutes native cursor positions without dispatching renderer hover events: each tab expands and restores input. This reproduces the missing-event recovery path, not a claim that every user disappearance has the same cause. The first isolated UI launch closed before rendering; a fresh run passed all four edges.
 
-## Version 0.7.0: character presets
+The dock check also verifies a separate visible native recovery window on every edge, a real click through its restricted reveal-only preload, and native hover recovery without renderer mouse-enter events. This prevents main-overlay clipping or painting from removing the only recovery target. The original main-window tab remains as a fallback.
+
+Three real desktop Codex turns verified automatic connection without selecting a project, first-person Rin dialogue, remembering a unique word across turns, no folder picker during chat, refusing a requested file read in chat without tool execution, then actually reading a uniquely marked project file after selecting its folder. Returning to chat restored the chat-only thread listing and saved history; the fixture file was unchanged. The local report is test-results/chat-real.json. Chat uses an application-owned working directory, read-only sandbox and no escalation; command execution, configured external integrations and project-document discovery are disabled for that thread. This is a restricted Codex session, not an additional OS security boundary.
+
+The App Server configuration round-trip required removing null optional fields and retaining MCP transport fields when disabling inherited servers. An initial override attempt failed before any model turn; the corrected configuration passed the real workflow above. Source full-chat and bubble checks also passed with sending enabled before connection and drafts preserved after a simulated connection failure. No programming execution is inferred from UI fixtures.
+
+## Version 0.7.0: original character-preset release
 
 All 55 unit tests passed locally, including five-template installation, transparent aligned images, editing/copy protection, original restoration and upgrade preservation. The preset UI check passed four identities and thinking poses, clearing stale replies on switch, disabled switching during a work fixture, custom-copy editing, original Rin restoration and selection persistence after restart. Customization, play and arcade source checks also passed. Work/approval fixtures are UI tests, not executed programming tasks.
 
@@ -48,7 +54,7 @@ For 0.2.4, source and packaged UI checks passed the sticky top-right settings cl
 
 The 0.2.2 source app and Windows packaged executable both passed the UI/customization checks, including switching from a custom character to Rin and back, preserving that custom selection on restart, and transparent approval-state rendering. The packaged 0.2.2 executable also passed the real local background-removal check with Rin present in the library. Real Codex backend evidence below is from the earlier backend implementation, which this character-library update does not change.
 
-The current unit suite contains 57 tests covering:
+The current unit suite contains 58 tests covering:
 
 - Idle-only fallback for every action; selecting an uploaded action and restoring fallback after removal.
 - Charged-hop limits, precise landings/streaks, reachable platform generation, misses, running jump/crouch collisions, bounded deterministic frame stepping, pause behavior and legacy original-Rin copy/restore migration.

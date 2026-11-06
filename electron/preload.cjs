@@ -6,6 +6,7 @@ const names = [
   "connect",
   "chooseExecutable",
   "chooseWorkspace",
+  "clearWorkspace",
   "newThread",
   "listThreads",
   "resume",

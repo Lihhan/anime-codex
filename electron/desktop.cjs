@@ -6,8 +6,8 @@ const {
   clamp,
 } = require("../shared/desktop.cjs");
 class Desktop {
-  constructor({ win, screen, preferences, emit, canHide }) {
-    Object.assign(this, { win, screen, preferences, emit, canHide });
+  constructor({ win, screen, preferences, emit, canHide, recovery }) {
+    Object.assign(this, { win, screen, preferences, emit, canHide, recovery });
     this.drag = null;
     this.edge = null;
     this.aspect = 0.75;
@@ -59,6 +59,12 @@ class Desktop {
   }
   publish() {
     this.checkDock();
+    if (this.edge)
+      this.recovery?.show(
+        tabBounds(this.layout, this.area(), this.edge),
+        this.edge,
+      );
+    else this.recovery?.hide();
     this.emit({ method: "client/desktop", params: this.snapshot() });
     return this.snapshot();
   }
@@ -186,6 +192,7 @@ class Desktop {
   }
   dispose() {
     clearInterval(this.dockWatch);
+    this.recovery?.dispose();
     for (const event of [
       "display-added",
       "display-removed",

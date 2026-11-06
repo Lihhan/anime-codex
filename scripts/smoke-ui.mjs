@@ -33,11 +33,20 @@ try {
     exact: true,
   });
   assert.equal(await setup.isEnabled(), true);
+  // A failed automatic connection must retain the draft, without starting a real backend.
+  await app.evaluate(({ app }) => {
+    const require = process
+      .getBuiltinModule("module")
+      .createRequire(app.getAppPath() + "/package.json");
+    require("./electron/rpc.cjs").Rpc.prototype.start = async () => {
+      throw new Error("UI fixture: connection failed");
+    };
+  });
   await page.getByTestId("message-input").fill("尚未连接时尝试发送");
   await page.getByTestId("message-input").press("Enter");
   await page
     .getByRole("alert")
-    .getByText("还未连接 Codex，请点击对话框上方的连接按钮。")
+    .getByText("UI fixture: connection failed")
     .waitFor();
   assert.equal(await page.locator(".userMessage").count(), 0);
   await page.getByRole("alert").getByRole("button").click();

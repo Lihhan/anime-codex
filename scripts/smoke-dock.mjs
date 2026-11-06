@@ -24,6 +24,7 @@ try {
     screen.getCursorScreenPoint = () => globalThis.testCursor;
     const win = BrowserWindow.getAllWindows()[0],
       original = win.setIgnoreMouseEvents.bind(win);
+    globalThis.mainWindowId = win.id;
     globalThis.lastIgnore = null;
     win.setIgnoreMouseEvents = (value, options) => {
       globalThis.lastIgnore = value;
@@ -45,6 +46,7 @@ try {
       (p) => window.animeCodex.desktopControl({ action: "move", ...p }),
       point,
     );
+    console.log("Checking dock edge: " + edge);
     assert.equal(state.edge, edge);
     const tab = page.getByTestId("dock-tab");
     await tab.waitFor();
@@ -52,6 +54,28 @@ try {
     const box = await tab.boundingBox();
     assert.ok(box.x >= 0 && box.y >= 0);
     assert.ok(box.width >= 44 && box.height >= 44);
+    let nativeTab;
+    for (let i = 0; i < 30; i++) {
+      nativeTab = app.windows().find((p) => p.url().endsWith("/dock.html"));
+      if (nativeTab) break;
+      await page.waitForTimeout(100);
+    }
+    assert.ok(nativeTab, "a separate native recovery window exists");
+    await nativeTab.waitForFunction(
+      (edge) => document.body.dataset.edge === edge,
+      edge,
+    );
+    assert.ok(
+      await app.evaluate(({ BrowserWindow }) =>
+        BrowserWindow.getAllWindows().some(
+          (w) => w.getTitle() === "Anime Codex — Edge tab" && w.isVisible(),
+        ),
+      ),
+    );
+    assert.equal(
+      await nativeTab.evaluate(() => typeof window.animeCodex),
+      "undefined",
+    );
     assert.equal(
       await page.evaluate(() => {
         const t = document.querySelector(".dock-tab"),
@@ -62,14 +86,21 @@ try {
       }),
       true,
     );
-    // No renderer hover is dispatched. Only native cursor sampling can recover.
-    await app.evaluate(({ BrowserWindow }, box) => {
-      const bounds = BrowserWindow.getAllWindows()[0].getBounds();
-      globalThis.testCursor = {
-        x: Math.round(bounds.x + box.x + box.width / 2),
-        y: Math.round(bounds.y + box.y + box.height / 2),
-      };
-    }, box);
+    if (edge === "left") {
+      // The dedicated window has only the reveal capability; its click must work.
+      await nativeTab.locator("button").click();
+    } else {
+      // No renderer hover is dispatched. Only native cursor sampling can recover.
+      await app.evaluate(({ BrowserWindow }, box) => {
+        const bounds = BrowserWindow.fromId(
+          globalThis.mainWindowId,
+        ).getBounds();
+        globalThis.testCursor = {
+          x: Math.round(bounds.x + box.x + box.width / 2),
+          y: Math.round(bounds.y + box.y + box.height / 2),
+        };
+      }, box);
+    }
     await page.waitForFunction(
       () => !document.querySelector(".dock-tab"),
       null,
@@ -89,6 +120,8 @@ try {
     JSON.stringify(
       {
         fourVisibleInsetTabs: true,
+        independentNativeWindow: true,
+        nativeTabClick: true,
         nativeHoverWithoutRendererEvents: true,
         inputRestored: true,
         programmingExecuted: false,

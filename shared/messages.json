@@ -338,8 +338,8 @@
     "gal.streaming": "原始回复 · 任务进行中",
     "gal.original": "Codex 原始回复",
     "gal.localWelcome": "角色招呼",
-    "gal.connectHint": "先选一个项目，我就能帮你做事。",
-    "gal.connect": "连接并选择项目",
+    "gal.connectHint": "可以直接和我聊天；需要一起做项目时再选文件夹。",
+    "gal.connect": "选择项目（可选）",
     "gal.taskContinues": "任务仍在进行；翻页不会发送新指令。",
     "gal.placeholder": "想和{name}说什么？",
     "gal.send": "说给你听",
@@ -350,7 +350,11 @@
     "preset.help": "选择角色会新开对话，原有 Codex 记录仍保留在工作台。修改预设会创建自定义副本。",
     "preset.original": "原创角色",
     "preset.fanart": "非官方同人预设",
-    "preset.rinSummary": "冷静、温柔，也保持好奇心"
+    "preset.rinSummary": "冷静、温柔，也保持好奇心",
+    "mode.chat": "聊天模式",
+    "mode.project": "项目模式",
+    "mode.returnChat": "返回聊天",
+    "mode.hint": "直接输入就能聊天，首次发送会连接 Codex。需要读写项目时再选择项目。"
   },
   "en": {
     "Start the Electron desktop app to connect to Codex.": "Start the Electron desktop app to connect to Codex.",
@@ -691,8 +695,8 @@
     "gal.streaming": "Original reply · task running",
     "gal.original": "Original Codex reply",
     "gal.localWelcome": "Character greeting",
-    "gal.connectHint": "Choose a project so I can help you work on it.",
-    "gal.connect": "Connect and choose project",
+    "gal.connectHint": "You can chat directly. Choose a folder when you want to work on a project together.",
+    "gal.connect": "Choose project (optional)",
     "gal.taskContinues": "The task is still running. Paging never sends a new instruction.",
     "gal.placeholder": "What would you like to tell {name}?",
     "gal.send": "Say it",
@@ -703,7 +707,11 @@
     "preset.help": "Choose a character to start a fresh conversation. Previous Codex threads remain in the workspace. Editing a preset creates a custom copy.",
     "preset.original": "Original character",
     "preset.fanart": "Unofficial fan preset",
-    "preset.rinSummary": "Calm, warm and curious"
+    "preset.rinSummary": "Calm, warm and curious",
+    "mode.chat": "Chat mode",
+    "mode.project": "Project mode",
+    "mode.returnChat": "Return to chat",
+    "mode.hint": "Type to chat. Your first message connects to Codex. Choose a project when you want file operations."
   },
   "ja": {
     "Start the Electron desktop app to connect to Codex.": "Electron デスクトップアプリから起動してください。",
@@ -1044,8 +1052,8 @@
     "gal.streaming": "元の返答 · タスク実行中",
     "gal.original": "Codexの元の返答",
     "gal.localWelcome": "キャラクターの挨拶",
-    "gal.connectHint": "プロジェクトを選んでくれたら、お手伝いできるよ。",
-    "gal.connect": "接続してプロジェクトを選ぶ",
+    "gal.connectHint": "そのまま話しかけてね。プロジェクトを進めるときにフォルダーを選んでください。",
+    "gal.connect": "プロジェクトを選ぶ（任意）",
     "gal.taskContinues": "タスクは実行中。ページ送りで指示が送られることはないよ。",
     "gal.placeholder": "{name}に何を話そう？",
     "gal.send": "伝える",
@@ -1056,6 +1064,10 @@
     "preset.help": "キャラクターを選ぶと新しい会話を始めます。過去の履歴はワークスペースに残ります。編集するとカスタムコピーを作ります。",
     "preset.original": "オリジナル",
     "preset.fanart": "非公式ファンプリセット",
-    "preset.rinSummary": "落ち着いていて優しく、好奇心旺盛"
+    "preset.rinSummary": "落ち着いていて優しく、好奇心旺盛",
+    "mode.chat": "チャットモード",
+    "mode.project": "プロジェクトモード",
+    "mode.returnChat": "チャットに戻る",
+    "mode.hint": "入力するだけで会話できます。最初の送信時に Codex に接続します。ファイル操作が必要なときにプロジェクトを選んでください。"
   }
 }

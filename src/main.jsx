@@ -485,16 +485,9 @@ function App() {
   }
   async function sendMessage(value) {
     if (!value.trim() || state.busy || loading) return;
-    if (!connected || !workspace) {
-      setError(
-        !connected
-          ? t("Connect to Codex using the setup button before sending.")
-          : t("Choose a project folder before sending."),
-      );
-      return;
-    }
     await run(async () => {
-      let id = thread;
+      let id = connected ? thread : null;
+      if (!connected) await connectBackend();
       if (!id) {
         const r = await api.newThread({ persona, mode });
         id = r.thread.id;
@@ -662,9 +655,10 @@ function App() {
           {workbench ? t("Hide workspace") : t("Show workspace")}
         </button>
         <button
-          disabled={!connected || state.busy || loading}
+          disabled={state.busy || loading || !!state.pending.length}
           onClick={() =>
             run(async () => {
+              if (!connected) await connectBackend();
               const d = await api.chooseWorkspace();
               if (d) {
                 setWorkspace(d);
@@ -677,6 +671,25 @@ function App() {
         >
           {workspace ? workspace.split(/[\\/]/).at(-1) : t("Choose project")}
         </button>
+        <span data-testid="conversation-mode">
+          {t(workspace ? "mode.project" : "mode.chat")}
+        </span>
+        {workspace && (
+          <button
+            data-testid="return-to-chat"
+            disabled={state.busy || loading || !!state.pending.length}
+            onClick={() =>
+              run(async () => {
+                await api.clearWorkspace();
+                setWorkspace("");
+                reset(null);
+                await refresh();
+              })
+            }
+          >
+            {t("mode.returnChat")}
+          </button>
+        )}
         <button
           data-testid="settings-toggle"
           ref={settingsToggle}
@@ -819,9 +832,10 @@ function App() {
         </div>
         <button
           className="new-chat"
-          disabled={!workspace || state.busy || loading}
+          disabled={state.busy || loading}
           onClick={() =>
             run(async () => {
+              if (!connected) await connectBackend();
               const r = await api.newThread({ persona, mode });
               reset(r.thread.id);
               await refresh();
@@ -834,7 +848,7 @@ function App() {
           <span className="eyebrow">{t("CONVERSATIONS")}</span>
           <button
             aria-label={t("Refresh conversations")}
-            disabled={!workspace || loading}
+            disabled={!connected || loading}
             onClick={() => run(() => refresh())}
           >
             ↻
@@ -1413,13 +1427,9 @@ function App() {
                     <strong>
                       {!connected
                         ? t("Not connected to Codex")
-                        : t("Codex connected; choose a project")}
+                        : t("mode.chat")}
                     </strong>
-                    <p>
-                      {t(
-                        "Choose a project folder to send messages. The default mode is read-only.",
-                      )}
-                    </p>
+                    <p>{t("mode.hint")}</p>
                     <button
                       disabled={loading || state.busy}
                       onClick={() => run(prepareConversation)}
@@ -1436,15 +1446,9 @@ function App() {
                   <textarea
                     data-testid="message-input"
                     aria-label={t("Message for {name}", { name: displayName })}
-                    placeholder={
-                      !connected
-                        ? t(
-                            "Write your idea, then connect using the button above…",
-                          )
-                        : !workspace
-                          ? t("Choose a project using the button above…")
-                          : t("Tell {name} your idea…", { name: displayName })
-                    }
+                    placeholder={t("Tell {name} your idea…", {
+                      name: displayName,
+                    })}
                     value={text}
                     disabled={state.busy}
                     onChange={(e) => setText(e.target.value)}
@@ -1477,7 +1481,7 @@ function App() {
                       <button
                         className="send"
                         disabled={
-                          !connected || !workspace || !text.trim() || loading
+                          !text.trim() || loading || !!state.pending.length
                         }
                       >
                         {t("Send ↗")}

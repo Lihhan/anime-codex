@@ -4,7 +4,7 @@ A transparent Windows and macOS desktop programming companion powered by the **r
 
 **UI languages:** Simplified Chinese, English and Japanese, selectable from the desktop toolbar. The preference is saved locally. Repository documentation is maintained in English.
 
-**Platform support:** Version 0.7.1 supports macOS 14+ builds for Apple Silicon and Intel, alongside Windows x64. Mac packages are ad-hoc signed development builds without Apple notarization; see [Mac installation](docs/MACOS.md). Version-specific verification is recorded in [validation evidence](docs/VALIDATION.md).
+**Platform support:** Version 0.7.0 supports macOS 14+ builds for Apple Silicon and Intel, alongside Windows x64. Mac packages are ad-hoc signed development builds without Apple notarization; see [Mac installation](docs/MACOS.md). Version-specific verification is recorded in [validation evidence](docs/VALIDATION.md).
 
 **Get started:** [Install on a Mac](#install-on-a-mac) · [Install on Windows](#install-on-windows) · [Troubleshooting](#installation-troubleshooting) · [Character features](#meet-rin) · [Build from source](#build-from-source-for-developers)
 
@@ -13,10 +13,10 @@ A transparent Windows and macOS desktop programming companion powered by the **r
 **You do not need Node.js, npm or Git to use the downloaded application.**
 
 1. Install the official Codex backend using the [macOS CLI guide](https://learn.chatgpt.com/docs/codex/cli), then run `codex login` in Terminal and complete sign-in. If you already use a native, signed-in Codex CLI, keep that installation.
-2. Open **Apple menu → About This Mac**. Download **[Apple Silicon .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.7.1/Anime-Codex-0.7.1-mac-arm64.dmg)** for an Apple M-series chip, or **[Intel .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.7.1/Anime-Codex-0.7.1-mac-x64.dmg)** for an Intel processor. macOS 14 or later is required. Downloads are private; sign in to an authorized GitHub account.
+2. Open **Apple menu → About This Mac**. Download **[Apple Silicon .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.7.0/Anime-Codex-0.7.0-mac-arm64.dmg)** for an Apple M-series chip, or **[Intel .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.7.0/Anime-Codex-0.7.0-mac-x64.dmg)** for an Intel processor. macOS 14 or later is required. Downloads are private; sign in to an authorized GitHub account.
 3. Open the **.dmg**, drag **Anime Codex.app** into **Applications**, eject the disk image, then open the app from Applications. If Gatekeeper blocks this ad-hoc-signed development build, follow the [documented first-launch steps](docs/MACOS.md#if-macos-blocks-the-first-launch).
-4. Select **English** to match these instructions. Click **Connect and choose project**, then select the folder you want help with.
-5. Type in the input below Rin's bubble and press **Return** or click **Say it**. The default permission is **Read-only**.
+4. Select **English** to match these instructions. Type directly below the character bubble; sending the first message connects to Codex automatically. No project is required.
+5. To work on files, click **Choose project (optional)** and select the intended folder. Project access starts in **Read-only**.
 
 **[Full Mac guide: installation, sign-in, first launch and troubleshooting](docs/MACOS.md)**
 
@@ -46,39 +46,43 @@ Complete the browser sign-in when asked. The first command should print a versio
 
 ### 2. Download Anime Codex
 
-1. Open [Anime Codex 0.7.1 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.7.1).
+1. Open [Anime Codex 0.7.0 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.7.0).
 2. Expand **Assets** if necessary.
-3. Click **Anime.Codex.0.7.1.exe** and save it somewhere easy to find, such as a new `Anime Codex` folder in Documents.
+3. Click **Anime.Codex.0.7.0.exe** and save it somewhere easy to find, such as a new `Anime Codex` folder in Documents.
 
-**[Download Anime.Codex.0.7.1.exe directly](https://github.com/Lihhan/anime-codex/releases/download/v0.7.1/Anime.Codex.0.7.1.exe)**
+**[Download Anime.Codex.0.7.0.exe directly](https://github.com/Lihhan/anime-codex/releases/download/v0.7.0/Anime.Codex.0.7.0.exe)**
 
 Choose the **.exe**, rather than GitHub's **Source code (zip)** or **Source code (tar.gz)**. Those archives contain code and need the developer build steps below. The repository and downloads are private: sign in to a GitHub account with repository access. A 404 usually means you are signed out or do not have access.
 
 ### 3. Double-click the downloaded file
 
-Close an older Anime Codex instance first, then double-click **Anime.Codex.0.7.1.exe**. This is a **portable application**: there is no installation wizard. Wait for Rin and the bottom toolbar to appear; first launch can take longer while the application extracts its bundled files.
+Close an older Anime Codex instance first, then double-click **Anime.Codex.0.7.0.exe**. This is a **portable application**: there is no installation wizard. Wait for Rin and the bottom toolbar to appear; first launch can take longer while the application extracts its bundled files.
 
 This development build is unsigned. If Windows displays a SmartScreen warning, verify you downloaded it from this repository. If Windows offers **More info → Run anyway**, use that only after verifying the source. Organization-managed computers may require administrator approval; do not disable Windows protection to launch it.
 
-### 4. Connect and choose a project
+### 4. Start chatting
 
-1. Select **English** on the bottom toolbar to match the button names in this guide. Chinese and Japanese are also available.
-2. Click **Connect and choose project** below the dialogue/input area. In the full chat layout, the button is **Connect to Codex and choose project**.
-3. In the folder picker, select the folder you want help with, then click **Select Folder**. You can create an empty folder in Documents if you just want to try the app.
+1. Select **English** on the bottom toolbar to match this guide. Chinese and Japanese are also available.
+2. Type in the input **directly below the character's dialogue bubble**.
+3. Click **Say it** or press **Enter**. The first send connects to your signed-in Codex backend automatically. No folder picker is required.
 
-**You are connected when the chosen folder appears on the toolbar and the connection prompt disappears.** Opening the official Codex app alone does not connect Anime Codex. You must choose a project here, even for an introductory conversation.
+> Introduce yourself, then ask me how my day went.
 
-### 5. Send your first message
+The toolbar shows **Chat mode**. Replies stream from the real backend; this is not an offline scripted chatbot. If the backend is missing or not signed in, the app shows the actual connection error and preserves your draft. **Shift+Enter** inserts a new line. Clicking the bubble only reveals/pages through a reply; it does not send.
 
-Type this in the input **directly below Rin's dialogue bubble**, then click **Say it** or press **Enter**:
+### 5. Choose a project when you want programming help
 
-> Introduce yourself, then list the files in this project. Do not modify anything.
+1. Click **Choose project (optional)** below the input, or **Choose project** on the toolbar.
+2. In the folder picker, select the intended folder and confirm.
+3. The toolbar shows **Project mode** and the folder name. You can now ask:
 
-Rin's reply should stream into the bubble. Click **History** to see the complete conversation and real tool records. **Shift+Enter** inserts a new line. Clicking the bubble or **Next page** only reveals/pages through dialogue; it does not send a message.
+> List the files in this project. Do not modify anything.
 
-**Read-only is the default**, so the first test does not permit file changes. To let Codex edit a project later, follow [Allow project edits](#allow-project-edits).
+Project permission defaults to **Read-only**. Click **History** for complete replies, actual tool records and saved conversations. **Return to chat** leaves project mode and starts a fresh conversation selection; project threads remain saved and are listed again when you reselect that project. Chat and project histories are filtered separately.
 
-For later launches, double-click the same **.exe**, reconnect and select your project. Your character library, copied images, language and appearance settings are saved locally.
+Chat mode uses an application-owned empty working folder, read-only permissions, no permission escalation and a disabled command-execution tool. Configured external integrations are disabled for chat threads. Character instructions forbid file inspection and direct users to select a project for file operations. This is a restricted Codex conversation, not a separate ChatGPT service or a new OS-level isolation boundary.
+
+For later launches, open the same **.exe** and type to chat. Your character library, copied images, language and appearance settings are saved locally.
 
 ### Allow project edits
 
@@ -101,7 +105,7 @@ This permits changes inside the selected project without asking about every file
 |---|---|
 | GitHub shows 404, or the download will not open | Sign in to GitHub with an account that has access to this private repository. |
 | The downloaded ZIP contains no application | You downloaded source code. Get the **.exe** under release **Assets**, or follow [Build from source](#build-from-source-for-developers). |
-| Rin appears, but **Say it** is disabled | Click **Connect and choose project**, complete Codex sign-in if required, and select a folder. Sending is also disabled during an active task or pending approval. |
+| Rin appears, but **Say it** is disabled | Enter a non-empty message. Sending is temporarily disabled while connecting, running a task or waiting for approval. A project is optional for ordinary chat. |
 | `spawn codex ENOENT` or “Codex backend was not found” | Use the current release and follow [Codex cannot be found](#codex-cannot-be-found). |
 | “Codex is not signed in” | Run `codex login` in Windows PowerShell, complete browser sign-in, then retry the connection. If the command is unavailable, use the native executable method below. |
 | Windows warns about an unknown publisher | This build is unsigned. Verify the repository/download source; follow your organization's software policy. |
@@ -233,7 +237,7 @@ The first model is optimized for anime illustrations. If its result would remove
 
 - Drag the character or the dotted toolbar handle to move it.
 - Resize with minus/plus, the Settings slider, or Alt + mouse wheel (50–180%).
-- Drag near any screen edge to collapse to a small tab; hover over or click it to restore.
+- Drag near any screen edge to collapse. A separate, high-contrast native recovery tab remains inside the work area. Hover for about half a second or click to restore; Ctrl+Alt+A (Mac: Command+Option+A) is the fallback.
 - Pending approvals prevent hiding; a new approval request automatically reveals the UI.
 - Toggle always-on-top and transparent-area click-through. `Ctrl + Alt + A` (Windows) or `Command + Option + A` (Mac) reveals the overlay and restores mouse input.
 - Position, scale, selected character, action images, personality, auto-hide and language survive restarts.
@@ -274,7 +278,7 @@ npm.cmd run build
 npm.cmd start
 ```
 
-Keep that PowerShell window open while the application runs. Rin and the toolbar should appear after the final command. Then follow [Connect and choose a project](#4-connect-and-choose-a-project). Installing the source dependencies does not install or sign in to the Codex backend.
+Keep that PowerShell window open while the application runs. Rin and the toolbar should appear after the final command. Then follow [Start chatting](#4-start-chatting). Installing the source dependencies does not install or sign in to the Codex backend.
 
 If you already downloaded and extracted **Source code (zip)**, open the extracted folder in PowerShell and start at `npm.cmd ci`; do not run `git clone` inside it. Run all npm commands in the folder containing `package.json`. The first dependency download can take several minutes. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`, then retry.
 
@@ -284,7 +288,7 @@ For development with automatic UI reload, use `npm.cmd run dev`. To create a por
 npm.cmd run dist:win
 ```
 
-The current output is `release/v0.7.1/Anime Codex 0.7.1.exe`. The build does not bundle Codex or account credentials. Downloaded releases provide `SHA256SUMS.txt`; you can compare it with `Get-FileHash -Algorithm SHA256 -LiteralPath '.\Anime.Codex.0.7.1.exe'` in the folder containing your downloaded executable.
+The current output is `release/v0.7.0/Anime Codex 0.7.0.exe`. The build does not bundle Codex or account credentials. Downloaded releases provide `SHA256SUMS.txt`; you can compare it with `Get-FileHash -Algorithm SHA256 -LiteralPath '.\Anime.Codex.0.7.0.exe'` in the folder containing your downloaded executable.
 
 ## Test and package
 

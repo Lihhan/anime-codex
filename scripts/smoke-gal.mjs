@@ -31,7 +31,7 @@ try {
       .textContent.includes("Rin"),
   );
   await page.getByTestId("gal-input").fill("A preserved draft");
-  assert.equal(await page.getByTestId("gal-send").isDisabled(), true);
+  assert.equal(await page.getByTestId("gal-send").isDisabled(), false);
   assert.equal(
     await page.getByTestId("gal-input").inputValue(),
     "A preserved draft",

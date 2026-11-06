@@ -1,6 +1,6 @@
 # Install Anime Codex on a Mac
 
-Version 0.7.1 adds native macOS support. Use **macOS 14 or later**. Separate downloads are built for **Apple Silicon (arm64)** and **Intel (x64)**. Build and verification results are recorded in [VALIDATION.md](VALIDATION.md); a CI startup check does not cover every desktop, display arrangement or user account.
+Version 0.7.0 adds native macOS support. Use **macOS 14 or later**. Separate downloads are built for **Apple Silicon (arm64)** and **Intel (x64)**. Build and verification results are recorded in [VALIDATION.md](VALIDATION.md); a CI startup check does not cover every desktop, display arrangement or user account.
 
 ## 1. Install and sign in to Codex
 
@@ -35,10 +35,10 @@ Open **Apple menu → About This Mac**:
 
 | Your Mac shows | Download under release Assets |
 |---|---|
-| Chip: Apple M1, M2, M3 or another Apple chip | `Anime-Codex-0.7.1-mac-arm64.dmg` |
-| Processor: Intel | `Anime-Codex-0.7.1-mac-x64.dmg` |
+| Chip: Apple M1, M2, M3 or another Apple chip | `Anime-Codex-0.7.0-mac-arm64.dmg` |
+| Processor: Intel | `Anime-Codex-0.7.0-mac-x64.dmg` |
 
-Open the [0.7.1 release](https://github.com/Lihhan/anime-codex/releases/tag/v0.7.1), expand **Assets**, then download the matching **.dmg**. The Windows `.exe` and GitHub source archives are not Mac installers. For your own build, use [the source build steps](#build-from-source-on-a-mac).
+Open the [0.7.0 release](https://github.com/Lihhan/anime-codex/releases/tag/v0.7.0), expand **Assets**, then download the matching **.dmg**. The Windows `.exe` and GitHub source archives are not Mac installers. For your own build, use [the source build steps](#build-from-source-on-a-mac).
 
 The repository is private. Sign in to a GitHub account with access before downloading. GitHub may show 404 if you are signed out or lack permission.
 
@@ -60,21 +60,14 @@ After attempting to open the app, if you trust the repository and downloaded fil
 
 The release's `SHA256SUMS.txt` lists checksums. In Terminal, use `shasum -a 256` followed by a space, drag your downloaded `.dmg` into Terminal to insert its full path, then press Return. Compare the output with the matching filename in the checksum file.
 
-## 4. Connect a project and talk to Rin
+## 4. Chat first, choose a project when needed
 
-1. Rin and a toolbar should appear. Select **English** to match the control names below; Chinese and Japanese are also available.
-2. Click **Connect and choose project** below the input area.
-3. Select the folder you want help with. You may create an empty folder in Documents for an introductory conversation.
-4. Wait for the folder name to appear on the toolbar and the connection prompt to disappear.
-5. Type in the input directly below Rin's bubble, then click **Say it** or press Return.
+1. Rin and the toolbar should appear. Select **English** to match these controls.
+2. Type directly below the bubble and click **Say it** or press Return. The app connects to your signed-in Codex backend automatically; no project folder is required.
+3. To work on files, click **Choose project (optional)** and select the intended folder. The toolbar changes from **Chat mode** to **Project mode**.
+4. Use **Return to chat** to leave the project. Both conversation histories remain stored separately.
 
-A useful first message is:
-
-> Introduce yourself, then list the files in this project. Do not modify anything.
-
-The default permission is **Read-only**. To allow edits, finish the active task, reselect the project by clicking its folder-name button, then choose **Settings → Permissions for new or resumed conversations → Project write** before starting a new conversation. Real approval requests still need your decision in the main window.
-
-**Shift+Return** inserts a new line. **History** shows full replies, tool records and diffs. Clicking the bubble or **Next page** only changes what you are reading; it never sends another task.
+Chat uses read-only permissions with command execution disabled. Project mode starts read-only too; changing project permissions still requires the existing explicit controls. **Command+Option+A** reveals the overlay and restores input, including when minimized. Collapsed characters retain a separate native recovery tab inside the screen edge.
 
 ## If connection fails
 
@@ -124,4 +117,4 @@ npm run dist:mac:arm64
 npm run dist:mac:x64
 ```
 
-The `.dmg` and `.zip` are written to `release/v0.7.1/`. This project does not claim that a Windows cross-build has verified a Mac application. The GitHub **macOS checks and packages** workflow runs on separate Apple Silicon and Intel Macs, checks source UI/native inference, connects a real unauthenticated Codex App Server without using model quota, builds the packages, then checks the packaged application. Signing/notarization with an Apple Developer ID requires your own Apple credentials and is not configured in this development release.
+The `.dmg` and `.zip` are written to `release/v0.7.0/`. This project does not claim that a Windows cross-build has verified a Mac application. The GitHub **macOS checks and packages** workflow runs on separate Apple Silicon and Intel Macs, checks source UI/native inference, connects a real unauthenticated Codex App Server without using model quota, builds the packages, then checks the packaged application. Signing/notarization with an Apple Developer ID requires your own Apple credentials and is not configured in this development release.
