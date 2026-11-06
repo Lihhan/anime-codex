@@ -4,6 +4,115 @@ A transparent Windows desktop programming companion powered by the **real Codex 
 
 **UI languages:** Simplified Chinese, English and Japanese, selectable from the desktop toolbar. The preference is saved locally. Repository documentation is maintained in English.
 
+**Get started:** [Install on Windows](#install-on-windows) · [Troubleshooting](#installation-troubleshooting) · [Character features](#meet-rin) · [Build from source](#build-from-source-for-developers)
+
+## Install on Windows
+
+**Recommended: download the ready-to-run application. You do not need Node.js, npm, Git or any build commands for this method.**
+
+You need a **Windows x64 computer** (Windows 11 recommended), an internet connection for Codex, and access to an official Codex account/backend. Anime Codex is the character interface; the separately installed Codex backend does the programming work.
+
+### 1. Prepare Codex once
+
+**Already using the official Codex desktop app on this Windows computer?** Open it and confirm you can sign in and send a request. You can then continue to step 2. Anime Codex attempts to find the native backend installed with supported Codex desktop versions automatically.
+
+**No Codex installation yet?** Follow OpenAI's [official Windows setup guide](https://developers.openai.com/codex/app/windows/) or [Codex CLI installation guide](https://developers.openai.com/codex/cli/) and complete sign-in. For the CLI guide, select **Windows** and install on Windows itself. A backend installed only inside WSL cannot be selected by this version of Anime Codex.
+
+If you use the CLI, open **Start → type PowerShell → open Windows PowerShell**, then run these commands one at a time:
+
+```powershell
+codex --version
+codex login
+codex login status
+```
+
+Complete the browser sign-in when asked. The first command should print a version; the last should confirm a signed-in account. If `codex` is not recognized, see [Codex cannot be found](#codex-cannot-be-found). Do not enter your password or copy login tokens into Anime Codex.
+
+### 2. Download Anime Codex
+
+1. Open [Anime Codex 0.5.0 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.5.0).
+2. Expand **Assets** if necessary.
+3. Click **Anime.Codex.0.5.0.exe** and save it somewhere easy to find, such as a new `Anime Codex` folder in Documents.
+
+**[Download Anime.Codex.0.5.0.exe directly](https://github.com/Lihhan/anime-codex/releases/download/v0.5.0/Anime.Codex.0.5.0.exe)**
+
+Choose the **.exe**, rather than GitHub's **Source code (zip)** or **Source code (tar.gz)**. Those archives contain code and need the developer build steps below. The repository and downloads are private: sign in to a GitHub account with repository access. A 404 usually means you are signed out or do not have access.
+
+### 3. Double-click the downloaded file
+
+Close an older Anime Codex instance first, then double-click **Anime.Codex.0.5.0.exe**. This is a **portable application**: there is no installation wizard. Wait for Rin and the bottom toolbar to appear; first launch can take longer while the application extracts its bundled files.
+
+This development build is unsigned. If Windows displays a SmartScreen warning, verify you downloaded it from this repository. If Windows offers **More info → Run anyway**, use that only after verifying the source. Organization-managed computers may require administrator approval; do not disable Windows protection to launch it.
+
+### 4. Connect and choose a project
+
+1. Select **English** on the bottom toolbar to match the button names in this guide. Chinese and Japanese are also available.
+2. Click **Connect and choose project** below the dialogue/input area. In the full chat layout, the button is **Connect to Codex and choose project**.
+3. In the folder picker, select the folder you want help with, then click **Select Folder**. You can create an empty folder in Documents if you just want to try the app.
+
+**You are connected when the chosen folder appears on the toolbar and the connection prompt disappears.** Opening the official Codex app alone does not connect Anime Codex. You must choose a project here, even for an introductory conversation.
+
+### 5. Send your first message
+
+Type this in the input **directly below Rin's dialogue bubble**, then click **Say it** or press **Enter**:
+
+> Introduce yourself, then list the files in this project. Do not modify anything.
+
+Rin's reply should stream into the bubble. Click **History** to see the complete conversation and real tool records. **Shift+Enter** inserts a new line. Clicking the bubble or **Next page** only reveals/pages through dialogue; it does not send a message.
+
+**Read-only is the default**, so the first test does not permit file changes. To let Codex edit a project later, follow [Allow project edits](#allow-project-edits).
+
+For later launches, double-click the same **.exe**, reconnect and select your project. Your character library, copied images, language and appearance settings are saved locally.
+
+### Allow project edits
+
+1. Finish or stop any running task.
+2. On the bottom toolbar, click the button showing your **current project folder name** (or **Choose project** if none is selected) and select the intended folder again. This clears the active conversation selection.
+3. Open **Settings → Permissions for new or resumed conversations** and choose **Project write (can modify the selected folder)**.
+4. Close Settings with its top-right **×**, then send a new request to start a conversation with that permission mode.
+
+This permits changes inside the selected project without asking about every file. Commands that need approval still show an explicit decision dialog. Read the command, folder and reason before deciding. Changing the setting does not change permissions for a task already running.
+
+### Upgrade or remove the app
+
+- **Upgrade:** close the old app, download the newer **.exe** from [Releases](https://github.com/Lihhan/anime-codex/releases), and open the new file. Keep your existing application data to preserve characters and settings.
+- **Remove the application:** close it and delete the downloaded **.exe**. It has no installer/uninstaller.
+- **Local data:** preferences and copied character images are stored separately in `%APPDATA%\anime-codex\`. Removing the **.exe** does not erase them. Only delete that data folder if you intentionally want to discard your library and settings.
+
+## Installation troubleshooting
+
+| What you see | What to do |
+|---|---|
+| GitHub shows 404, or the download will not open | Sign in to GitHub with an account that has access to this private repository. |
+| The downloaded ZIP contains no application | You downloaded source code. Get the **.exe** under release **Assets**, or follow [Build from source](#build-from-source-for-developers). |
+| Rin appears, but **Say it** is disabled | Click **Connect and choose project**, complete Codex sign-in if required, and select a folder. Sending is also disabled during an active task or pending approval. |
+| `spawn codex ENOENT` or “Codex backend was not found” | Use the current release and follow [Codex cannot be found](#codex-cannot-be-found). |
+| “Codex is not signed in” | Run `codex login` in Windows PowerShell, complete browser sign-in, then retry the connection. If the command is unavailable, use the native executable method below. |
+| Windows warns about an unknown publisher | This build is unsigned. Verify the repository/download source; follow your organization's software policy. |
+| The character or toolbar is hidden, docked or difficult to click | Press **Ctrl+Alt+A** to reveal the overlay and restore mouse input. |
+| `node`, `npm` or `git` is not recognized while building | Install the tools listed in [Build from source](#build-from-source-for-developers), then close and reopen PowerShell. These tools are not needed for the downloaded app. |
+| PowerShell says `npm.ps1` cannot run | Use the documented `npm.cmd` commands below; there is no need to change PowerShell's execution policy. |
+
+### Codex cannot be found
+
+Anime Codex needs a **native Windows `codex.exe`**, not an npm `codex.cmd`/`codex.ps1` launcher or a Linux/WSL executable.
+
+1. Open **Settings** on the bottom toolbar.
+2. Click **Choose codex.exe and connect**.
+3. Select the native `codex.exe` from your official Windows Codex installation. The successful choice is remembered.
+4. Close Settings, click **Choose project** on the bottom toolbar (or the current folder name if one is shown), select your folder, then try sending again.
+
+For the supported Codex desktop installation layout, press **Win+R**, paste `%LOCALAPPDATA%\OpenAI\Codex\bin`, and press Enter. Open the appropriate version folder to find `codex.exe`. If that folder does not exist, your installation uses another layout; use the path from the official installer instead. For a standalone CLI installation, `(Get-Command codex.exe).Source` in PowerShell can show its native executable path when it is on PATH.
+
+If you need to sign in using that file, open Windows PowerShell and run the following, **replacing the example path with your actual `codex.exe` path**:
+
+```powershell
+& "C:\path\to\codex.exe" login
+& "C:\path\to\codex.exe" login status
+```
+
+Do not select a similarly named executable from an untrusted project folder. If you previously set `CODEX_PATH` to a file that no longer exists, correct or remove that setting and restart Anime Codex. [Official sign-in documentation](https://developers.openai.com/codex/auth/) explains Codex authentication.
+
 ## Meet Rin
 
 **Original Rin is included in the character library and selected on a fresh install.** Her calm, warm personality and eight expressions use the same image system as custom characters. Editing the original creates a custom copy, preserving the bundled template. **Settings → Use original Rin** restores her original appearance without deleting your custom character. Upgrading also preserves previously modified Rin profiles as custom copies before repairing the original template.
@@ -96,64 +205,67 @@ The application uses the official `codex app-server --listen stdio://` transport
 
 A success image means the server completed the turn; it does not guarantee that all tests passed. Failures, unsupported requests and unverified results remain visible. The character's presentation never grants permissions or substitutes for actual execution evidence.
 
-## Run on Windows
-
-Recommended: Windows 11 x64, Node.js 24 with npm, Git, and an installed official Codex CLI or the native `codex.exe` from Codex desktop.
-
-```powershell
-codex --version
-codex login
-git clone https://github.com/Lihhan/anime-codex.git
-cd anime-codex
-npm ci
-npm run build
-npm start
-```
-
-The repository is private, so cloning requires GitHub access. Use `npm run dev` for development. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`.
-
-A packaged `Anime Codex 0.5.0.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.5.0/`.
-
-## First use
-
-1. Pick Chinese, English or Japanese on the bottom toolbar.
-2. Start with Rin, or open **Settings → Character library → New character from idle image** to upload your own character. Optional action images can be added later. Rin remains available in the character selector.
-3. Click **Connect to Codex and choose project** above the composer. Select the folder you want Codex to work in. Opening the official Codex app alone does not connect this client.
-4. Send a message. **Show workspace** exposes threads, progress, raw events, command records and diffs.
-5. Read every approval's original command, directory and reason before deciding.
-
-Read-only is the default. To allow edits, choose **Project write** in Settings before starting a new conversation. This permits changes within the selected folder without approving every file; Codex still enforces sandbox and organization policies. Reselect the project and start a new conversation to change permission mode.
-
-The app resolves a native `codex.exe` from an explicit selection or `CODEX_PATH`, a remembered successful connection, PATH, or the Codex desktop installation under `%LOCALAPPDATA%\OpenAI\Codex\bin\<version>\codex.exe`. Desktop discovery works even when launching from Explorer supplies no Codex PATH entry. A successful selection is saved locally; if that saved file disappears after an update, automatic discovery runs again.
-
-If automatic discovery fails, open Settings and use **Choose codex.exe and connect**. `CODEX_PATH`, when set, must be a valid absolute native executable path; an invalid explicit configuration is reported instead of silently ignored. A `codex.cmd` npm wrapper is not the native backend and is not launched through a shell. The app never searches the selected project folder for a backend executable.
-
 ## Language and local data
 
 The language selector translates application controls, settings, action labels, local errors and native picker titles. It also sets the response-language preference for new/resumed Codex conversations and the preferred system TTS language. Existing replies, tool output, code, diffs and server-supplied requests remain verbatim. Changing language mid-turn does not rewrite that turn's instructions.
 
 Preferences and copied images live in `%APPDATA%\anime-codex\`. Uploaded images are never sent to Codex or GitHub; your chosen name and personality are included in conversation instructions. Windows voices vary by installation. TTS is optional; image switching is not phoneme-accurate lip synchronization.
 
+## Build from source (for developers)
+
+**Skip this section if you downloaded the ready-to-run .exe.** Use it only to change the code or build your own copy.
+
+1. Install **Node.js 24 with npm** from [nodejs.org](https://nodejs.org/en/download) and **Git for Windows** from [git-scm.com](https://git-scm.com/downloads/win). Keep their normal PATH options enabled.
+2. Close and reopen **Windows PowerShell** after installation. Check that these commands print versions:
+
+```powershell
+node --version
+npm.cmd --version
+git --version
+```
+
+3. Run the following commands **one line at a time**. Complete the GitHub sign-in prompt if it appears; your account needs access to this private repository.
+
+```powershell
+git clone https://github.com/Lihhan/anime-codex.git
+Set-Location anime-codex
+npm.cmd ci
+npm.cmd run build
+npm.cmd start
+```
+
+Keep that PowerShell window open while the application runs. Rin and the toolbar should appear after the final command. Then follow [Connect and choose a project](#4-connect-and-choose-a-project). Installing the source dependencies does not install or sign in to the Codex backend.
+
+If you already downloaded and extracted **Source code (zip)**, open the extracted folder in PowerShell and start at `npm.cmd ci`; do not run `git clone` inside it. Run all npm commands in the folder containing `package.json`. The first dependency download can take several minutes. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`, then retry.
+
+For development with automatic UI reload, use `npm.cmd run dev`. To create a portable Windows executable, run:
+
+```powershell
+npm.cmd run dist:win
+```
+
+The current output is `release/v0.5.0/Anime Codex 0.5.0.exe`. The build does not bundle Codex or account credentials. Downloaded releases provide `SHA256SUMS.txt`; you can compare it with `Get-FileHash -Algorithm SHA256 -LiteralPath '.\Anime.Codex.0.5.0.exe'` in the folder containing your downloaded executable.
+
 ## Test and package
 
 ```powershell
-npm test
-npm run build
-npm run smoke:ui
-npm run smoke:gal
-npm run smoke:customization
-npm run smoke:play
-npm run smoke:arcade
+npm.cmd test
+npm.cmd run build
+npm.cmd run smoke:ui
+npm.cmd run smoke:gal
+npm.cmd run smoke:customization
+npm.cmd run smoke:play
+npm.cmd run smoke:arcade
 # Real handshake/account read with an empty PATH, including restart persistence:
-npm run smoke:connection
+npm.cmd run smoke:connection
 # Optional real local AI check (downloads the model if missing):
 $env:RUN_REAL_BACKGROUND = '1'
-npm run smoke:background -- path/to/character.png
+npm.cmd run smoke:background -- path/to/character.png
 $env:RUN_REAL_CODEX = '1'
-npm run smoke:backend
-npm run smoke:desktop
-npm run smoke:gal-real
-npm run dist:win
+npm.cmd run smoke:backend
+npm.cmd run smoke:desktop
+npm.cmd run smoke:gal-real
+npm.cmd run dist:win
 ```
 
 Real-backend tests use your Codex quota. They operate on disposable fixture directories. UI-only action/approval events are explicitly marked test fixtures, not claimed execution results. UI tests use isolated application data directories and do not change your own character library.
