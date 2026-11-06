@@ -52,6 +52,8 @@ jobs:
       - run: npm test
       - run: npm run smoke:native
       - run: npm run build
+      - run: npm run smoke:companion
+      - run: node scripts/smoke-quick.mjs
       - run: npm run smoke:gal
       - run: npm run smoke:dock
       - run: npm run smoke:presets

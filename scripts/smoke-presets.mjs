@@ -1,3 +1,4 @@
+import { selectSettingsTab } from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import fs from "node:fs/promises";
@@ -14,6 +15,8 @@ const options = {
   env: {
     ...process.env,
     ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_SURFACE: "workbench",
+    ANIME_CODEX_AUTOCONNECT: "0",
     ANIME_CODEX_DATA_DIR: dataDirectory,
   },
 };
@@ -26,7 +29,7 @@ try {
   await page.getByTestId("language-select").selectOption("en");
   await page.waitForFunction(() => document.documentElement.lang === "en");
   const initial = await page.evaluate(() => window.animeCodex.bootstrap());
-  assert.equal(initial.characters.length, 5);
+  assert.equal(initial.characters.length, catalog.length);
   assert.equal(initial.character.builtin, "rin");
   const rin = initial.character.images.idle.src;
   await app.evaluate(({ BrowserWindow }) =>
@@ -39,7 +42,11 @@ try {
     }),
   );
   await page.getByTestId("settings-toggle").click();
-  assert.equal(await page.locator(".preset-gallery button").count(), 5);
+  await selectSettingsTab(page, "character");
+  assert.equal(
+    await page.locator(".preset-gallery button").count(),
+    catalog.length,
+  );
   for (const { id, slug } of catalog.slice(1)) {
     const profile = require("../characters/" + slug + ".json");
     await page.getByTestId("preset-" + slug).click();
@@ -49,12 +56,15 @@ try {
       id,
     );
     await page.getByTestId("slot-thinking").locator(".action-preview").click();
-    const thinking = await page
-      .locator('.state-image[data-action="thinking"]')
-      .getAttribute("src");
     const state = await page.evaluate(() => window.animeCodex.bootstrap());
+    const action = state.character.images.thinking ? "thinking" : "idle";
+    const thinking = await page
+      .locator('.state-image[data-action="' + action + '"]')
+      .getAttribute("src");
     assert.ok(
-      thinking === state.character.images.thinking.src,
+      thinking ===
+        (state.character.images.thinking?.src ||
+          state.character.images.idle.src),
       "Selected preset thinking image must match its own assets",
     );
     await page.getByTestId("settings-close").click();
@@ -68,6 +78,7 @@ try {
       profile.greetings.en,
     );
     await page.getByTestId("settings-toggle").click();
+    await selectSettingsTab(page, "character");
   }
   await app.evaluate(({ BrowserWindow }) =>
     BrowserWindow.getAllWindows()[0].webContents.send("codex:event", {
@@ -104,7 +115,7 @@ try {
   let state = await page.evaluate(() => window.animeCodex.bootstrap());
   assert.equal(state.character.builtin, undefined);
   assert.equal(state.character.greetings, undefined);
-  assert.equal(state.characters.length, 6);
+  assert.equal(state.characters.length, catalog.length + 1);
   await page.getByTestId("original-rin").click();
   await page.waitForFunction(
     (id) =>
@@ -131,7 +142,7 @@ try {
   await page.getByTestId("character-images").waitFor();
   state = await page.evaluate(() => window.animeCodex.bootstrap());
   assert.equal(state.character.builtin, "iroha");
-  assert.equal(state.characters.length, 6);
+  assert.equal(state.characters.length, catalog.length + 1);
   await fs.writeFile(
     "test-results/presets-ui.json",
     JSON.stringify(

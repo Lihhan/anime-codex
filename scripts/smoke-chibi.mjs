@@ -1,0 +1,37 @@
+import {_electron as electron} from 'playwright';
+import electronPath from 'electron';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+const directory=await fs.mkdtemp(path.resolve('test-results/chibi-'));
+const app=await electron.launch({executablePath:electronPath,args:['.'],env:{...process.env,ANIME_CODEX_DATA_DIR:directory,ANIME_CODEX_DEV:'0'}});
+const errors=[];
+try {
+ const page=await app.firstWindow();page.on('pageerror',e=>errors.push(e.message));
+ await page.getByTestId('pet-body').waitFor();
+ await page.getByTestId('pet-body').hover();
+ await page.getByTitle('设置',{exact:true}).click();
+ await page.getByLabel('切换角色').selectOption('c126295a-d3f1-4746-a748-122dfb001101');
+ await page.locator('.pet-sprite').waitFor();
+ assert.equal(await page.getByLabel('外观画风').inputValue(),'chibi');
+ await page.getByRole('button',{name:'跑步',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('.pet-sprite').dataset.row==='0');
+ const frames=new Set();for(let i=0;i<10;i++){frames.add(await page.locator('.pet-sprite').getAttribute('data-frame'));await page.waitForTimeout(100);}assert.equal(frames.size,4);
+ await page.screenshot({path:'test-results/chibi-settings.png'});
+ await page.getByRole('button',{name:'睡觉',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('.pet-sprite').dataset.row==='2');
+ await page.screenshot({path:'test-results/chibi-sleep.png'});
+ await page.getByLabel('外观画风').selectOption('portrait');assert.equal(await page.locator('.pet-sprite').count(),0);
+ await page.getByLabel('外观画风').selectOption('chibi');
+ await page.getByTitle('收起面板，角色继续陪伴').click();
+ await page.getByTestId('pet-body').dblclick();
+ await page.getByLabel('气泡输入').fill('你好，芙宁娜');
+ assert.equal(await page.getByTestId('companion-panel').count(),0);
+ await page.waitForTimeout(4500);
+ await page.screenshot({path:'test-results/chibi-bubble.png'});
+ await page.getByTitle('收起聊天气泡').click();await page.mouse.move(20,20);await page.waitForTimeout(2000);
+ assert.equal(await page.locator('.pet-dock').evaluate(el=>getComputedStyle(el).visibility),'hidden');
+ await page.screenshot({path:'test-results/chibi-idle.png'});
+ assert.deepEqual(errors,[]);
+ await fs.writeFile('test-results/chibi-ui.json',JSON.stringify({ok:true,frames:[...frames],bubble:true,idleControlsHidden:true,errors,directory},null,2));
+}finally{await app.close();}

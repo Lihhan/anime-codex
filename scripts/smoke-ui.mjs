@@ -1,3 +1,4 @@
+import {selectSettingsTab} from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import { useChatLayout } from "./ui-layout.mjs";
@@ -16,6 +17,8 @@ const app = await electron.launch({
     // This native file is only resolved; the stub below prevents any launch.
     CODEX_PATH: electronPath,
     ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_SURFACE: "workbench",
+    ANIME_CODEX_AUTOCONNECT: "0",
     ANIME_CODEX_DATA_DIR: dataDirectory,
   },
   timeout: 30000,
@@ -53,6 +56,7 @@ try {
   assert.equal(await page.locator(".userMessage").count(), 0);
   await page.getByRole("alert").getByRole("button").click();
   await page.getByTestId("settings-toggle").click();
+  await selectSettingsTab(page,"character");
   await page.locator(".settings").evaluate((el) => {
     el.scrollTop = el.scrollHeight;
   });
@@ -65,10 +69,12 @@ try {
     true,
   );
   await page.getByTestId("settings-toggle").click();
+  await selectSettingsTab(page,"character");
   await page.getByTestId("character-name").fill("Draft name");
   await page.keyboard.press("Escape");
   await page.getByRole("dialog").waitFor({ state: "hidden" });
   await page.getByTestId("settings-toggle").click();
+  await selectSettingsTab(page,"character");
   assert.equal(
     await page.getByTestId("character-name").inputValue(),
     "Draft name",

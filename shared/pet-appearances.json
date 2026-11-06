@@ -1,0 +1,1198 @@
+{
+  "furina": {
+    "themeHue": 225,
+    "chibi": {
+      "src": "./characters/furina/chibi/atlas.png",
+      "columns": 4,
+      "rows": 4,
+      "clips": {
+        "idle": {
+          "row": 0,
+          "durations": [
+            2800,
+            100,
+            140,
+            900
+          ]
+        },
+        "walk": {
+          "row": 1,
+          "durations": [
+            130,
+            130,
+            130,
+            130
+          ]
+        },
+        "sleep": {
+          "row": 2,
+          "durations": [
+            850,
+            850,
+            850,
+            850
+          ]
+        },
+        "eat": {
+          "row": 3,
+          "durations": [
+            400,
+            300,
+            450,
+            650
+          ]
+        },
+        "read": {
+          "src": "./characters/furina/chibi/life.png",
+          "row": 0,
+          "durations": [
+            900,
+            650,
+            650,
+            900
+          ]
+        },
+        "meal": {
+          "src": "./characters/furina/chibi/life.png",
+          "row": 1,
+          "durations": [
+            450,
+            350,
+            450,
+            650
+          ]
+        },
+        "gaming": {
+          "src": "./characters/furina/chibi/life.png",
+          "row": 2,
+          "durations": [
+            450,
+            350,
+            450,
+            650
+          ]
+        },
+        "office": {
+          "src": "./characters/furina/chibi/life.png",
+          "row": 3,
+          "durations": [
+            450,
+            350,
+            450,
+            650
+          ]
+        },
+        "walk_right": {
+          "src": "./characters/furina/chibi/run.png",
+          "row": 0,
+          "durations": [
+            130,
+            130,
+            130,
+            130
+          ]
+        },
+        "walk_left": {
+          "src": "./characters/furina/chibi/run.png",
+          "row": 1,
+          "durations": [
+            130,
+            130,
+            130,
+            130
+          ]
+        },
+        "walk_up": {
+          "src": "./characters/furina/chibi/run.png",
+          "row": 2,
+          "durations": [
+            130,
+            130,
+            130,
+            130
+          ]
+        },
+        "walk_down": {
+          "src": "./characters/furina/chibi/run.png",
+          "row": 3,
+          "durations": [
+            130,
+            130,
+            130,
+            130
+          ]
+        }
+      }
+    },
+    "sticker": {
+      "src": "./characters/furina/sticker/atlas.png",
+      "columns": 4,
+      "rows": 4,
+      "clips": {
+        "idle": {
+          "row": 0,
+          "durations": [
+            2700,
+            100,
+            140,
+            1100
+          ],
+          "cropY": {
+            "top": 0,
+            "height": 330,
+            "sheetHeight": 1312
+          },
+          "aspect": 0.9083333333333333,
+          "offsetX": [
+            -5.046,
+            -0.459,
+            3.461,
+            7.548
+          ],
+          "renderScale": 1,
+          "offsetY": [
+            0.03,
+            0.03,
+            0.03,
+            0.03
+          ]
+        },
+        "sleep": {
+          "row": 1,
+          "durations": [
+            900,
+            900,
+            900,
+            900
+          ],
+          "cropY": {
+            "top": 350,
+            "height": 225,
+            "sheetHeight": 1312
+          },
+          "aspect": 1.3322222222222222,
+          "renderScale": 0.9,
+          "offsetX": [
+            -2.74,
+            -0.863,
+            2.064,
+            4.691
+          ],
+          "offsetY": [
+            5.203,
+            7.603,
+            6.003,
+            6.403
+          ]
+        },
+        "read": {
+          "row": 2,
+          "durations": [
+            1500,
+            500,
+            1100,
+            500
+          ],
+          "cropY": {
+            "top": 585,
+            "height": 340,
+            "sheetHeight": 1312
+          },
+          "aspect": 0.8816176470588235,
+          "renderScale": 1,
+          "offsetX": [
+            -5.046,
+            -0.792,
+            3.128,
+            7.048
+          ],
+          "offsetY": [
+            0.235,
+            0.235,
+            0.235,
+            0.235
+          ],
+          "frames": [
+            1,
+            2,
+            3,
+            2
+          ]
+        },
+        "meal": {
+          "row": 3,
+          "durations": [
+            650,
+            450,
+            450,
+            800
+          ],
+          "cropY": {
+            "top": 930,
+            "height": 365,
+            "sheetHeight": 1312
+          },
+          "aspect": 0.8212328767123288,
+          "renderScale": 1,
+          "offsetX": [
+            -4.379,
+            -0.459,
+            3.628,
+            7.214
+          ],
+          "offsetY": [
+            1.932,
+            1.932,
+            1.932,
+            1.932
+          ]
+        },
+        "eat": {
+          "row": 3,
+          "durations": [
+            650,
+            450,
+            450,
+            800
+          ],
+          "cropY": {
+            "top": 930,
+            "height": 365,
+            "sheetHeight": 1312
+          },
+          "aspect": 0.8212328767123288,
+          "renderScale": 1,
+          "offsetX": [
+            -4.379,
+            -0.459,
+            3.628,
+            7.214
+          ],
+          "offsetY": [
+            1.932,
+            1.932,
+            1.932,
+            1.932
+          ]
+        },
+        "walk_right": {
+          "src": "./characters/furina/sticker/run.png",
+          "row": 0,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ],
+          "aspect": 1
+        },
+        "walk_left": {
+          "src": "./characters/furina/sticker/run.png",
+          "row": 1,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ],
+          "aspect": 1
+        },
+        "walk_up": {
+          "src": "./characters/furina/sticker/run.png",
+          "row": 2,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ],
+          "aspect": 1
+        },
+        "walk_down": {
+          "src": "./characters/furina/sticker/run.png",
+          "row": 3,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ],
+          "aspect": 1
+        },
+        "gaming": {
+          "src": "./characters/furina/sticker/life.png",
+          "row": 0,
+          "durations": [
+            700,
+            500,
+            600,
+            1000
+          ],
+          "aspect": 1,
+          "renderScale": 0.94,
+          "offsetX": [
+            -7.721,
+            -2.174,
+            -0.075,
+            -3.973
+          ],
+          "offsetY": [
+            0.748,
+            -0.152,
+            0.748,
+            0.748
+          ]
+        },
+        "office": {
+          "src": "./characters/furina/sticker/life.png",
+          "row": 1,
+          "durations": [
+            900,
+            700,
+            900,
+            700
+          ],
+          "aspect": 1,
+          "frames": [
+            0,
+            2,
+            0,
+            2
+          ],
+          "renderScale": 1,
+          "offsetX": [
+            -1.994,
+            null,
+            2.951,
+            5.502
+          ],
+          "offsetY": [
+            3.061,
+            null,
+            3.061,
+            2.742
+          ]
+        },
+        "pet": {
+          "src": "./characters/furina/sticker/life.png",
+          "row": 2,
+          "durations": [
+            700,
+            500,
+            600,
+            1000
+          ],
+          "aspect": 1,
+          "renderScale": 1,
+          "offsetX": [
+            -4.545,
+            1.515,
+            0.718,
+            -2.153
+          ],
+          "offsetY": [
+            0.668,
+            0.349,
+            0.668,
+            0.668
+          ]
+        },
+        "attention": {
+          "src": "./characters/furina/sticker/life.png",
+          "row": 3,
+          "durations": [
+            700,
+            500,
+            600,
+            1000
+          ],
+          "aspect": 1,
+          "renderScale": 1,
+          "offsetX": [
+            -3.589,
+            -1.356,
+            4.705,
+            -3.27
+          ],
+          "offsetY": [
+            -0.767,
+            -0.448,
+            -0.448,
+            -0.448
+          ]
+        },
+        "drag": {
+          "src": "./characters/furina/sticker/drag-v1.png",
+          "row": 0,
+          "rows": 1,
+          "columns": 4,
+          "aspect": 0.75,
+          "durations": [
+            300,
+            240,
+            200,
+            240,
+            280,
+            240
+          ],
+          "frames": [
+            0,
+            1,
+            2,
+            0,
+            3,
+            0
+          ]
+        },
+        "transition_sleep_read": {
+          "src": "./characters/furina/sticker/sleep-read-v1.png",
+          "row": 0,
+          "rows": 2,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            160,
+            200,
+            220,
+            220,
+            200,
+            170,
+            200,
+            180
+          ],
+          "renderScale": 1.055,
+          "offsetX": [
+            0.059,
+            -0.178,
+            1.368,
+            2.438,
+            -3.866,
+            -0.892,
+            1.13,
+            -2.319
+          ],
+          "offsetY": [
+            5.683,
+            6.396,
+            8.775,
+            7.348,
+            2.947,
+            2.471,
+            2.233,
+            2.233
+          ]
+        },
+        "transition_read_sleep": {
+          "src": "./characters/furina/sticker/sleep-read-v1.png",
+          "row": 0,
+          "rows": 2,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            0
+          ],
+          "durations": [
+            180,
+            200,
+            170,
+            200,
+            220,
+            220,
+            200,
+            160
+          ],
+          "renderScale": 1.055,
+          "offsetX": [
+            0.059,
+            -0.178,
+            1.368,
+            2.438,
+            -3.866,
+            -0.892,
+            1.13,
+            -2.319
+          ],
+          "offsetY": [
+            5.683,
+            6.396,
+            8.775,
+            7.348,
+            2.947,
+            2.471,
+            2.233,
+            2.233
+          ]
+        },
+        "exit_sleep": {
+          "src": "./characters/furina/sticker/sleep-read-v1.png",
+          "row": 0,
+          "rows": 2,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            160,
+            200,
+            220,
+            220
+          ],
+          "renderScale": 1.055,
+          "offsetX": [
+            0.059,
+            -0.178,
+            1.368,
+            2.438
+          ],
+          "offsetY": [
+            5.683,
+            6.396,
+            8.775,
+            7.348
+          ]
+        },
+        "enter_sleep": {
+          "src": "./characters/furina/sticker/sleep-read-v1.png",
+          "row": 0,
+          "rows": 2,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "durations": [
+            220,
+            220,
+            200,
+            200
+          ],
+          "renderScale": 1.055,
+          "offsetX": [
+            0.059,
+            -0.178,
+            1.368,
+            2.438
+          ],
+          "offsetY": [
+            5.683,
+            6.396,
+            8.775,
+            7.348
+          ]
+        },
+        "enter_read": {
+          "src": "./characters/furina/sticker/sleep-read-v1.png",
+          "row": 0,
+          "rows": 2,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            220,
+            170,
+            200,
+            180
+          ],
+          "renderScale": 1.055,
+          "offsetX": [
+            null,
+            null,
+            null,
+            null,
+            -3.866,
+            -0.892,
+            1.13,
+            -2.319
+          ],
+          "offsetY": [
+            null,
+            null,
+            null,
+            null,
+            2.947,
+            2.471,
+            2.233,
+            2.233
+          ]
+        },
+        "exit_read": {
+          "src": "./characters/furina/sticker/sleep-read-v1.png",
+          "row": 0,
+          "rows": 2,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            7,
+            6,
+            5,
+            4
+          ],
+          "durations": [
+            180,
+            200,
+            170,
+            220
+          ],
+          "renderScale": 1.055,
+          "offsetX": [
+            null,
+            null,
+            null,
+            null,
+            -3.866,
+            -0.892,
+            1.13,
+            -2.319
+          ],
+          "offsetY": [
+            null,
+            null,
+            null,
+            null,
+            2.947,
+            2.471,
+            2.233,
+            2.233
+          ]
+        },
+        "enter_meal": {
+          "src": "./characters/furina/sticker/activity-bridges-v1.png",
+          "row": 0,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1.035,
+          "offsetX": [
+            -4.209,
+            -4.209,
+            -4.209,
+            -4.209
+          ],
+          "offsetY": [
+            0.797,
+            0.797,
+            0.797,
+            0.797
+          ]
+        },
+        "exit_meal": {
+          "src": "./characters/furina/sticker/activity-bridges-v1.png",
+          "row": 0,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1.035,
+          "offsetX": [
+            -4.209,
+            -4.209,
+            -4.209,
+            -4.209
+          ],
+          "offsetY": [
+            0.797,
+            0.797,
+            0.797,
+            0.797
+          ]
+        },
+        "enter_gaming": {
+          "src": "./characters/furina/sticker/activity-bridges-v1.png",
+          "row": 1,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1.035,
+          "offsetX": [
+            -4.044,
+            -4.209,
+            -4.044,
+            -4.539
+          ],
+          "offsetY": [
+            0.632,
+            0.962,
+            1.622,
+            2.612
+          ]
+        },
+        "exit_gaming": {
+          "src": "./characters/furina/sticker/activity-bridges-v1.png",
+          "row": 1,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1.035,
+          "offsetX": [
+            -4.044,
+            -4.209,
+            -4.044,
+            -4.539
+          ],
+          "offsetY": [
+            0.632,
+            0.962,
+            1.622,
+            2.612
+          ]
+        },
+        "enter_office": {
+          "src": "./characters/furina/sticker/activity-bridges-v1.png",
+          "row": 2,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1.035,
+          "offsetX": [
+            -5.2,
+            -1.238,
+            0.413,
+            -0.743
+          ],
+          "offsetY": [
+            6.079,
+            5.749,
+            5.419,
+            5.749
+          ]
+        },
+        "exit_office": {
+          "src": "./characters/furina/sticker/activity-bridges-v1.png",
+          "row": 2,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1.035,
+          "offsetX": [
+            -5.2,
+            -1.238,
+            0.413,
+            -0.743
+          ],
+          "offsetY": [
+            6.079,
+            5.749,
+            5.419,
+            5.749
+          ]
+        },
+        "enter_walk": {
+          "src": "./characters/furina/sticker/activity-bridges-v1.png",
+          "row": 3,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1.035,
+          "offsetX": [
+            -4.044,
+            -3.219,
+            1.238,
+            0.743
+          ],
+          "offsetY": [
+            0.962,
+            0.962,
+            1.292,
+            1.292
+          ]
+        },
+        "exit_walk": {
+          "src": "./characters/furina/sticker/activity-bridges-v1.png",
+          "row": 3,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "frames": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1.035,
+          "offsetX": [
+            -4.044,
+            -3.219,
+            1.238,
+            0.743
+          ],
+          "offsetY": [
+            0.962,
+            0.962,
+            1.292,
+            1.292
+          ]
+        },
+        "enter_pet": {
+          "src": "./characters/furina/sticker/social-bridges-v1.png",
+          "row": 0,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1,
+          "offsetX": [
+            -8.054,
+            -0.08,
+            1.675,
+            -1.675
+          ],
+          "offsetY": [
+            -0.927,
+            -0.608,
+            -0.608,
+            -0.608
+          ]
+        },
+        "exit_pet": {
+          "src": "./characters/furina/sticker/social-bridges-v1.png",
+          "row": 1,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1,
+          "offsetX": [
+            -5.662,
+            -0.558,
+            -1.356,
+            0.08
+          ],
+          "offsetY": [
+            -0.129,
+            0.19,
+            -0.129,
+            -0.129
+          ]
+        },
+        "enter_attention": {
+          "src": "./characters/furina/sticker/social-bridges-v1.png",
+          "row": 2,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1,
+          "offsetX": [
+            -6.459,
+            2.791,
+            1.834,
+            3.429
+          ],
+          "offsetY": [
+            0.03,
+            0.03,
+            0.03,
+            0.03
+          ]
+        },
+        "exit_attention": {
+          "src": "./characters/furina/sticker/social-bridges-v1.png",
+          "row": 3,
+          "rows": 4,
+          "columns": 4,
+          "aspect": 1,
+          "durations": [
+            150,
+            180,
+            180,
+            150
+          ],
+          "renderScale": 1,
+          "offsetX": [
+            -1.675,
+            -1.196,
+            3.589,
+            0.399
+          ],
+          "offsetY": [
+            0.19,
+            0.509,
+            0.19,
+            0.509
+          ]
+        }
+      },
+      "aspect": 0.9138719512195121
+    }
+  },
+  "rin": {
+    "themeHue": 165
+  },
+  "nahida": {
+    "themeHue": 105
+  },
+  "kaguya": {
+    "themeHue": 350
+  },
+  "iroha": {
+    "themeHue": 32
+  },
+  "elysia": {
+    "themeHue": 320,
+    "chibi": {
+      "src": "./characters/elysia/chibi/atlas.png",
+      "columns": 4,
+      "rows": 4,
+      "clips": {
+        "idle": {
+          "row": 0,
+          "durations": [
+            2700,
+            100,
+            140,
+            1100
+          ]
+        },
+        "sleep": {
+          "row": 1,
+          "durations": [
+            900,
+            900,
+            900,
+            900
+          ]
+        },
+        "read": {
+          "row": 2,
+          "durations": [
+            800,
+            1400,
+            400,
+            600
+          ]
+        },
+        "meal": {
+          "row": 3,
+          "durations": [
+            650,
+            450,
+            450,
+            800
+          ]
+        },
+        "eat": {
+          "row": 3,
+          "durations": [
+            650,
+            450,
+            450,
+            800
+          ]
+        },
+        "walk_right": {
+          "src": "./characters/elysia/chibi/run.png",
+          "row": 0,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "walk_left": {
+          "src": "./characters/elysia/chibi/run.png",
+          "row": 1,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "walk_up": {
+          "src": "./characters/elysia/chibi/run.png",
+          "row": 2,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "walk_down": {
+          "src": "./characters/elysia/chibi/run.png",
+          "row": 3,
+          "durations": [
+            140,
+            140,
+            140,
+            140
+          ]
+        },
+        "gaming": {
+          "src": "./characters/elysia/chibi/life.png",
+          "row": 0,
+          "durations": [
+            700,
+            500,
+            600,
+            1000
+          ]
+        },
+        "office": {
+          "src": "./characters/elysia/chibi/life.png",
+          "row": 1,
+          "durations": [
+            700,
+            500,
+            600,
+            1000
+          ]
+        },
+        "pet": {
+          "src": "./characters/elysia/chibi/life.png",
+          "row": 2,
+          "durations": [
+            700,
+            500,
+            600,
+            1000
+          ]
+        },
+        "attention": {
+          "src": "./characters/elysia/chibi/life.png",
+          "row": 3,
+          "durations": [
+            700,
+            500,
+            600,
+            1000
+          ]
+        }
+      }
+    }
+  }
+}

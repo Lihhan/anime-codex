@@ -1,6 +1,6 @@
 {
   "name": "anime-codex",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "A character-driven Windows and macOS desktop client for the real Codex App Server",
   "private": true,
   "type": "module",
@@ -22,14 +22,24 @@
     "smoke:arcade": "node scripts/smoke-arcade.mjs",
     "smoke:gal": "node scripts/smoke-gal.mjs",
     "smoke:gal-real": "node scripts/smoke-gal-real.mjs",
-    "dist:mac": "npm run build && electron-builder --mac dmg zip --publish never",
-    "dist:mac:arm64": "npm run build && electron-builder --mac dmg zip --arm64 --publish never",
-    "dist:mac:x64": "npm run build && electron-builder --mac dmg zip --x64 --publish never",
+    "dist:mac": "npm run build && node scripts/build-input-pulse.mjs && electron-builder --mac dmg zip --publish never",
+    "dist:mac:arm64": "npm run build && node scripts/build-input-pulse.mjs arm64 && electron-builder --mac dmg zip --arm64 --publish never",
+    "dist:mac:x64": "npm run build && node scripts/build-input-pulse.mjs x64 && electron-builder --mac dmg zip --x64 --publish never",
     "smoke:native": "node scripts/smoke-native.mjs",
     "smoke:presets": "node scripts/smoke-presets.mjs",
     "smoke:presets-real": "node scripts/smoke-presets-real.mjs",
     "smoke:dock": "node scripts/smoke-dock.mjs",
-    "smoke:chat-real": "node scripts/smoke-chat-real.mjs"
+    "smoke:chat-real": "node scripts/smoke-chat-real.mjs",
+    "smoke:claude": "node scripts/smoke-claude-ui.mjs",
+    "smoke:claude-real": "node scripts/smoke-claude-real.mjs",
+    "smoke:agent": "node scripts/smoke-agent.mjs",
+    "smoke:workbench": "node scripts/smoke-workbench.mjs",
+    "smoke:studio": "node scripts/smoke-studio.mjs",
+    "build:icons": "node scripts/build-icons.mjs",
+    "smoke:companion": "node scripts/smoke-companion.mjs",
+    "smoke:companion-real": "node scripts/smoke-companion-real.mjs",
+    "smoke:input": "node scripts/smoke-input-pulse.mjs",
+    "smoke:portable-real": "node scripts/smoke-portable-real.mjs"
   },
   "build": {
     "appId": "io.animecodex.desktop",
@@ -62,10 +72,12 @@
         "scripts/native-probe.cjs",
         "!node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
         "!node_modules/onnxruntime-node-intel/**"
-      ]
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "Anime-Codex-${version}-win-x64.${ext}"
     },
     "directories": {
-      "output": "release/v0.7.0"
+      "output": "release/v0.8.0"
     },
     "asarUnpack": [
       "electron/background-worker.cjs",
@@ -74,7 +86,8 @@
       "node_modules/onnxruntime-common/**",
       "node_modules/pngjs/**",
       "electron/inference-runtime.cjs",
-      "node_modules/onnxruntime-node-intel/**"
+      "node_modules/onnxruntime-node-intel/**",
+      "electron/native/input-pulse.cs"
     ],
     "mac": {
       "target": [
@@ -102,6 +115,13 @@
         "!node_modules/onnxruntime-node-intel/bin/napi-v6/win32/**",
         "!node_modules/onnxruntime-node-intel/bin/napi-v6/linux/**",
         "!node_modules/onnxruntime-node-intel/bin/napi-v6/darwin/arm64/**"
+      ],
+      "icon": "build/icon.icns",
+      "extraResources": [
+        {
+          "from": "build/native/input-pulse-mac",
+          "to": "helpers/input-pulse"
+        }
       ]
     }
   },

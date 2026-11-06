@@ -1,4 +1,5 @@
 node_modules/
+build/native/
 dist/
 release/
 test-results/

@@ -273,7 +273,28 @@ class Preferences {
           /^[a-f0-9-]{36}\.png$/i.test(entry.originalFile || ""),
       };
     }
-    return { ...c, images };
+    let petAppearance;
+    if (c.petPack) {
+      const pack = structuredClone(c.petPack),
+        cache = new Map();
+      for (const clip of Object.values(pack.clips)) {
+        if (!/^[a-f0-9-]{36}\.png$/i.test(clip.src))
+          throw Error("Invalid pet asset");
+        if (!cache.has(clip.src))
+          cache.set(
+            clip.src,
+            "data:image/png;base64," +
+              (
+                await fs.readFile(
+                  path.join(this.directory, "characters", clip.src),
+                )
+              ).toString("base64"),
+          );
+        clip.src = cache.get(clip.src);
+      }
+      petAppearance = { themeHue: c.profile?.themeHue ?? 210, chibi: pack };
+    }
+    return { ...c, images, petAppearance };
   }
   async snapshot() {
     return {
@@ -316,6 +337,65 @@ class Preferences {
     const encoded = image.toPNG();
     if (encoded.length > 24 * 1024 * 1024) throw new Error("error.imageSize");
     return { width, height, encoded };
+  }
+  async installPet(job, directory, persona) {
+    if (job.status !== "ready" || !job.petPack || !job.profile)
+      throw Error("桌宠还没有完成制作");
+    const existing = this.data.characters.find(
+      (c) => c.studioJob === job.id && c.petPack,
+    );
+    if (existing) {
+      this.data.activeCharacter = existing.id;
+      await this.save();
+      return this.snapshot();
+    }
+    const { validateSheet } = require("./pet-artifacts.cjs");
+    const pack = JSON.parse(JSON.stringify(job.petPack)),
+      files = new Map();
+    if (!/^portrait-[a-f0-9-]{36}\.png$/.test(job.petPortrait))
+      throw Error("Invalid pet portrait");
+    const portrait = await this.decodeImage(
+      path.join(directory, job.petPortrait),
+    );
+    // Validate every source before changing the user's active character or library.
+    for (const clip of Object.values(pack.clips)) {
+      if (!/^[a-z]+-[a-f0-9-]{36}\.png$/.test(clip.src))
+        throw Error("Invalid generated pet asset");
+      if (!files.has(clip.src)) {
+        await validateSheet(path.join(directory, clip.src));
+        files.set(clip.src, randomUUID() + ".png");
+      }
+    }
+    const destination = path.join(this.directory, "characters");
+    await fs.mkdir(destination, { recursive: true });
+    for (const [source, target] of files)
+      await fs.copyFile(
+        path.join(directory, source),
+        path.join(destination, target),
+      );
+    for (const clip of Object.values(pack.clips))
+      clip.src = files.get(clip.src);
+    const image = randomUUID() + ".png";
+    await fs.writeFile(path.join(destination, image), portrait.encoded);
+    const c = {
+      id: randomUUID(),
+      name: job.profile.name,
+      persona,
+      profile: job.profile,
+      studioJob: job.id,
+      renderer: "images",
+      petPack: pack,
+      images: {
+        idle: { file: image, width: portrait.width, height: portrait.height },
+      },
+      width: portrait.width,
+      height: portrait.height,
+      voice: { rate: 1, pitch: 1 },
+    };
+    this.data.characters.push(c);
+    this.data.activeCharacter = c.id;
+    await this.save();
+    return this.snapshot();
   }
   async importActionImage({ id = null, phase = "idle" } = {}, file) {
     if (!PHASES.includes(phase)) throw new Error("error.action");

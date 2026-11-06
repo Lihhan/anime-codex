@@ -11,6 +11,8 @@ const options = {
   env: {
     ...process.env,
     ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_SURFACE: "workbench",
+    ANIME_CODEX_AUTOCONNECT: "0",
     ANIME_CODEX_DATA_DIR: directory,
   },
 };

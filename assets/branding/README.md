@@ -1,0 +1,9 @@
+# Anime Codex application icon
+
+Created with the built-in imagegen tool for the local 0.9.2 release. Original generated PNG: `anime-codex-icon-source.png`. No external API key or fallback CLI was used.
+
+Run `npm run build:icons` on macOS to regenerate the packaging assets using sips and iconutil. This only resizes and packages the approved artwork, preserving transparency. The output includes `build/icon.icns` (16–1024 px macOS representations), `build/icon.ico` (16–256 px Windows representations), `build/icon.png`, `public/app-icon.png`, and `public/favicon.png`.
+
+## Generation prompt
+
+Use case: logo-brand. Create one final production macOS application icon for 'Anime Codex', an anime character coding companion. Square 1024x1024 image, genuine transparent background outside a centered macOS rounded-square tile occupying 86% of canvas width and height. The tile is deep midnight navy (#14232d), with subtle premium satin depth and very restrained edge highlight. A single bold iconic anime companion face emblem: ivory face, simple dark friendly eyes, sculptural sweeping mint-green hair locks, a small four-point mint sparkle hairpin. Integrate two thick mint coding angle brackets flanking the small face, forming a cohesive compact symmetrical-ish badge. Original mascot, not any existing character. Sophisticated minimal Japanese character design meets a polished developer tool, clean and memorable, not childish sticker art. Flat vector-like broad shapes with slight dimensional shading; strong contrast and generous negative space, legible at 32px. No body, no neck, no detailed eyelashes, no tiny embellishments, no gradients outside tile, no text, no letters, no words, no watermark, no background scene, no mockup, no multiple icons. Pixel-perfect crisp silhouette. The icon itself is the only object.

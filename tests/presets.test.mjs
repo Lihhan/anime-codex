@@ -20,9 +20,9 @@ async function setup(t, bundled = templates) {
     p: await new Preferences(directory, null, null, bundled).load(),
   };
 }
-test("five independent presets install with Rin selected and aligned transparent task images", async (t) => {
+test("all independent presets install with Rin selected and aligned transparent task images", async (t) => {
   const { p } = await setup(t);
-  assert.equal(p.data.characters.length, 5);
+  assert.equal(p.data.characters.length, templates.length);
   assert.equal(p.data.activeCharacter, templates[0].profile.id);
   const idle = new Set();
   for (const { profile, directory } of templates) {
@@ -53,7 +53,7 @@ test("five independent presets install with Rin selected and aligned transparent
           assert.ok(c.reactions[lang][region].length >= 2);
       }
   }
-  assert.equal(idle.size, 5);
+  assert.equal(idle.size, templates.length);
 });
 test("editing each fan preset clones it, retains original images and does not duplicate templates on restart", async (t) => {
   let { p, directory } = await setup(t);
@@ -76,10 +76,10 @@ test("editing each fan preset clones it, retains original images and does not du
   }
   const selected = p.data.activeCharacter;
   p = await new Preferences(directory, null, null, templates).load();
-  assert.equal(p.data.characters.length, 9);
+  assert.equal(p.data.characters.length, templates.length * 2 - 1);
   assert.equal(p.data.activeCharacter, selected);
 });
-test("upgrading a Rin-only library adds four presets without replacing a custom selection", async (t) => {
+test("upgrading a Rin-only library adds the remaining presets without replacing a custom selection", async (t) => {
   let { p, directory } = await setup(t, [templates[0]]);
   await p.updateCharacter({
     id: templates[0].profile.id,
@@ -89,7 +89,7 @@ test("upgrading a Rin-only library adds four presets without replacing a custom 
   const active = p.data.activeCharacter;
   const before = (await p.character()).images.idle.src;
   p = await new Preferences(directory, null, null, templates).load();
-  assert.equal(p.data.characters.length, 6);
+  assert.equal(p.data.characters.length, templates.length + 1);
   assert.equal(p.data.activeCharacter, active);
   assert.equal((await p.character()).images.idle.src, before);
   assert.equal(p.find(active).persona, "My custom personality");

@@ -86,6 +86,18 @@ export function GalDialogue({
       data-pages={pages.length}
       data-reply-id={reply?.id || "local"}
     >
+      {reply?.translated && (
+        <small className="translation-status">{t("translation.label")}</small>
+      )}
+      {reply?.translationError && (
+        <p className="translation-error">{t("translation.failed")}</p>
+      )}
+      {reply?.originalText && (
+        <details className="translation-original">
+          <summary>{t("translation.original")}</summary>
+          <pre>{reply.originalText}</pre>
+        </details>
+      )}
       <div className="gal-nameplate">
         <strong>{name}</strong>
         <span className={busy ? "working" : "gal-mood"}>
@@ -147,7 +159,13 @@ export function GalDialogue({
         <small>
           {source
             ? reply
-              ? t(busy ? "gal.streaming" : "gal.original")
+              ? t(
+                  reply.translated
+                    ? "translation.label"
+                    : busy
+                      ? "gal.streaming"
+                      : "gal.original",
+                )
               : t("gal.localWelcome")
             : t("state." + phase)}
         </small>

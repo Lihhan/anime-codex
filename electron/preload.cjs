@@ -1,6 +1,36 @@
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, webUtils } = require("electron");
 const names = [
+  "companionCursor",
+  "companionState",
+  "companionChat",
+  "companionStop",
+  "companionSettings",
+  "companionModels",
+  "companionHistory",
+  "companionMemory",
+  "companionWorkspace",
+  "companionTask",
+  "companionTaskControl",
+  "companionAnswer",
+  "companionLife",
+  "companionFiles",
+  "companionEat",
+  "companionRestore",
+  "companionReveal",
+  "companionIdle",
+  "companionQuit",
   "bootstrap",
+  "studioList",
+  "studioProduce",
+  "studioDraft",
+  "studioGenerate",
+  "studioCancel",
+  "studioApply",
+  "listModels",
+  "setCodexModel",
+  "setBackend",
+  "setTranslation",
+  "testTranslation",
   "setInterface",
   "openPlay",
   "connect",
@@ -27,6 +57,9 @@ const names = [
   "cancelBackgroundRemoval",
 ];
 contextBridge.exposeInMainWorld("animeCodex", {
+  droppedFiles(files) {
+    return files.map((file) => webUtils.getPathForFile(file)).filter(Boolean);
+  },
   ...Object.fromEntries(
     names.map((name) => [
       name,

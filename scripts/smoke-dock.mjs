@@ -10,6 +10,8 @@ const app = await electron.launch({
   env: {
     ...process.env,
     ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_SURFACE: "workbench",
+    ANIME_CODEX_AUTOCONNECT: "0",
     ANIME_CODEX_DATA_DIR: await fs.mkdtemp(
       path.resolve("test-results/dock-recovery-"),
     ),

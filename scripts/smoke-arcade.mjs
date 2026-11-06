@@ -1,3 +1,4 @@
+import { selectSettingsTab } from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import fs from "node:fs/promises";
@@ -13,6 +14,8 @@ const options = {
   env: {
     ...process.env,
     ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_SURFACE: "workbench",
+    ANIME_CODEX_AUTOCONNECT: "0",
     ANIME_CODEX_DATA_DIR: directory,
   },
 };
@@ -41,6 +44,7 @@ try {
     });
   }, file);
   await page.getByTestId("settings-toggle").click();
+  await selectSettingsTab(page, "character");
   await page.getByTestId("upload-idle").click();
   await page.waitForFunction(() =>
     document

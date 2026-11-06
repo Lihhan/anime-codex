@@ -19,7 +19,9 @@ await fs.writeFile(path.join(project, "marker.txt"), secret);
 const app = await electron.launch({
   executablePath: process.env.ANIME_CODEX_EXECUTABLE || electronPath,
   args: process.env.ANIME_CODEX_EXECUTABLE ? [] : ["."],
-  env: { ...process.env, ANIME_CODEX_DEV: "0", ANIME_CODEX_DATA_DIR: profile },
+  env: { ...process.env, ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_SURFACE: "workbench",
+    ANIME_CODEX_AUTOCONNECT: "0", ANIME_CODEX_DATA_DIR: profile },
 });
 try {
   const page = await app.firstWindow();

@@ -1,3 +1,4 @@
+import {selectSettingsTab} from "./settings-navigation.mjs";
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
 import { useChatLayout } from "./ui-layout.mjs";
@@ -13,6 +14,8 @@ const options = {
   env: {
     ...process.env,
     ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_SURFACE: "workbench",
+    ANIME_CODEX_AUTOCONNECT: "0",
     ANIME_CODEX_DATA_DIR: directory,
   },
 };
@@ -31,6 +34,7 @@ try {
     "18px",
   );
   await page.getByTestId("settings-toggle").click();
+  await selectSettingsTab(page,"appearance");
   await page.getByTestId("font-size").focus();
   await page.getByTestId("font-size").press("End");
   await page.getByTestId("font-size").press("ArrowLeft");
@@ -47,12 +51,14 @@ try {
   await page.getByTestId("touch-bubble").waitFor();
   assert.equal(await page.locator(".react-hair").count(), 1);
   await page.getByTestId("settings-toggle").click();
+  await selectSettingsTab(page,"appearance");
   await page.getByTestId("touch-enabled").uncheck();
   await page.getByTestId("touch-bubble").waitFor({ state: "detached" });
   await page.getByTestId("settings-close").click();
   await page.mouse.click(b.x + b.width * 0.5, b.y + b.height * 0.18);
   assert.equal(await page.getByTestId("touch-bubble").count(), 0);
   await page.getByTestId("settings-toggle").click();
+  await selectSettingsTab(page,"appearance");
   await page.getByTestId("touch-enabled").check();
   await page.getByTestId("settings-close").click();
   const next = app.waitForEvent("window");

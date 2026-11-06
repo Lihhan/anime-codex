@@ -1,0 +1,44 @@
+.backend-settings {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #ffffff24;
+  border-radius: 14px;
+  background: #161d33;
+}
+.backend-settings p {
+  margin: 0;
+  line-height: 1.6;
+}
+.backend-settings input:not([type="checkbox"]),
+.backend-settings select {
+  width: 100%;
+}
+.backend-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.backend-settings pre,
+.translation-original pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 240px;
+  overflow: auto;
+}
+.translation-status {
+  padding: 8px 14px;
+  background: #25314d;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.translation-original {
+  padding: 8px 12px;
+  background: #172137;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+.translation-error {
+  color: #ffba8c;
+}

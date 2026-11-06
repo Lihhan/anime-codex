@@ -30,6 +30,8 @@ const app = await electron.launch({
   env: {
     ...process.env,
     ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_SURFACE: "workbench",
+    ANIME_CODEX_AUTOCONNECT: "0",
     ANIME_CODEX_DATA_DIR: await fs.mkdtemp(
       path.resolve("test-results/mac-package-"),
     ),
@@ -51,8 +53,28 @@ try {
         .createRequire(root + "/package.json"),
       path = process.getBuiltinModule("path");
     const { probe } = require(path.join(root, "scripts/native-probe.cjs"));
+    const { InputPulse } = require(path.join(root, "electron/input-pulse.cjs"));
+    const pulse = new InputPulse(
+      path.join(app.getPath("userData"), "counter-probe"),
+      () => {},
+    );
+    let inputCounter;
+    try {
+      await pulse.start();
+      const child = pulse.child;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (!child?.pid || child.exitCode !== null)
+        throw Error("Packaged input counter did not remain running.");
+      const exited = new Promise((resolve) => child.once("exit", resolve));
+      pulse.stop();
+      await exited;
+      inputCounter = true;
+    } finally {
+      pulse.stop();
+    }
     return {
       version: app.getVersion(),
+      inputCounter,
       ...(await probe(
         require(
           path.join(root, "electron/inference-runtime.cjs"),
@@ -107,5 +129,22 @@ await new Promise((resolve, reject) => {
     code === 0
       ? resolve()
       : reject(new Error("Packaged dock recovery failed: " + code)),
+  );
+});
+
+await new Promise((resolve, reject) => {
+  const child = spawnDock(process.execPath, ["scripts/smoke-companion.mjs"], {
+    stdio: "inherit",
+    env: {
+      ...process.env,
+      ANIME_CODEX_EXECUTABLE: executable,
+      ANIME_CODEX_SURFACE: "",
+    },
+  });
+  child.once("error", reject);
+  child.once("exit", (code) =>
+    code === 0
+      ? resolve()
+      : reject(Error("Packaged companion check failed: " + code)),
   );
 });

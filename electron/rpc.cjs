@@ -2,10 +2,11 @@ const { EventEmitter } = require("node:events");
 const { createInterface } = require("node:readline");
 const { spawn } = require("node:child_process");
 class Rpc extends EventEmitter {
-  constructor(executable = "codex", spawnFn = spawn) {
+  constructor(executable = "codex", spawnFn = spawn, env = process.env) {
     super();
     this.executable = executable;
     this.spawnFn = spawnFn;
+    this.env = env;
     this.pending = new Map();
     this.next = 0;
     this.child = null;
@@ -15,7 +16,12 @@ class Rpc extends EventEmitter {
     const child = this.spawnFn(
       this.executable,
       ["app-server", "--listen", "stdio://"],
-      { shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] },
+      {
+        env: this.env,
+        shell: false,
+        windowsHide: true,
+        stdio: ["pipe", "pipe", "pipe"],
+      },
     );
     this.child = child;
     const fail = (err) => {

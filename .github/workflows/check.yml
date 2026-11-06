@@ -5,6 +5,7 @@ permissions:
 jobs:
   test:
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -14,6 +15,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - run: npm run smoke:native
+      - run: npm run smoke:input
+      - run: npm run smoke:companion
+      - run: node scripts/smoke-quick.mjs
       - run: npm run smoke:ui
       - run: npm run smoke:gal
       - run: npm run smoke:dock
@@ -22,3 +27,21 @@ jobs:
       - run: npm run smoke:play
       - run: npm run smoke:arcade
       - run: npm audit
+
+      - run: npm run dist:win
+      - name: Check packaged Windows UI, inference, counters and recovery
+        run: node scripts/smoke-mac-packaged.mjs
+        env:
+          ANIME_CODEX_EXECUTABLE: ${{ github.workspace }}/release/v0.8.0/win-unpacked/Anime Codex.exe
+          RUN_PACKAGED_BACKGROUND: "1"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Anime-Codex-win-x64
+          path: release/v0.8.0/*.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-checks-x64
+          path: test-results/*.json
+          if-no-files-found: ignore

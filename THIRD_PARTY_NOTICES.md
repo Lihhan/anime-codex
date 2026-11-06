@@ -18,3 +18,22 @@ The general fallback uses its own JavaScript RGB preprocessing (320×320 bilinea
 ## Optional fan-character samples
 
 Furina and Nahida reference Genshin Impact; Kaguya and Iroha Sakayori reference Cosmic Princess Kaguya!. Their names and underlying designs remain with the respective franchise rights holders. Included images are newly generated unofficial fan art, not extracted official assets, and personality text is newly written. The application code license does not license franchise IP. See [characters/FANART.md](characters/FANART.md) for provenance and limitations.
+
+## Mori character workflow
+
+The character studio adapts profile evidence separation and candidate review patterns from the local Mori project. `shared/pet-candidate-directions.json` is copied from Mori (Copyright 2026 Mori contributors), under the MIT license reproduced in `third_party/MORI_LICENSE.txt`. Mori assets and private application data are not bundled.
+
+## Companion design references (0.10.0)
+
+The companion architecture and interaction design were informed by AIRI, Agent Pet, Claw Orchestrator, Letta Code, CodePet, DeskPet-Furina, VPet, BongoCat, and Clawd on Desk. This release copies no source code or artwork from those projects. Their respective licenses do not grant blanket rights to bundled character assets. Detailed source links, adaptation boundaries, and the original implementations used here are recorded in [docs/SUPERAGENT.md](docs/SUPERAGENT.md).
+
+### Q版芙宁娜动作包（0.11.0）
+`public/characters/furina/chibi/atlas.png` 是内置 imagegen 生成的二创素材，未复制参考桌宠项目的图片。芙宁娜角色属于《原神》及其权利人；本应用不声称拥有原角色知识产权。生成规格和使用范围见 `docs/CHIBI_PETS.md`。
+
+0.12.0: `public/characters/furina/chibi/run.png` and `life.png` were generated with the built-in imagegen tool using the earlier generated Furina atlas as the visual reference. The same fan-art character rights notice above applies. Prompt specifications are recorded in `docs/CHIBI_PETS.md`.
+
+### Elysia preview (0.13.0)
+New imagegen-created fan-art sprites in `public/characters/elysia/`, visually referencing 神帝宇's “q版粉色小妖精小姐” preview at https://www.aplaybox.com/details/model/ZdIJ1cvFE7Ow . No original model files are redistributed. Elysia and associated character designs belong to their respective rights holders; generated fan art is not covered by the code MIT license. See `docs/ELYSIA.md` for provenance and prompt specifications.
+
+### Furina flat-sticker preview (0.14.0)
+`public/characters/furina/sticker/` contains newly generated fan-art animation sheets, using a generated style study based on Genshin Impact Official's Paimon's Paintings Set 28 as reference: https://www.hoyolab.com/article/23063798 . These are not official sprites. Original character rights remain with their holders. Prompt and asset details: `docs/CHIBI_PETS.md`.

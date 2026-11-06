@@ -12,6 +12,8 @@ const env = {
   ...process.env,
   CODEX_PATH: "",
   ANIME_CODEX_DEV: "0",
+    ANIME_CODEX_SURFACE: "workbench",
+    ANIME_CODEX_AUTOCONNECT: "0",
   ANIME_CODEX_DATA_DIR: directory,
 };
 for (const key of Object.keys(env))
