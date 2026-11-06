@@ -4,6 +4,8 @@ A transparent Windows desktop programming companion powered by the **real Codex 
 
 **UI languages:** Simplified Chinese, English and Japanese, selectable from the desktop toolbar. The preference is saved locally. Repository documentation is maintained in English.
 
+**Platform support:** Version 0.5.0 supports **Windows x64 only**. There is currently no macOS installer. The Windows `.exe` does not run natively on a Mac, and running the current source on macOS is not a supported workaround: backend discovery and selection require a Windows `codex.exe`, and the packaging configuration excludes macOS inference libraries. A working macOS release requires native backend discovery/selection, platform-specific packaging and verification on a Mac. Neither Apple Silicon nor Intel Mac support has been validated.
+
 **Get started:** [Install on Windows](#install-on-windows) · [Troubleshooting](#installation-troubleshooting) · [Character features](#meet-rin) · [Build from source](#build-from-source-for-developers)
 
 ## Install on Windows
