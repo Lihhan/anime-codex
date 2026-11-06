@@ -157,6 +157,9 @@ function App() {
     inflight = useRef(false);
   const dragging = useRef(false),
     dockTimer = useRef(null);
+  const collapsedView = useRef(null),
+    currentView = useRef(null);
+  currentView.current = { settings, workbench, dialogue, showChatLog };
   function applyPreferences(result, preserveEdits = false) {
     if (!result) return;
     if (result.language) setLocale(result.language);
@@ -352,6 +355,7 @@ function App() {
     });
     return api.onEvent((e) => {
       if (e.method === "client/externalFocus" && e.params.collapsePanels) {
+        if (!collapsedView.current) collapsedView.current = currentView.current;
         setOverlayActive(false);
         setSettings(false);
         setWorkbench(false);
@@ -359,6 +363,14 @@ function App() {
         setShowChatLog(false);
       }
       if (e.method === "client/windowFocus") {
+        const previous = collapsedView.current;
+        collapsedView.current = null;
+        if (previous) {
+          setSettings(previous.settings);
+          setWorkbench(previous.workbench);
+          setDialogue(previous.dialogue);
+          setShowChatLog(previous.showChatLog);
+        }
         setOverlayActive(true);
         return;
       }

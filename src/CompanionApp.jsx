@@ -123,6 +123,8 @@ export function CompanionApp() {
   activityRef.current = activity;
   tourRef.current = tourStep;
   const drag = useRef(null),
+    collapsedView = useRef(null),
+    currentView = useRef(null),
     stateRef = useRef(null),
     panelRef = useRef(null),
     lastInteraction = useRef(Date.now()),
@@ -135,6 +137,7 @@ export function CompanionApp() {
     gameTimer = useRef(null),
     mealRef = useRef(null);
   stateRef.current = state;
+  currentView.current = { panel, chatOpen };
   panelRef.current = panel || quickMenu || (chatOpen ? "bubble" : null);
   mealRef.current = meal;
   useOverlayPointer(api, {
@@ -248,7 +251,14 @@ export function CompanionApp() {
     void run(refresh);
     bubbleTimer.current = setTimeout(() => setBubble(""), 12000);
     const stop = api.onEvent((e) => {
+      if (e.method === "client/windowFocus" && collapsedView.current) {
+        const previous = collapsedView.current;
+        collapsedView.current = null;
+        setPanel(previous.panel);
+        setChatOpen(previous.chatOpen);
+      }
       if (e.method === "client/externalFocus" && e.params.collapsePanels) {
+        if (!collapsedView.current) collapsedView.current = currentView.current;
         setPanel(null);
         setQuickMenu(null);
         setChatOpen(false);

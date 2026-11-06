@@ -137,7 +137,19 @@ try {
   }
   assert.equal(await game.locator(".memory-card.matched").count(), 12);
   await game.getByText("We found every pair!", { exact: false }).waitFor();
-  assert.equal(await page.locator(".working").isVisible(), true);
+  assert.equal(
+    await page
+      .getByTestId("character-images")
+      .getAttribute("data-active-action"),
+    "thinking",
+  );
+  assert.equal(
+    await game
+      .getByTestId("play-work-status")
+      .getByText("I'm still working", { exact: false })
+      .isVisible(),
+    true,
+  );
   await game
     .getByRole("button", { name: "Show main window", exact: true })
     .click();
@@ -166,7 +178,10 @@ try {
   await game.getByTestId("play-close").click();
   await closed;
   assert.equal(app.windows().length, 1);
-  assert.equal(await page.locator(".working").isVisible(), true);
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].focus(),
+  );
+  await page.locator(".working").waitFor();
   assert.deepEqual(errors, []);
   await app.close();
   app = await electron.launch(options);
