@@ -1,15 +1,23 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
-const { randomUUID } = require("node:crypto");
+const { randomUUID, createHash } = require("node:crypto");
+const retiredArtwork = require("../shared/retired-artwork.json");
 const { PNG } = require("pngjs");
 const { assertForeground } = require("../shared/background-math.cjs");
 const PHASES = require("../shared/actions.json");
 const LANGUAGES = ["zh", "en", "ja"];
 class Preferences {
-  constructor(directory, nativeImage, processBackground, builtin = null) {
+  constructor(
+    directory,
+    nativeImage,
+    processBackground,
+    builtin = null,
+    retiredHashes = retiredArtwork.sha256,
+  ) {
     this.directory = directory;
     this.nativeImage = nativeImage;
     this.processBackground = processBackground;
+    this.retiredHashes = new Set(retiredHashes);
     this.builtins = Array.isArray(builtin) ? builtin : builtin ? [builtin] : [];
     this.builtin =
       this.builtins.find(
@@ -100,6 +108,36 @@ class Preferences {
           await this.archiveCharacter(c, "legacy-ke-jie-retirement");
       }
       this.data.keJieRetirementV1 = true;
+      await this.save();
+    }
+    // Legacy artwork can survive the name migration as a renamed Rin custom
+    // copy. Match only the three exact known photo files, never a generic name.
+    if (!this.data.keJieArtworkRetirementV2) {
+      for (const c of [...this.data.characters]) {
+        if (c.builtin) continue;
+        const idle = c.images?.idle;
+        for (const file of new Set(
+          [idle?.file, idle?.originalFile].filter(Boolean),
+        )) {
+          if (!/^[a-f0-9-]{36}\.png$/i.test(file)) continue;
+          let bytes;
+          try {
+            bytes = await fs.readFile(this.assetPath(file));
+          } catch (e) {
+            if (e.code === "ENOENT") continue;
+            throw e;
+          }
+          if (
+            this.retiredHashes.has(
+              createHash("sha256").update(bytes).digest("hex"),
+            )
+          ) {
+            await this.archiveCharacter(c, "legacy-ke-jie-artwork-retirement");
+            break;
+          }
+        }
+      }
+      this.data.keJieArtworkRetirementV2 = true;
       await this.save();
     }
     const recovered = await this.recoverEmptyCutouts();

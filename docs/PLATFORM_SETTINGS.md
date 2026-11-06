@@ -20,7 +20,7 @@ Both platforms use local HTML audio playback for user-uploaded recordings. There
 
 ## Character removal and upgrade
 
-The upgrade performs a one-time retirement of an existing library entry whose exact display name is `柯洁`, `Ke Jie` or `KeJie`. It writes a profile backup under `userData/removed-characters/`, removes the selectable entry and returns an active selection to Rin. Images, conversations, memories and completed task evidence are retained. It does not become a permanent name blacklist.
+The upgrade performs a one-time retirement of an existing library entry whose exact display name is `柯洁`, `Ke Jie` or `KeJie`. It writes a profile backup under `userData/removed-characters/`, removes the selectable entry and returns an active selection to Rin. Images, conversations, memories and completed task evidence are retained. It does not become a permanent name blacklist. A second one-time repair also recognizes the three exact known legacy photo files when an old copy has been renamed (for example, Rin Custom). It archives that entry without removing genuine custom Rin artwork. Only SHA-256 fingerprints are bundled; the photograph is not included.
 
 Custom entries also have an explicit removal button. Builtin templates are protected. Active conversations/tasks must finish or stop before their character can be removed. Profile backups retain image filenames so recovery is possible without deleting personal history or artwork.
 

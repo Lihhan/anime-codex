@@ -1,5 +1,7 @@
 # 0.8.1 — Complete animation packs and uploaded action audio
 
+- Same-version refresh: retire exact legacy photo copies even when renamed as Rin Custom; preserve unrelated custom characters, source images and backups.
+
 - Add seven validated sheets and 112 generated frames each for Rin, Nahida, Kaguya, Iroha and Elysia using the original production pipeline; retain Furina unchanged.
 - Apply cursor orientation to portrait and sprite appearances on Windows and Mac; restore quiet, wandering and keyboard-rhythm setting behavior.
 - Replace synthesized speech with local, user-uploaded prerecorded action clips, per-character storage, preview, volume and silent missing slots. No speech model is bundled.

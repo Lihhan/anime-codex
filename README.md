@@ -2,6 +2,8 @@
 
 A transparent desktop character companion for **Windows x64 and macOS 14+**. Chat with a consistent character, keep local memories, and delegate actual programming tasks to your installed **Codex or Claude Code**.
 
+The refreshed **0.8.1** download also removes renamed copies of the retired legacy photo while preserving genuine custom characters. Quit older running copies before opening the refreshed EXE.
+
 Version **0.8.1** adds complete animated sprite packs for Rin, Nahida, Kaguya, Iroha and Elysia, restores companion settings on Windows, and lets you upload prerecorded action audio. Furina retains her existing pack. Project-free chat and native permissions remain available on both platforms.
 
 ## Download
