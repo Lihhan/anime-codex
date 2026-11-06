@@ -1,5 +1,6 @@
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
+import { useChatLayout } from "./ui-layout.mjs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import assert from "node:assert/strict";
@@ -24,6 +25,7 @@ const app = await electron.launch({
 });
 try {
   const page = await app.firstWindow();
+  await useChatLayout(page);
   await page.getByText("今天想做点什么？").waitFor();
   await app.evaluate(({ dialog }, dir) => {
     dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [dir] });

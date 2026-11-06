@@ -19,7 +19,7 @@ class Preferences {
       characters: [],
       desktop: { scale: 1, autoHide: true },
       backgroundRemoval: { automatic: false },
-      interface: { fontSize: 18, interactions: true },
+      interface: { fontSize: 18, interactions: true, dialogueStyle: "gal" },
     };
   }
   async load() {
@@ -43,6 +43,8 @@ class Preferences {
               ? saved.interface.fontSize
               : 18,
           interactions: saved.interface?.interactions !== false,
+          dialogueStyle:
+            saved.interface?.dialogueStyle === "chat" ? "chat" : "gal",
         },
         backgroundRemoval: {
           automatic: saved.backgroundRemoval?.automatic === true,
@@ -444,6 +446,11 @@ class Preferences {
   }
   async setInterface(options) {
     if (
+      options?.dialogueStyle !== undefined &&
+      !["gal", "chat"].includes(options.dialogueStyle)
+    )
+      throw new Error("error.interface");
+    if (
       !options ||
       (options.fontSize !== undefined &&
         (!Number.isInteger(options.fontSize) ||
@@ -458,6 +465,9 @@ class Preferences {
       ...(options.fontSize !== undefined ? { fontSize: options.fontSize } : {}),
       ...(options.interactions !== undefined
         ? { interactions: options.interactions }
+        : {}),
+      ...(options.dialogueStyle !== undefined
+        ? { dialogueStyle: options.dialogueStyle }
         : {}),
     };
     await this.save();

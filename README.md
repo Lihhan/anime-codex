@@ -10,13 +10,21 @@ A transparent Windows desktop programming companion powered by the **real Codex 
 
 ![Rin in the actual transparent desktop app](docs/images/rin-desktop.png)
 
-Actual application capture, with no project connected. The surrounding area is transparent; the chat panel is optional. This is the welcome screen, not a claimed task execution.
+Actual application capture, with no project connected. The surrounding area is transparent; the dialogue bubble is optional. This is the welcome screen, not a claimed task execution.
 
 ![Rin action previews: thinking, working, waiting for approval and success](docs/images/rin-actions.png)
 
 These are the application's explicitly labeled **Preview** states. Real task states follow Codex events. Speaking reuses the listening image; interrupted reuses idle. See [artwork provenance](characters/ASSETS.md).
 
 ## Talk and play with Rin
+
+The default **visual-novel dialogue** places a speech bubble beside your character, with a nameplate and progressive text. The bubble contains only character dialogue. A compact, always-visible free-text input sits directly below it; there are no preset response choices. Drafts stay intact when switching between bubbles and the full transcript during the session. Task status, errors and navigation remain outside the speech bubble.
+
+Click the dialogue to reveal the current page or advance to the next page. **Paging only changes the display; it never sends an instruction.** Type below the bubble and select **Say it**, or press Enter, to send your own message. Shift+Enter adds a line. Sending stays disabled until a project is connected and while a task or approval is pending.
+
+Replies stream from Codex without paraphrasing or fabricated results. Long replies are paginated while preserving every original character, including code and whitespace. **History** opens the complete transcript with tools and diffs; **Back to bubbles** returns to the character. Pending approvals keep their explicit main-window decision dialog. A new task never presents an old reply as its current progress.
+
+Use the toolbar layout button or **Settings → Dialogue layout** to switch between bubbles and the full chat layout. Your choice persists across restarts. Both layouts support Chinese, English, Japanese, adjustable text size and reduced-motion settings.
 
 Conversation text now defaults to **18 px**, with a persistent **14–24 px** setting under **Settings → Reading and interaction**. Messages, the composer and welcome text use the same size, with stronger contrast. Avatar scaling does not change text size.
 
@@ -104,7 +112,7 @@ npm start
 
 The repository is private, so cloning requires GitHub access. Use `npm run dev` for development. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`.
 
-A packaged `Anime Codex 0.4.0.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.4.0/`.
+A packaged `Anime Codex 0.5.0.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.5.0/`.
 
 ## First use
 
@@ -132,6 +140,7 @@ Preferences and copied images live in `%APPDATA%\anime-codex\`. Uploaded images 
 npm test
 npm run build
 npm run smoke:ui
+npm run smoke:gal
 npm run smoke:customization
 npm run smoke:play
 npm run smoke:arcade
@@ -143,6 +152,7 @@ npm run smoke:background -- path/to/character.png
 $env:RUN_REAL_CODEX = '1'
 npm run smoke:backend
 npm run smoke:desktop
+npm run smoke:gal-real
 npm run dist:win
 ```
 

@@ -1,5 +1,6 @@
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
+import { useChatLayout } from "./ui-layout.mjs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import assert from "node:assert/strict";
@@ -23,6 +24,7 @@ try {
     errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.getByTestId("character-images").waitFor();
+  await useChatLayout(page);
   assert.equal(await page.locator(".state-image").count(), 10);
   await page.waitForFunction(() =>
     document.querySelector(".drag-handle").textContent.includes("凛"),

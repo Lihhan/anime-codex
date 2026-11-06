@@ -10,6 +10,8 @@ import { CharacterSettings } from "./CharacterSettings";
 import { GameApp } from "./GameApp";
 import { resolveAction } from "../shared/character-images.mjs";
 import { touchPoint, isDrag } from "../shared/interactions.mjs";
+import { bubbleReply } from "../shared/dialogue.mjs";
+import { GalDialogue } from "./GalDialogue";
 
 const api = window.animeCodex;
 const pretty = (v) => JSON.stringify(v, null, 2);
@@ -17,7 +19,11 @@ function App() {
   const [appearance, setAppearance] = useState({
     fontSize: 18,
     interactions: true,
+    dialogueStyle: "gal",
   });
+  const [showChatLog, setShowChatLog] = useState(false),
+    [liveReply, setLiveReply] = useState({ id: null, turnId: null });
+  const activeTurn = useRef(null);
   const builtinId = useRef(null);
   const [reaction, setReaction] = useState(null);
   const pointerSession = useRef(null),
@@ -298,12 +304,21 @@ function App() {
       ]);
       setState((s) => reduceEvent(s, e));
       const p = e.params || {};
+      if (e.method === "turn/started") {
+        activeTurn.current = p.turn.id;
+        setLiveReply({ id: null, turnId: p.turn.id });
+      }
       if (e.method === "client/disconnected") {
         setConnected(false);
         setError(p.message);
         voice.current.stop();
       }
       if (["item/started", "item/completed"].includes(e.method)) {
+        if (p.item.type === "agentMessage")
+          setLiveReply({
+            id: p.item.id,
+            turnId: p.turnId || activeTurn.current,
+          });
         setItems((old) => ({
           ...old,
           [p.item.id]: { ...old[p.item.id], ...p.item },
@@ -321,7 +336,8 @@ function App() {
           );
         }
       }
-      if (e.method === "item/agentMessage/delta")
+      if (e.method === "item/agentMessage/delta") {
+        setLiveReply({ id: p.itemId, turnId: p.turnId || activeTurn.current });
         setItems((old) => ({
           ...old,
           [p.itemId]: {
@@ -331,6 +347,7 @@ function App() {
             text: (old[p.itemId]?.text || "") + p.delta,
           },
         }));
+      }
       if (e.method === "item/commandExecution/outputDelta")
         setItems((old) => ({
           ...old,
@@ -431,6 +448,8 @@ function App() {
     }
   }
   function reset(id) {
+    activeTurn.current = null;
+    setLiveReply({ id: null, turnId: null });
     currentThread.current = id;
     setThread(id);
     setItems({});
@@ -449,7 +468,10 @@ function App() {
   }
   async function send(e) {
     e.preventDefault();
-    if (!text.trim() || state.busy || loading) return;
+    return sendMessage(text);
+  }
+  async function sendMessage(value) {
+    if (!value.trim() || state.busy || loading) return;
     if (!connected || !workspace) {
       setError(
         !connected
@@ -458,7 +480,6 @@ function App() {
       );
       return;
     }
-    const value = text;
     await run(async () => {
       let id = thread;
       if (!id) {
@@ -515,6 +536,9 @@ function App() {
   const transcript = Object.values(items).filter((i) =>
     ["userMessage", "agentMessage"].includes(i.type),
   );
+  const galActive =
+    appearance.dialogueStyle !== "chat" && !showChatLog && !workbench;
+  const currentReply = bubbleReply(items, state.busy, state.turnId, liveReply);
   const tools = Object.values(items).filter(
     (i) => !["userMessage", "agentMessage", "reasoning"].includes(i.type),
   );
@@ -535,6 +559,7 @@ function App() {
     <div
       style={{
         "--chat-font-size": `${appearance.fontSize}px`,
+        "--gal-y": `${Math.max(16, Math.min(avatarY + 70, window.innerHeight - 600))}px`,
         "--panel-x": `${Math.max(16, panelX)}px`,
         "--panel-y": `${panelY}px`,
         "--settings-x": `${avatarX >= 744 ? avatarX - 744 : Math.max(16, Math.min(window.innerWidth - 736, avatarX + avatarWidth + 24))}px`,
@@ -653,6 +678,22 @@ function App() {
           }
         >
           {t("Open playroom")}
+        </button>
+        <button
+          data-testid="dialogue-mode"
+          onClick={() => {
+            setShowChatLog(false);
+            updateAppearance({
+              dialogueStyle:
+                appearance.dialogueStyle === "chat" ? "gal" : "chat",
+            });
+          }}
+        >
+          {t(
+            appearance.dialogueStyle === "chat"
+              ? "gal.bubbleLayout"
+              : "gal.chatLayout",
+          )}
         </button>
         <button
           aria-label={t("Smaller")}
@@ -944,6 +985,20 @@ function App() {
             <section className="appearance-settings">
               <h2>{t("Reading and interaction")}</h2>
               <label>
+                {t("gal.layout")}
+                <select
+                  data-testid="dialogue-style"
+                  value={appearance.dialogueStyle || "gal"}
+                  onChange={(e) => {
+                    setShowChatLog(false);
+                    updateAppearance({ dialogueStyle: e.target.value });
+                  }}
+                >
+                  <option value="gal">{t("gal.bubbleLayout")}</option>
+                  <option value="chat">{t("gal.chatLayout")}</option>
+                </select>
+              </label>
+              <label>
                 {t("Conversation font size")} ·{" "}
                 <output>{appearance.fontSize}px</output>
                 <input
@@ -1214,165 +1269,208 @@ function App() {
               <span>01 — ∞</span>
             </div>
           </section>
-          <section className="conversation">
-            <div className="conversation-title">
-              <span>{t("Our conversation")}</span>
-              <span className="muted">
-                {thread
-                  ? t("Thread ") + thread.slice(0, 8)
-                  : t("A new chapter")}
-              </span>
-            </div>
-            <div className="messages" aria-live="polite">
-              {historyCursor && (
-                <button
-                  disabled={loading}
-                  onClick={() => run(() => history(thread, historyCursor))}
-                >
-                  {t("Load earlier history")}
-                </button>
-              )}
-              {!transcript.length && (
-                <div className="welcome">
-                  <span className="eyebrow">{t("LET’S MAKE SOMETHING.")}</span>
-                  <h2>{t("What would you like to build?")}</h2>
-                  <p>
-                    {t("I am {name}. Tell me what you have in mind.", {
-                      name: displayName,
-                    })}
-                    <br />
-                    {t("Tell me your idea. We can explore a project")}
-                    <br />
-                    {t("or make something new together.")}
-                  </p>
-                  <div className="suggestions">
-                    {[
-                      t("Help me understand this project"),
-                      t("Review my changes for potential issues"),
-                      t("Help me build a new feature"),
-                    ].map((s) => (
-                      <button key={s} onClick={() => setText(s)}>
-                        {s}
-                        <span>↗</span>
-                      </button>
-                    ))}
-                  </div>
-                  <p className="hint">
-                    {t(
-                      "This is a welcome message. Connected replies and execution events come from real Codex.",
-                    )}
-                  </p>
-                </div>
-              )}
-              {transcript.map((i) => (
-                <article className={"message " + i.type} key={i.id}>
-                  <div className="message-author">
-                    {i.type === "userMessage" ? t("You") : displayName}
-                    <small>
-                      {i.type === "agentMessage"
-                        ? t("CODEX · ORIGINAL RESPONSE")
-                        : ""}
-                    </small>
-                  </div>
-                  <div className="message-body">
-                    {i.type === "userMessage"
-                      ? i.content?.map((c) => c.text || "").join("\n")
-                      : i.text}
-                  </div>
-                </article>
-              ))}
-              {state.busy && (
-                <div className="working">
-                  <span className="pulse" /> {labels[state.phase]}
-                </div>
-              )}
-              {state.error && (
-                <div className="error">
-                  {state.error.message || pretty(state.error)}
-                </div>
-              )}
-              <div ref={bottom} />
-            </div>
-            {(!connected || !workspace) && (
-              <div className="setup-guide" role="status">
-                <strong>
-                  {!connected
-                    ? t("Not connected to Codex")
-                    : t("Codex connected; choose a project")}
-                </strong>
-                <p>
-                  {t(
-                    "Choose a project folder to send messages. The default mode is read-only.",
-                  )}
-                </p>
-                <button
-                  disabled={loading || state.busy}
-                  onClick={() => run(prepareConversation)}
-                >
-                  {loading
-                    ? t("Getting ready…")
-                    : !connected
-                      ? t("Connect to Codex and choose project")
-                      : t("Choose project and start chatting")}
-                </button>
-              </div>
-            )}
-            <form className="composer" onSubmit={send}>
-              <textarea
-                data-testid="message-input"
-                aria-label={t("Message for {name}", { name: displayName })}
-                placeholder={
-                  !connected
-                    ? t("Write your idea, then connect using the button above…")
-                    : !workspace
-                      ? t("Choose a project using the button above…")
-                      : t("Tell {name} your idea…", { name: displayName })
-                }
-                value={text}
-                disabled={state.busy}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (
-                    e.key === "Enter" &&
-                    !e.shiftKey &&
-                    !e.nativeEvent.isComposing
-                  ) {
-                    e.preventDefault();
-                    send(e);
-                  }
-                }}
+          <section
+            className={"conversation" + (galActive ? " gal-conversation" : "")}
+            data-tail={avatarX >= panelWidth + 32 ? "right" : "left"}
+          >
+            {galActive ? (
+              <GalDialogue
+                t={t}
+                name={displayName}
+                reply={currentReply}
+                busy={state.busy}
+                phase={state.phase}
+                pending={state.pending.length}
+                error={state.error}
+                connected={connected}
+                workspace={workspace}
+                loading={loading}
+                text={text}
+                setText={setText}
+                onSend={sendMessage}
+                onPrepare={() => run(prepareConversation)}
+                onStop={() => run(() => api.interrupt())}
+                onHistory={() => setShowChatLog(true)}
+                onHide={() => setDialogue(false)}
               />
-              <div className="composer-bottom">
-                <span>
-                  {state.busy
-                    ? t("Task running; you can stop at any time")
-                    : t("Enter to send · Shift + Enter for a new line")}
-                </span>
-                {state.busy ? (
-                  <button
-                    type="button"
-                    className="stop"
-                    onClick={() => run(() => api.interrupt())}
-                  >
-                    {t("■ Stop")}
-                  </button>
-                ) : (
-                  <button
-                    className="send"
-                    disabled={
-                      !connected || !workspace || !text.trim() || loading
-                    }
-                  >
-                    {t("Send ↗")}
-                  </button>
+            ) : (
+              <>
+                <div className="conversation-title">
+                  <span>{t("Our conversation")}</span>
+                  {appearance.dialogueStyle !== "chat" && (
+                    <button
+                      data-testid="gal-back"
+                      className="gal-back"
+                      onClick={() => {
+                        setShowChatLog(false);
+                        setWorkbench(false);
+                      }}
+                    >
+                      {t("gal.back")}
+                    </button>
+                  )}
+                  <span className="muted">
+                    {thread
+                      ? t("Thread ") + thread.slice(0, 8)
+                      : t("A new chapter")}
+                  </span>
+                </div>
+                <div className="messages" aria-live="polite">
+                  {historyCursor && (
+                    <button
+                      disabled={loading}
+                      onClick={() => run(() => history(thread, historyCursor))}
+                    >
+                      {t("Load earlier history")}
+                    </button>
+                  )}
+                  {!transcript.length && (
+                    <div className="welcome">
+                      <span className="eyebrow">
+                        {t("LET’S MAKE SOMETHING.")}
+                      </span>
+                      <h2>{t("What would you like to build?")}</h2>
+                      <p>
+                        {t("I am {name}. Tell me what you have in mind.", {
+                          name: displayName,
+                        })}
+                        <br />
+                        {t("Tell me your idea. We can explore a project")}
+                        <br />
+                        {t("or make something new together.")}
+                      </p>
+                      <div className="suggestions">
+                        {[
+                          t("Help me understand this project"),
+                          t("Review my changes for potential issues"),
+                          t("Help me build a new feature"),
+                        ].map((s) => (
+                          <button key={s} onClick={() => setText(s)}>
+                            {s}
+                            <span>↗</span>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="hint">
+                        {t(
+                          "This is a welcome message. Connected replies and execution events come from real Codex.",
+                        )}
+                      </p>
+                    </div>
+                  )}
+                  {transcript.map((i) => (
+                    <article className={"message " + i.type} key={i.id}>
+                      <div className="message-author">
+                        {i.type === "userMessage" ? t("You") : displayName}
+                        <small>
+                          {i.type === "agentMessage"
+                            ? t("CODEX · ORIGINAL RESPONSE")
+                            : ""}
+                        </small>
+                      </div>
+                      <div className="message-body">
+                        {i.type === "userMessage"
+                          ? i.content?.map((c) => c.text || "").join("\n")
+                          : i.text}
+                      </div>
+                    </article>
+                  ))}
+                  {state.busy && (
+                    <div className="working">
+                      <span className="pulse" /> {labels[state.phase]}
+                    </div>
+                  )}
+                  {state.error && (
+                    <div className="error">
+                      {state.error.message || pretty(state.error)}
+                    </div>
+                  )}
+                  <div ref={bottom} />
+                </div>
+                {(!connected || !workspace) && (
+                  <div className="setup-guide" role="status">
+                    <strong>
+                      {!connected
+                        ? t("Not connected to Codex")
+                        : t("Codex connected; choose a project")}
+                    </strong>
+                    <p>
+                      {t(
+                        "Choose a project folder to send messages. The default mode is read-only.",
+                      )}
+                    </p>
+                    <button
+                      disabled={loading || state.busy}
+                      onClick={() => run(prepareConversation)}
+                    >
+                      {loading
+                        ? t("Getting ready…")
+                        : !connected
+                          ? t("Connect to Codex and choose project")
+                          : t("Choose project and start chatting")}
+                    </button>
+                  </div>
                 )}
-              </div>
-            </form>
-            <div className="privacy">
-              {t(
-                "Check execution records · Permissions are never automatically approved",
-              )}
-            </div>
+                <form className="composer" onSubmit={send}>
+                  <textarea
+                    data-testid="message-input"
+                    aria-label={t("Message for {name}", { name: displayName })}
+                    placeholder={
+                      !connected
+                        ? t(
+                            "Write your idea, then connect using the button above…",
+                          )
+                        : !workspace
+                          ? t("Choose a project using the button above…")
+                          : t("Tell {name} your idea…", { name: displayName })
+                    }
+                    value={text}
+                    disabled={state.busy}
+                    onChange={(e) => setText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        !e.shiftKey &&
+                        !e.nativeEvent.isComposing
+                      ) {
+                        e.preventDefault();
+                        send(e);
+                      }
+                    }}
+                  />
+                  <div className="composer-bottom">
+                    <span>
+                      {state.busy
+                        ? t("Task running; you can stop at any time")
+                        : t("Enter to send · Shift + Enter for a new line")}
+                    </span>
+                    {state.busy ? (
+                      <button
+                        type="button"
+                        className="stop"
+                        onClick={() => run(() => api.interrupt())}
+                      >
+                        {t("■ Stop")}
+                      </button>
+                    ) : (
+                      <button
+                        className="send"
+                        disabled={
+                          !connected || !workspace || !text.trim() || loading
+                        }
+                      >
+                        {t("Send ↗")}
+                      </button>
+                    )}
+                  </div>
+                </form>
+                <div className="privacy">
+                  {t(
+                    "Check execution records · Permissions are never automatically approved",
+                  )}
+                </div>
+              </>
+            )}
           </section>
           <aside className="evidence">
             <div className="evidence-title">

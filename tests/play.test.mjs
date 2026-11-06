@@ -72,6 +72,7 @@ test("font size and interaction preference persist with bounded values", async (
   assert.deepEqual(restored.data.interface, {
     fontSize: 22,
     interactions: false,
+    dialogueStyle:"gal",
   });
   await assert.rejects(p.setInterface({ fontSize: 80 }), /error.interface/);
   await assert.rejects(

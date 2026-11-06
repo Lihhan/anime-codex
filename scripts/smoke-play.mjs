@@ -1,5 +1,6 @@
 import { _electron as electron } from "playwright";
 import electronPath from "electron";
+import { useChatLayout } from "./ui-layout.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -21,6 +22,7 @@ try {
   let page = await app.firstWindow();
   page.on("pageerror", (e) => errors.push(e.message));
   await page.getByTestId("character-images").waitFor();
+  await useChatLayout(page);
   await page.getByTestId("language-select").selectOption("en");
   assert.equal(
     await page

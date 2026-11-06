@@ -1,3 +1,14 @@
+## 0.5.0
+
+- Default to character-side visual-novel dialogue with a nameplate and progressive text.
+- Keep a compact free-text input directly below the dialogue, without preset response choices.
+- Keep task status, errors and page navigation outside the speech bubble; preserve session drafts between layouts.
+- Separate local page navigation from messages that actually start a Codex task.
+- Preserve original streamed text, full history, tools, diffs, explicit approvals and interruption.
+- Prevent previous replies from appearing as progress for a newly started task.
+- Add persistent bubble/chat layout selection and Chinese, English and Japanese copy.
+- Cover exact Unicode pagination, UI behavior and real Codex file reading through the bubble composer.
+
 ## 0.4.0
 
 - Add charge-controlled platform hopping with landing preview, center bonuses and perfect streaks.
