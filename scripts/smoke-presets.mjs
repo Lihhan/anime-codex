@@ -148,7 +148,7 @@ try {
     JSON.stringify(
       {
         testedAt: new Date().toISOString(),
-        presets: 5,
+        presets: catalog.length,
         allFourSwitched: true,
         localGreetings: true,
         thinkingImages: true,

@@ -7,7 +7,7 @@ import {
 import { sizeValue, stepMotion } from "../shared/pet-motion.mjs";
 import { gazeAt } from "../shared/pet-gaze.mjs";
 import personalities from "../shared/companion-personality.json";
-import voicePresets from "../shared/voice-presets.json";
+import { VoiceClipSettings, useVoiceClips } from "./VoiceClips";
 import { CompanionIcon } from "./CompanionIcon";
 import appearances from "../shared/pet-appearances.json";
 import { PetSprite } from "./PetSprite";
@@ -95,7 +95,6 @@ export function CompanionApp() {
     [game, setGame] = useState(null),
     [models, setModels] = useState([]),
     [loadingModels, setLoadingModels] = useState(false),
-    [systemVoices, setSystemVoices] = useState([]),
     [memoryText, setMemoryText] = useState(""),
     [taskText, setTaskText] = useState(""),
     [checkCommand, setCheckCommand] = useState(""),
@@ -128,7 +127,6 @@ export function CompanionApp() {
     activityTimer = useRef(null),
     messagesEnd = useRef(null),
     lastReport = useRef(null),
-    spoken = useRef(null),
     gameTimer = useRef(null),
     mealRef = useRef(null);
   stateRef.current = state;
@@ -190,6 +188,24 @@ export function CompanionApp() {
     ),
     waiting = tasks.find((t) => t.status === "waiting");
   const settings = state?.settings || {};
+  const audio = useVoiceClips({
+    api,
+    character,
+    state,
+    activity,
+    onError: setError,
+  });
+  useEffect(() => {
+    if (!character?.artworkRevision) return;
+    const key = "companion.artworkRevision." + character.id;
+    if (localStorage.getItem(key) === character.artworkRevision) return;
+    setStyles((previous) => {
+      const next = { ...previous, [character.id]: "portrait" };
+      localStorage.setItem("companion.styles", JSON.stringify(next));
+      return next;
+    });
+    localStorage.setItem(key, character.artworkRevision);
+  }, [character?.id, character?.artworkRevision]);
   behaviorRef.current = {
     ...(personalities[character?.builtin || character?.templateSource] ||
       personalities.default),
@@ -203,21 +219,6 @@ export function CompanionApp() {
   function tourEvent(event) {
     setTourStep((step) => advanceTour(step, event));
   }
-  useEffect(() => {
-    if (
-      !boot?.character ||
-      !settings.voice ||
-      settings.quiet ||
-      !tourSteps[tourStep]
-    )
-      return;
-    void run(() =>
-      api.companionSpeak({ text: tourSteps[tourStep].text, lang: "zh-CN" }),
-    );
-    return () => {
-      void api.companionSpeechStop();
-    };
-  }, [tourStep, boot?.character?.id, settings.voice, settings.quiet]);
   useEffect(() => {
     localStorage.setItem("companion.tour.v1", String(tourStep));
   }, [tourStep]);
@@ -316,31 +317,7 @@ export function CompanionApp() {
       animate("attention", 7000);
     }
     lastReport.current = report?.id || "none";
-    const latest = state?.messages.filter((m) => m.role === "assistant").at(-1);
-    if (
-      latest &&
-      settings.voice &&
-      !settings.quiet &&
-      spoken.current !== latest.id
-    ) {
-      // Do not read saved history on startup. Every genuinely new reply is read,
-      // including the first one when the history was initially empty.
-      if (spoken.current !== null)
-        void run(() =>
-          api.companionSpeak({
-            text: latest.text.slice(0, 2000),
-            lang:
-              { zh: "zh-CN", en: "en-US", ja: "ja-JP" }[boot?.language] ||
-              "zh-CN",
-            rate: character?.voice?.rate || 1,
-          }),
-        );
-    }
-    if (state) spoken.current = latest?.id || "empty";
-  }, [state?.messages?.at(-1)?.id, settings.voice, settings.quiet]);
-  useEffect(() => {
-    if (!settings.voice || settings.quiet) void api.companionSpeechStop();
-  }, [settings.voice, settings.quiet]);
+  }, [state?.messages?.at(-1)?.id, panel]);
   useEffect(() => {
     if (settings.quiet) {
       clearTimeout(activityTimer.current);
@@ -720,11 +697,14 @@ export function CompanionApp() {
     appearances[character?.builtin || character?.templateSource];
   const palette = appearance?.themeHue ?? 210;
   const chibiAvailable = !!appearance?.chibi;
+  const preferredStyle =
+    styles[character.id] ||
+    (character.builtin || character.petAppearance ? "chibi" : "portrait");
   const selectedStyle = !chibiAvailable
     ? "portrait"
-    : styles[character.id] === "portrait"
+    : preferredStyle === "portrait"
       ? "portrait"
-      : styles[character.id] === "sticker" && appearance.sticker
+      : preferredStyle === "sticker" && appearance.sticker
         ? "sticker"
         : "chibi";
   const chibi = selectedStyle !== "portrait";
@@ -733,6 +713,7 @@ export function CompanionApp() {
     <main
       className="companion-app"
       data-testid="companion-app"
+      data-character-id={character.id}
       style={{ "--hue": palette, "--pet-scale": petScale }}
     >
       {(quickMenu || chatOpen) && (
@@ -812,6 +793,7 @@ export function CompanionApp() {
             <textarea
               autoFocus
               aria-label="气泡输入"
+              onFocus={() => void audio.event("listening")}
               placeholder="想和我说些什么？"
               rows={1}
               value={text}
@@ -1824,7 +1806,7 @@ export function CompanionApp() {
                   ["wander", "在桌面散步"],
                   ["proactive", "偶尔邀请互动（至少间隔 35 分钟）"],
                   ["quiet", "安静休息，不显示日常气泡"],
-                  ["voice", "用系统语音读出新回复"],
+                  ["voice", "播放我上传的动作语音"],
                 ].map(([key, label]) => (
                   <label className="toggle-row" key={key}>
                     <span>{label}</span>
@@ -1844,126 +1826,30 @@ export function CompanionApp() {
                     : "主动邀请和动作由本地逻辑驱动，不会在后台反复调用模型。"}
                 </small>
                 <label>
-                  语音风格
-                  <select
-                    aria-label="语音风格"
-                    disabled={settingsBusy}
-                    value={settings.voiceStyle || "soft"}
-                    onChange={(e) => {
-                      const preset = voicePresets[e.target.value];
-                      if (preset)
-                        void saveSettings({
-                          voiceStyle: e.target.value,
-                          voiceRate: preset.rate,
-                          voicePitch: preset.pitch,
-                        });
-                    }}
-                  >
-                    {Object.entries(voicePresets).map(([key, p]) => (
-                      <option key={key} value={key}>
-                        {p.label}
-                      </option>
-                    ))}
-                    <option value="custom">自定义调音</option>
-                  </select>
-                </label>
-                <label>
-                  语速 {Math.round((settings.voiceRate || 1) * 100)}%
+                  动作语音音量{" "}
+                  {Math.round((settings.voiceVolume ?? 0.75) * 100)}%
                   <input
-                    aria-label="语音速度"
+                    aria-label="动作语音音量"
                     type="range"
-                    min="0.75"
-                    max="1.25"
-                    step="0.01"
+                    min="0"
+                    max="1"
+                    step="0.05"
                     disabled={settingsBusy}
-                    value={settings.voiceRate || 1}
+                    value={settings.voiceVolume ?? 0.75}
                     onChange={(e) =>
-                      saveSettings({
-                        voiceStyle: "custom",
-                        voiceRate: Number(e.target.value),
-                      })
+                      saveSettings({ voiceVolume: Number(e.target.value) })
                     }
                   />
                 </label>
-                <label>
-                  音高 {Math.round((settings.voicePitch || 1) * 100)}%
-                  <input
-                    aria-label="语音音高"
-                    type="range"
-                    min="0.8"
-                    max="1.35"
-                    step="0.01"
-                    disabled={settingsBusy}
-                    value={settings.voicePitch || 1}
-                    onChange={(e) =>
-                      saveSettings({
-                        voiceStyle: "custom",
-                        voicePitch: Number(e.target.value),
-                      })
-                    }
-                  />
-                </label>
-                <button
-                  onClick={() =>
-                    run(async () =>
-                      setSystemVoices(await api.companionVoices()),
-                    )
-                  }
-                >
-                  读取本机声线
-                </button>
-                <label>
-                  系统声线
-                  <select
-                    aria-label="系统声线"
-                    value={settings.voiceName || ""}
-                    disabled={settingsBusy}
-                    onChange={(e) =>
-                      saveSettings({ voiceName: e.target.value })
-                    }
-                  >
-                    <option value="">自动选择对应语言的女声</option>
-                    {settings.voiceName &&
-                      !systemVoices.some(
-                        (v) => (v.id || v.name) === settings.voiceName,
-                      ) && (
-                        <option value={settings.voiceName}>
-                          {settings.voiceName}
-                        </option>
-                      )}
-                    {systemVoices.map((v) => (
-                      <option key={v.id || v.name} value={v.id || v.name}>
-                        {v.name} · {v.lang}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button
-                  disabled={settings.quiet}
-                  onClick={() =>
-                    run(() =>
-                      api.companionSpeak({
-                        text:
-                          {
-                            zh: "你好，语音测试完成。",
-                            en: "Hello. Voice test complete.",
-                            ja: "こんにちは。音声テストです。",
-                          }[boot.language] || "你好，语音测试完成。",
-                        lang:
-                          { zh: "zh-CN", en: "en-US", ja: "ja-JP" }[
-                            boot.language
-                          ] || "zh-CN",
-                        preview: true,
-                      }),
-                    )
-                  }
-                >
-                  试听当前声线
-                </button>
-                <small>
-                  甜声是本机女声的语速与音高调节，不是原角色配音。效果取决于系统声线；缺少对应语言语音包会显示错误。
-                </small>
               </div>
+              <VoiceClipSettings
+                api={api}
+                character={character}
+                state={state}
+                run={run}
+                refresh={refresh}
+                audio={audio}
+              />
               <div className="companion-card">
                 <div className="inline-fields">
                   <h3>模型与 effort</h3>

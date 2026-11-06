@@ -1,3 +1,15 @@
+# 0.8.1 validation
+
+Local Windows checks passed 117 unit tests, production build and dependency audit (zero known vulnerabilities). All five new complete packs passed structural validation, SHA-256/evidence checks and runtime decoding, frame progression and activity transitions. Furina assets were retained.
+
+The source UI checks passed uploaded audio import, actual native HTML audio decoding/playback using a silent PCM fixture, replacement cleanup, role isolation, restart and deletion while preserving the source file. This is playback-path evidence, not a physical speaker audition. Unit checks cover priority, deduplication, pending-play cancellation, quiet/hidden behavior, invalid input and library integrity. No voice model or synthesis call is used.
+
+Settings checks passed shared portrait/sprite gaze on both axes, disable/reset behavior, native Windows counter lifecycle and quiet stop/resume, setting persistence, exact-name legacy Ke Jie retirement with backup, custom removal, and uploaded pictures overriding sprite presentation. Cursor coordinates were substituted through the native API; physical pointer movement is not claimed. Source companion and retained workbench UI checks passed. No model calls were made for these fixture checks.
+
+Architecture-specific package CI and release verification are recorded with the published 0.8.1 release. Historical results below apply only to their stated versions.
+
+---
+
 ## 0.8.0 Windows and macOS release integration
 
 Date: November 6, 2026. This integration combines the current companion preview with main's project-free chat and native edge recovery, under the requested 0.8.0 release number.

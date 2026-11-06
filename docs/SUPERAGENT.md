@@ -24,7 +24,7 @@ Confirmed memories can be edited, forgotten or shared across characters. Model s
 - Restyled light, mint/ivory conversation panel with separate Tasks, Memory, Life and Settings tabs; model and effort are visible in Settings and linked from task creation.
 - Local wandering, breathing, resting, touch reactions, task activity poses, cursor following, mini companion mode and occasional invitations. Idle detection uses system idle time. Quiet mode suppresses ambient bubbles.
 - Optional global keyboard/mouse rhythm on macOS uses a small CoreGraphics event-counter helper. It reads aggregate event counts only, not key codes, entered text, clipboard or window titles. It is off by default and compiled on first enable with the local Swift toolchain. Helper lifetime follows the app. No global input hook is installed.
-- 20-second catch-the-star game plus the existing arcade room. Optional system speech reads new assistant replies.
+- 20-second catch-the-star game plus the existing arcade room. Optional uploaded action clips play local prerecorded reactions; replies remain text.
 - Existing character generation studio and persona editing remain available. Current animation uses the existing action images with transforms; it is not a Live2D rig or newly generated frame-by-frame walk cycle.
 
 ## File feeding

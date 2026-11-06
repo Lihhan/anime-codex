@@ -1,9 +1,10 @@
 const { contextBridge, ipcRenderer, webUtils } = require("electron");
 const names = [
   "companionCursor",
-  "companionVoices",
-  "companionSpeak",
-  "companionSpeechStop",
+  "chooseVoiceClip",
+  "commitVoiceClip",
+  "voiceClipSource",
+  "removeVoiceClip",
   "companionState",
   "companionChat",
   "companionStop",

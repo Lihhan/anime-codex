@@ -1,3 +1,12 @@
+# 0.8.1 — Complete animation packs and uploaded action audio
+
+- Add seven validated sheets and 112 generated frames each for Rin, Nahida, Kaguya, Iroha and Elysia using the original production pipeline; retain Furina unchanged.
+- Apply cursor orientation to portrait and sprite appearances on Windows and Mac; restore quiet, wandering and keyboard-rhythm setting behavior.
+- Replace synthesized speech with local, user-uploaded prerecorded action clips, per-character storage, preview, volume and silent missing slots. No speech model is bundled.
+- Retire the legacy Ke Jie entry once with a recoverable profile backup; allow removal of custom characters while preserving history and artwork.
+- Show uploaded custom pictures immediately and protect builtin templates.
+- Prevent competing new-version instances from overwriting one data directory.
+
 # 0.8.0 — Windows and macOS
 
 - Release the current companion preview features for Windows x64, Apple Silicon and Intel Mac.

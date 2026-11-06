@@ -16,10 +16,11 @@ class Companion {
     emit,
     translator,
     shell,
+    clips = null,
     brain = think,
     createConnection,
   }) {
-    Object.assign(this, { preferences, emit, brain });
+    Object.assign(this, { preferences, emit, brain, clips });
     this.store = new CompanionStore(directory);
     this.busy = null;
     this.reportQueue = Promise.resolve();
@@ -59,6 +60,9 @@ class Companion {
     const id = this.character()?.id;
     return {
       ...this.store.state,
+      characterId: id,
+      audio: this.clips?.snapshot(id) || {},
+      audioWarning: this.clips?.warning || "",
       messages: this.store.history(id),
       memories: this.store.state.memories.filter(
         (m) => m.characterId === id || m.global,
@@ -275,22 +279,12 @@ class Companion {
         s[k] = values[k];
     if (["codex", "claude"].includes(values.executor))
       s.executor = values.executor;
-    if (["natural", "soft", "bright", "custom"].includes(values.voiceStyle))
-      s.voiceStyle = values.voiceStyle;
-    if (typeof values.voiceName === "string" && values.voiceName.length <= 200)
-      s.voiceName = values.voiceName;
     if (
-      Number.isFinite(values.voiceRate) &&
-      values.voiceRate >= 0.75 &&
-      values.voiceRate <= 1.25
+      Number.isFinite(values.voiceVolume) &&
+      values.voiceVolume >= 0 &&
+      values.voiceVolume <= 1
     )
-      s.voiceRate = values.voiceRate;
-    if (
-      Number.isFinite(values.voicePitch) &&
-      values.voicePitch >= 0.8 &&
-      values.voicePitch <= 1.35
-    )
-      s.voicePitch = values.voicePitch;
+      s.voiceVolume = values.voiceVolume;
     await this.store.save();
     this.publish();
     return this.snapshot();

@@ -9,6 +9,13 @@ const require = createRequire(import.meta.url);
 const appearances = require("../shared/pet-appearances.json");
 const { validateSheet } = require("../electron/pet-artifacts.cjs");
 const { sheets } = require("../shared/pet-production.cjs");
+test("every requested builtin except Furina has a complete pack", () => {
+  for (const slug of ["rin", "nahida", "kaguya", "iroha", "elysia"])
+    assert.ok(
+      appearances[slug]?.chibi?.clips?.idle?.src?.includes("/complete-v1/"),
+      slug,
+    );
+});
 for (const [slug, appearance] of Object.entries(appearances)) {
   const pack = appearance.chibi;
   if (!pack?.clips?.idle?.src?.includes("/complete-v1/")) continue;

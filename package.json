@@ -40,7 +40,9 @@
     "smoke:companion-real": "node scripts/smoke-companion-real.mjs",
     "smoke:input": "node scripts/smoke-input-pulse.mjs",
     "smoke:portable-real": "node scripts/smoke-portable-real.mjs",
-    "smoke:settings": "node scripts/smoke-settings.mjs"
+    "smoke:settings": "node scripts/smoke-settings.mjs",
+    "smoke:audio": "node scripts/smoke-voice-clips.mjs",
+    "smoke:packs": "node scripts/smoke-builtin-packs.mjs"
   },
   "build": {
     "appId": "io.animecodex.desktop",
@@ -122,10 +124,6 @@
         {
           "from": "build/native/input-pulse-mac",
           "to": "helpers/input-pulse"
-        },
-        {
-          "from": "build/native/speech-mac",
-          "to": "helpers/speech"
         }
       ]
     }

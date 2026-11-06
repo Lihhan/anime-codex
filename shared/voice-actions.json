@@ -1,0 +1,20 @@
+{
+  "greeting": "出场 / 切换角色",
+  "idle": "待机",
+  "touch": "点击 / 摸摸头",
+  "book": "看书",
+  "office": "日常办公动作",
+  "listening": "倾听输入",
+  "thinking": "思考回复",
+  "reply": "回复提示",
+  "reading": "阅读代码",
+  "coding": "工作 / 写代码",
+  "approval": "等待审批",
+  "success": "任务完成",
+  "failure": "失败 / 抱歉",
+  "interrupted": "任务中断",
+  "gaming": "玩游戏",
+  "meal": "吃点心",
+  "sleep": "休息 / 睡觉",
+  "walk": "散步"
+}

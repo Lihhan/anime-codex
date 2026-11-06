@@ -1354,3 +1354,9 @@ html.companion-mode #root {
 .pet-gaze {position:absolute;inset:0;pointer-events:none;transform-origin:50% 30%;transform:perspective(700px) rotateY(calc(var(--gaze-x,0) * 7deg)) rotateX(calc(var(--gaze-y,0) * -4deg)) rotate(calc(var(--gaze-x,0) * 2deg));transition:transform .22s ease-out;}
 .pet-body .image-stack {rotate:0deg;}
 @media (prefers-reduced-motion:reduce) {.pet-gaze {transform:none;transition:none;}}
+.voice-clip-settings .voice-clip-row {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.voice-clip-row>div:first-child {min-width:0;flex:1;}
+.voice-clip-row small {overflow-wrap:anywhere;}
+.voice-clip-row .inline-fields {flex:0 0 auto;gap:6px;}
+.voice-clip-row button {white-space:nowrap;padding:7px 10px;}
+@media(max-width:600px){.voice-clip-settings .voice-clip-row {align-items:flex-start;flex-direction:column;}.voice-clip-row .inline-fields {flex-wrap:wrap;}}

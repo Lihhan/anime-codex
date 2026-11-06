@@ -4,15 +4,15 @@ The requested production work uses the existing `CharacterStudio.generate` and `
 
 The existing profiles supply identity rather than repeating public research or replacing their personas. Production creates a new chibi identity reference, then the standard seven 4 × 4 atlases: daily, play, run, exit, enter, change and social. Each completed pack has 112 generated poses and routes for all 72 directed activity pairs. These are sprite packs; they contain no native Live2D model/rig.
 
-Progress at the first integration checkpoint:
+Completed packs in 0.8.1:
 
 | Character      | Pack status                                  |
 | -------------- | -------------------------------------------- |
 | Rin            | Complete: seven validated sheets, 112 frames |
-| Nahida         | Production in progress                       |
-| Kaguya         | Queued                                       |
-| Iroha Sakayori | Queued                                       |
-| Elysia         | Queued                                       |
+| Nahida         | Complete: seven validated sheets, 112 frames |
+| Kaguya         | Complete: seven validated sheets, 112 frames |
+| Iroha Sakayori | Complete: seven validated sheets, 112 frames |
+| Elysia         | Complete: seven validated sheets, 112 frames |
 
 Final packs are imported with `node scripts/import-builtin-pack.mjs <slug> <completed-job.json>`. The importer refuses incomplete jobs, missing actual image-generation evidence, invalid source paths, failed structural QA and overwriting a different pack. It registers the resulting appearance through the same `makePack` contract as custom production.
 

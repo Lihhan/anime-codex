@@ -37,7 +37,7 @@ The first-run guide highlights one control at a time:
 3. Life: select an activity.
 4. Settings: adjust size or quiet companionship.
 
-Progress persists locally and can be postponed/restarted. Guide speech requires speech enabled outside quiet mode. Restarting the guide does not reset tasks/history.
+Progress persists locally and can be postponed/restarted. The guide remains text; optional uploaded clips are configured independently. Restarting the guide does not reset tasks/history.
 
 ## Research evidence
 

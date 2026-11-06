@@ -54,12 +54,6 @@ try {
       path = process.getBuiltinModule("path");
     const { probe } = require(path.join(root, "scripts/native-probe.cjs"));
     const { InputPulse } = require(path.join(root, "electron/input-pulse.cjs"));
-    const { NativeSpeech } = require(path.join(root, "electron/speech.cjs"));
-    const speechProbe = new NativeSpeech();
-    const speechVoices = await speechProbe.voices();
-    speechProbe.stop();
-    if (!Array.isArray(speechVoices))
-      throw Error("Packaged system voice enumeration failed.");
     const pulse = new InputPulse(
       path.join(app.getPath("userData"), "counter-probe"),
       () => {},
@@ -81,8 +75,6 @@ try {
     return {
       version: app.getVersion(),
       inputCounter,
-      systemSpeech: true,
-      installedVoiceCount: speechVoices.length,
       ...(await probe(
         require(
           path.join(root, "electron/inference-runtime.cjs"),
@@ -127,6 +119,18 @@ if (process.env.RUN_PACKAGED_BACKGROUND === "1") {
 }
 
 const { spawn: spawnDock } = await import("node:child_process");
+await new Promise((resolve, reject) => {
+  const child = spawnDock(process.execPath, ["scripts/smoke-voice-clips.mjs"], {
+    stdio: "inherit",
+    env: { ...process.env, ANIME_CODEX_EXECUTABLE: executable },
+  });
+  child.once("error", reject);
+  child.once("exit", (code) =>
+    code === 0
+      ? resolve()
+      : reject(Error("Packaged action audio failed: " + code)),
+  );
+});
 await new Promise((resolve, reject) => {
   const child = spawnDock(process.execPath, ["scripts/smoke-dock.mjs"], {
     stdio: "inherit",

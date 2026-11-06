@@ -23,8 +23,9 @@ const { CharacterStudio, personaFor } = require("./character-studio.cjs");
 const { TranslationService } = require("./translation.cjs");
 const { Companion } = require("./companion.cjs");
 const { InputPulse } = require("./input-pulse.cjs");
-const { NativeSpeech } = require("./speech.cjs");
-const speech = new NativeSpeech();
+const { VoiceClips } = require("./voice-clips.cjs");
+const voiceActions = require("../shared/voice-actions.json");
+let voiceClips;
 let companion,
   tray,
   inputPulse,
@@ -325,7 +326,6 @@ const handlers = {
     companion.busy?.abort();
   },
   async companionSettings(values) {
-    if (values.voice === false || values.quiet === true) speech.stop();
     const current = companion.store.state.settings;
     if (
       (values.keyboard ?? current.keyboard) &&
@@ -340,25 +340,34 @@ const handlers = {
       b = win.getBounds();
     return { x: p.x - b.x, y: p.y - b.y };
   },
-  async companionVoices() {
-    return speech.voices();
-  },
-  async companionSpeak(args) {
-    if (
-      companion.store.state.settings.quiet ||
-      (!companion.store.state.settings.voice && !args.preview)
-    )
-      return { cancelled: true };
-    const s = companion.store.state.settings;
-    return speech.speak({
-      ...args,
-      rate: Math.max(0.5, Math.min(2, (args.rate || 1) * s.voiceRate)),
-      pitch: s.voicePitch,
-      voice: s.voiceName,
+  async chooseVoiceClip({ id, action }) {
+    if (!preferences.find(id) || !Object.hasOwn(voiceActions, action))
+      throw Error("无效的角色或语音动作。");
+    const d = await dialog.showOpenDialog(win, {
+      title: "上传自己的动作音频",
+      properties: ["openFile"],
+      filters: [
+        { name: "Audio", extensions: ["wav", "mp3", "ogg", "flac", "m4a"] },
+      ],
     });
+    return d.canceled
+      ? null
+      : voiceClips.prepare({ characterId: id, action }, d.filePaths[0]);
   },
-  async companionSpeechStop() {
-    speech.stop();
+  async commitVoiceClip(args) {
+    const result = await voiceClips.commit(args);
+    companion.publish();
+    return result;
+  },
+  async voiceClipSource({ id, action }) {
+    if (!preferences.find(id)) throw Error("error.characterMissing");
+    return voiceClips.source({ characterId: id, action });
+  },
+  async removeVoiceClip({ id, action }) {
+    if (!preferences.find(id)) throw Error("error.characterMissing");
+    const result = await voiceClips.remove({ characterId: id, action });
+    companion.publish();
+    return result;
   },
   async companionModels() {
     return companion.models();
@@ -926,7 +935,11 @@ if (primaryInstance)
     ).load();
     translator = new TranslationService(app.getPath("userData"));
     await translator.load(preferences.data.translation);
+    voiceClips = await new VoiceClips(
+      path.join(app.getPath("userData"), "voice-clips"),
+    ).load();
     companion = await new Companion({
+      clips: voiceClips,
       directory: path.join(app.getPath("userData"), "companion"),
       preferences,
       emit,
@@ -963,6 +976,7 @@ if (primaryInstance)
       alwaysOnTop: true,
       title: "Anime Codex",
       webPreferences: {
+        autoplayPolicy: "no-user-gesture-required",
         preload: path.join(__dirname, "preload.cjs"),
         contextIsolation: true,
         nodeIntegration: false,
@@ -993,6 +1007,8 @@ if (primaryInstance)
     });
     desktop.resizeSurface();
     desktop.setCharacter(preferences.find(preferences.data.activeCharacter));
+    win.on("hide", () => emit({ method: "client/voiceStop", params: {} }));
+    win.on("show", () => emit({ method: "client/voiceResume", params: {} }));
     win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     tray = new Tray(
       nativeImage.createFromPath(appIcon).resize({ width: 18, height: 18 }),
@@ -1145,7 +1161,21 @@ if (primaryInstance)
           ].includes(name)
         )
           playWindow.webContents.send("companion:refresh");
-        return result;
+        const enrich = (snapshot) =>
+          snapshot?.character && Array.isArray(snapshot.characters)
+            ? {
+                ...snapshot,
+                audio: voiceClips.snapshot(snapshot.character.id),
+                audioSettings: {
+                  voice: companion.store.state.settings.voice,
+                  quiet: companion.store.state.settings.quiet,
+                  voiceVolume: companion.store.state.settings.voiceVolume,
+                },
+              }
+            : snapshot;
+        return result?.preferences
+          ? { ...result, preferences: enrich(result.preferences) }
+          : enrich(result);
       } catch (error) {
         throw new Error(t(error.message));
       }
@@ -1154,7 +1184,6 @@ if (primaryInstance)
   });
 let flushingQuit = false;
 app.on("before-quit", (event) => {
-  speech.stop();
   quitting = true;
   inputPulse?.stop();
   translationTest?.abort();
@@ -1164,7 +1193,11 @@ app.on("before-quit", (event) => {
   flushingQuit = true;
   rpc?.close();
   // Persist interruption/completion before Electron terminates the main process.
-  Promise.allSettled([rpc?.saveQueue, companion?.close()]).then(
+  Promise.allSettled([
+    rpc?.saveQueue,
+    companion?.close(),
+    voiceClips?.queue,
+  ]).then(
     () => app.quit(),
     () => app.quit(),
   );

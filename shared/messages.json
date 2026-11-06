@@ -361,7 +361,10 @@
     "mode.chat": "聊天模式",
     "mode.project": "项目模式",
     "mode.returnChat": "返回聊天",
-    "mode.hint": "直接输入就能聊天，首次发送会连接 Codex。需要读写项目时再选择项目。"
+    "mode.hint": "直接输入就能聊天，首次发送会连接 Codex。需要读写项目时再选择项目。",
+    "Action audio on": "动作音频已开启",
+    "Action audio off": "动作音频已关闭",
+    "Audio clips are configured in the desktop companion settings. Replies stay as text.": "在桌面伙伴设置中上传动作音频。回复仍以文字显示。"
   },
   "en": {
     "Start the Electron desktop app to connect to Codex.": "Start the Electron desktop app to connect to Codex.",
@@ -725,7 +728,10 @@
     "mode.chat": "Chat mode",
     "mode.project": "Project mode",
     "mode.returnChat": "Return to chat",
-    "mode.hint": "Type to chat. Your first message connects to Codex. Choose a project when you want file operations."
+    "mode.hint": "Type to chat. Your first message connects to Codex. Choose a project when you want file operations.",
+    "Action audio on": "Action audio on",
+    "Action audio off": "Action audio off",
+    "Audio clips are configured in the desktop companion settings. Replies stay as text.": "Audio clips are configured in the desktop companion settings. Replies stay as text."
   },
   "ja": {
     "Start the Electron desktop app to connect to Codex.": "Electron デスクトップアプリから起動してください。",
@@ -1089,6 +1095,9 @@
     "mode.chat": "チャットモード",
     "mode.project": "プロジェクトモード",
     "mode.returnChat": "チャットに戻る",
-    "mode.hint": "入力するだけで会話できます。最初の送信時に Codex に接続します。ファイル操作が必要なときにプロジェクトを選んでください。"
+    "mode.hint": "入力するだけで会話できます。最初の送信時に Codex に接続します。ファイル操作が必要なときにプロジェクトを選んでください。",
+    "Action audio on": "アクション音声オン",
+    "Action audio off": "アクション音声オフ",
+    "Audio clips are configured in the desktop companion settings. Replies stay as text.": "デスクトップパートナーの設定からアクション音声を追加できます。返答はテキストで表示されます。"
   }
 }

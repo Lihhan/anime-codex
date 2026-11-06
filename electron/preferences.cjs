@@ -484,6 +484,7 @@ class Preferences {
     }
     c = this.editable(c);
     c.images[phase] = entry;
+    c.artworkRevision = randomUUID();
     if (phase === "idle") {
       c.width = width;
       c.height = height;

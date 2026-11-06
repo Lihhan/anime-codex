@@ -1,18 +1,18 @@
-# Anime Codex 0.8.0
+# Anime Codex 0.8.1
 
 A transparent desktop character companion for **Windows x64 and macOS 14+**. Chat with a consistent character, keep local memories, and delegate actual programming tasks to your installed **Codex or Claude Code**.
 
-This release brings the current `feature/claude-translation` companion features to both platforms under version **0.8.0**. It also retains project-free chat and native edge recovery from `main`. Earlier 0.18.x numbers describe unreleased development milestones, not a newer installer you need to find.
+Version **0.8.1** adds complete animated sprite packs for Rin, Nahida, Kaguya, Iroha and Elysia, restores companion settings on Windows, and lets you upload prerecorded action audio. Furina retains her existing pack. Project-free chat and native permissions remain available on both platforms.
 
 ## Download
 
-Sign in to GitHub with access to this repository, then open **[0.8.0 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.8.0)**.
+Sign in to GitHub with access to this repository, then open **[0.8.1 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.8.1)**.
 
-| Your computer | File |
-|---|---|
-| Windows 10/11, Intel or AMD x64 | [Anime-Codex-0.8.0-win-x64.exe](https://github.com/Lihhan/anime-codex/releases/download/v0.8.0/Anime-Codex-0.8.0-win-x64.exe) |
-| Apple Silicon Mac (M-series), macOS 14+ | [Apple Silicon DMG](https://github.com/Lihhan/anime-codex/releases/download/v0.8.0/Anime-Codex-0.8.0-mac-arm64.dmg) |
-| Intel Mac, macOS 14+ | [Intel DMG](https://github.com/Lihhan/anime-codex/releases/download/v0.8.0/Anime-Codex-0.8.0-mac-x64.dmg) |
+| Your computer                           | File                                                                                                                          |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Windows 10/11, Intel or AMD x64         | [Anime-Codex-0.8.1-win-x64.exe](https://github.com/Lihhan/anime-codex/releases/download/v0.8.1/Anime-Codex-0.8.1-win-x64.exe) |
+| Apple Silicon Mac (M-series), macOS 14+ | [Apple Silicon DMG](https://github.com/Lihhan/anime-codex/releases/download/v0.8.1/Anime-Codex-0.8.1-mac-arm64.dmg)           |
+| Intel Mac, macOS 14+                    | [Intel DMG](https://github.com/Lihhan/anime-codex/releases/download/v0.8.1/Anime-Codex-0.8.1-mac-x64.dmg)                     |
 
 Mac ZIP alternatives and `SHA256SUMS.txt` are on the same page. **The application downloads do not require Node.js, npm, Git, Swift or a .NET SDK.** Choose the application file for your computer; source ZIPs are for developers.
 
@@ -22,7 +22,7 @@ A GitHub 404 usually means you are signed out or your account lacks repository a
 
 1. **Prepare Codex once.** If you already use the signed-in official Codex desktop app on this Windows computer, keep that installation. Otherwise install and sign in using the [official Windows guide](https://developers.openai.com/codex/app/windows/) or [Codex CLI guide](https://developers.openai.com/codex/cli/). A backend installed only inside WSL is not a native Windows backend for this app.
 2. **Close an older Anime Codex instance.** Use its tray menu to quit, rather than only closing a panel.
-3. **Download `Anime-Codex-0.8.0-win-x64.exe`** from the release page. Save it in a permanent folder such as `Documents\Anime Codex`.
+3. **Download `Anime-Codex-0.8.1-win-x64.exe`** from the release page. Save it in a permanent folder such as `Documents\Anime Codex`.
 4. **Double-click the file.** It is portable: there is no installation wizard. Wait for the character and first-run guide to appear.
 5. **Hover over the character and click Chat (`聊天`).** Type below the bubble. Ordinary conversation does not require choosing a project.
 
@@ -47,7 +47,7 @@ These development packages are **ad-hoc signed and not Apple-notarized**. If mac
 - **Programming workbench:** right-click the tray/menu-bar icon and choose `编程工作台`. Choose `桌面伙伴` to return. Finish or stop any active workbench task before switching.
 - **Settings:** click `设置` → `角色、模型与更多设置 ↗`. Select characters, appearance, personality, models/effort and companion behavior here.
 - **Memory:** use the full panel's `记忆` tab. Suggested memories require confirmation; confirmed memories can be edited or forgotten. Original conversation history remains available separately from summaries.
-- **Move and resize:** drag the character and use the quick size slider. Settings includes idle motion, wandering, quiet mode and system speech.
+- **Move and resize:** drag the character and use the quick size slider. Settings includes idle motion, wandering, quiet mode and uploaded action audio.
 - **Mini mode:** quick Settings → `收成小挂件`; click the mini character's expand control to return.
 - **Hide versus quit:** closing a panel leaves the companion running. Use the system tray/menu-bar icon to show, temporarily hide or quit it.
 - **Recover a hidden character:** press **Ctrl+Alt+A** on Windows or **Command+Option+A** on Mac. The retained workbench also has a separate native edge-recovery tab.
@@ -62,6 +62,10 @@ Both implementations send only aggregate `keys` and `clicks` counts to the app. 
 
 Protected desktops and organization restrictions may limit native input monitoring. Startup failures are reported; the app does not change Windows security or execution-policy settings.
 
+### Your own action audio
+
+Open full Settings, select a character, then find `自己的动作语音包`. Upload a recording beside an action, click Preview (`试听`), and enable `播放我上传的动作语音`. Each character saves its own recordings; missing actions stay silent. Files stay on this computer. No voice model or synthesized voice is used. [Step-by-step audio instructions](docs/ACTION_AUDIO.md).
+
 ### Codex and Claude Code
 
 Codex is required for the companion brain, memory consolidation, character research/generation and optional independent translation. Claude Code is an **optional programming worker**; it does not replace the companion brain's Codex login.
@@ -74,7 +78,7 @@ In the retained Claude workbench, independent translation can polish Chinese inp
 
 ### Characters and artwork
 
-Original Rin and the existing character library are retained, together with custom image uploads, optional action images and idle fallback. Furina's sticker appearance includes activity transitions; PNG actions are not a Live2D rig. Character research and portrait generation depend on the native account's actual tool availability and report failures instead of substituting fabricated artwork or results.
+Rin, Nahida, Kaguya, Iroha and Elysia each include seven validated animation sheets (112 poses) produced through the existing character pipeline. Kaguya and Iroha use their everyday designs. Custom image uploads, optional action images and idle fallback remain available. Uploading a new picture selects the portrait appearance so your picture is visible. Furina's sticker appearance includes activity transitions; PNG actions are not a Live2D rig. Character research and portrait generation depend on the native account's actual tool availability and report failures instead of substituting fabricated artwork or results.
 
 Franchise presets are unofficial fan interpretations. The code's MIT license does not grant franchise character rights. See [fan-art provenance](characters/FANART.md), [original Rin provenance](characters/ASSETS.md), [third-party notices](THIRD_PARTY_NOTICES.md), and [character production](docs/AUTOMATIC_PET_PRODUCTION.md).
 
@@ -84,14 +88,14 @@ File feeding requires a preview and explicit confirmation. Only then does the ap
 
 ## Troubleshooting
 
-| Problem | What to do |
-|---|---|
-| Nothing appears | Wait for portable extraction, check the tray/menu-bar icon, then use the recovery shortcut. Quit older copies. |
-| Codex cannot be found | Confirm a native signed-in installation exists on this OS. The app also checks supported desktop-install paths. In workbench settings, choose the actual `codex.exe` on Windows or native `codex` on Mac. |
-| Chat reports a sign-in or quota error | Complete sign-in in the official Codex CLI/app and retry. The app preserves actual failures; a local welcome/touch line does not mean a model request succeeded. |
-| Claude cannot be found | Install native Claude Code, sign in, then restart. Confirm `claude --version` works in a fresh terminal. |
-| Keyboard rhythm cannot start on Windows | Check that built-in Windows PowerShell and .NET Framework are available and permitted by your organization. No execution-policy or security-setting changes are made by Anime Codex. |
-| A source ZIP contains no EXE | Download the Windows application asset above, or use the build steps below. |
+| Problem                                 | What to do                                                                                                                                                                                                |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nothing appears                         | Wait for portable extraction, check the tray/menu-bar icon, then use the recovery shortcut. Quit older copies.                                                                                            |
+| Codex cannot be found                   | Confirm a native signed-in installation exists on this OS. The app also checks supported desktop-install paths. In workbench settings, choose the actual `codex.exe` on Windows or native `codex` on Mac. |
+| Chat reports a sign-in or quota error   | Complete sign-in in the official Codex CLI/app and retry. The app preserves actual failures; a local welcome/touch line does not mean a model request succeeded.                                          |
+| Claude cannot be found                  | Install native Claude Code, sign in, then restart. Confirm `claude --version` works in a fresh terminal.                                                                                                  |
+| Keyboard rhythm cannot start on Windows | Check that built-in Windows PowerShell and .NET Framework are available and permitted by your organization. No execution-policy or security-setting changes are made by Anime Codex.                      |
+| A source ZIP contains no EXE            | Download the Windows application asset above, or use the build steps below.                                                                                                                               |
 
 Local data is normally `%APPDATA%\anime-codex\` on Windows and `~/Library/Application Support/anime-codex/` on Mac. Keep that folder to retain your library and memories when upgrading. Personal imports, account data and test reports are excluded from Git.
 
@@ -122,7 +126,7 @@ npm run dist:mac:arm64
 npm run dist:mac:x64
 ```
 
-Outputs are under `release/v0.8.0/`. To start the retained workbench directly for development, set `ANIME_CODEX_SURFACE=workbench` before `npm start`; omit it for the default companion.
+Outputs are under `release/v0.8.1/`. To start the retained workbench directly for development, set `ANIME_CODEX_SURFACE=workbench` before `npm start`; omit it for the default companion.
 
 ## Validation
 

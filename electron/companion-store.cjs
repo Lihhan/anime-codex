@@ -18,10 +18,7 @@ class CompanionStore {
         proactive: true,
         quiet: false,
         voice: false,
-        voiceStyle: "soft",
-        voiceName: "",
-        voiceRate: 0.94,
-        voicePitch: 1.12,
+        voiceVolume: 0.75,
         cursor: true,
         keyboard: false,
         autoDispatch: true,
@@ -70,6 +67,14 @@ class CompanionStore {
     } catch (e) {
       if (e.code !== "ENOENT") throw e;
     }
+    for (const key of ["voiceStyle", "voiceName", "voiceRate", "voicePitch"])
+      delete this.state.settings[key];
+    if (
+      !Number.isFinite(this.state.settings.voiceVolume) ||
+      this.state.settings.voiceVolume < 0 ||
+      this.state.settings.voiceVolume > 1
+    )
+      this.state.settings.voiceVolume = 0.75;
     for (const t of this.state.tasks)
       if (["running", "queued", "waiting"].includes(t.status)) {
         t.status = "interrupted";

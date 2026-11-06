@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { initialState, reduceEvent } from "../shared/state.mjs";
 import { createTranslator, languages } from "../shared/i18n.mjs";
-import { SystemVoice } from "./voice";
+import { ClipPlayer } from "../shared/clip-player.mjs";
 import "./style.css";
 
 import { ImageCharacter } from "./ImageCharacter";
@@ -140,8 +140,14 @@ function App() {
       "interrupted",
     ].map((p) => [p, t("state." + p)]),
   );
-  const voice = useRef(new SystemVoice()),
-    voiceEnabled = useRef(false),
+  const voice = useRef(
+      new ClipPlayer({
+        source: (args) => api.voiceClipSource(args),
+        createAudio: (src) => new Audio(src),
+        onError: setError,
+        onStatus: () => setMouth(0),
+      }),
+    ),
     charRef = useRef(null),
     currentThread = useRef(null),
     bottom = useRef(null),
@@ -153,6 +159,16 @@ function App() {
     if (result.backend) setBackend(result.backend);
     if (result.codexModel) setCodexModel(result.codexModel);
     if (result.translation) setTranslation(result.translation);
+    if (result.audioSettings && result.character) {
+      setVoiceOn(!!result.audioSettings.voice);
+      voice.current.configure({
+        id: result.character.id,
+        enabled: !!result.audioSettings.voice,
+        quiet: !!result.audioSettings.quiet,
+        volume: result.audioSettings.voiceVolume ?? 0.75,
+        clips: result.audio || {},
+      });
+    }
     if (
       charRef.current?.id &&
       result.character?.id &&
@@ -357,6 +373,21 @@ function App() {
       ]);
       setState((s) => reduceEvent(s, e));
       const p = e.params || {};
+      if (e.method === "client/voiceStop") voice.current.suspend();
+      if (e.method === "client/voiceResume") voice.current.resume();
+      if (
+        e.method === "client/companion" &&
+        p.characterId === charRef.current?.id
+      ) {
+        setVoiceOn(!!p.settings.voice);
+        voice.current.configure({
+          id: p.characterId,
+          enabled: !!p.settings.voice,
+          quiet: !!p.settings.quiet,
+          volume: p.settings.voiceVolume ?? 0.75,
+          clips: p.audio || {},
+        });
+      }
       if (e.method === "turn/started") {
         activeTurn.current = p.turn.id;
         setLiveReply({ id: null, turnId: p.turn.id });
@@ -376,18 +407,8 @@ function App() {
           ...old,
           [p.item.id]: { ...old[p.item.id], ...p.item },
         }));
-        if (
-          e.method === "item/completed" &&
-          p.item.type === "agentMessage" &&
-          voiceEnabled.current
-        ) {
-          voice.current.speak(
-            p.item.text,
-            charRef.current.voice,
-            setMouth,
-            () => setMouth(0),
-          );
-        }
+        if (e.method === "item/completed" && p.item.type === "agentMessage")
+          void voice.current.play("reply", { key: "reply:" + p.item.id });
       }
       if (e.method === "item/agentMessage/delta") {
         setLiveReply({ id: p.itemId, turnId: p.turnId || activeTurn.current });
@@ -417,14 +438,24 @@ function App() {
     if (Object.keys(items).length)
       bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [items]);
-  useEffect(() => {
-    voiceEnabled.current = voiceOn;
-    if (!voiceOn) {
-      voice.current.stop();
-      setMouth(0);
-    }
-  }, [voiceOn]);
   useEffect(() => () => voice.current.stop(), []);
+  useEffect(() => {
+    if (
+      activeTurn.current &&
+      [
+        "thinking",
+        "reading",
+        "coding",
+        "approval",
+        "success",
+        "failure",
+        "interrupted",
+      ].includes(state.phase)
+    )
+      void voice.current.play(state.phase, {
+        key: activeTurn.current + ":" + state.phase,
+      });
+  }, [state.phase]);
   useEffect(() => {
     if (!api) return;
     let ignored = false;
@@ -1005,13 +1036,13 @@ function App() {
                   ? t("Read-only mode")
                   : t("Project write access")}
             </span>
-            <button
-              className={voiceOn ? "active" : ""}
-              onClick={() => setVoiceOn(!voiceOn)}
+            <span
+              title={t(
+                "Audio clips are configured in the desktop companion settings. Replies stay as text.",
+              )}
             >
-              {" "}
-              {voiceOn ? t("◖ Voice on") : t("◖ Voice off")}
-            </button>
+              {voiceOn ? t("Action audio on") : t("Action audio off")}
+            </span>
           </div>
         </header>
         {error && (
@@ -1322,7 +1353,7 @@ function App() {
               </label>
               <p>
                 {t(
-                  "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.",
+                  "Audio clips are configured in the desktop companion settings. Replies stay as text.",
                 )}
               </p>
             </div>

@@ -119,26 +119,42 @@ try {
   await page.getByLabel("在桌面散步", { exact: true }).uncheck();
   await page.getByLabel("偶尔邀请互动（至少间隔 35 分钟）").uncheck();
   await page.getByLabel("明确任务自动分发（需先选择项目）").uncheck();
-  const voices = await page.evaluate(() => window.animeCodex.companionVoices());
-  assert.ok(Array.isArray(voices));
-  let nativeSpeechCompleted = false;
-  if (process.env.RUN_NATIVE_SPEECH === "1") {
-    const lang =
-      voices.find((v) => v.lang === "zh-CN")?.lang ||
-      voices.find((v) => v.lang === "en-US")?.lang;
-    assert.ok(lang, "No usable local speech voice");
-    const result = await page.evaluate(
-      (lang) =>
-        window.animeCodex.companionSpeak({
-          text: lang === "zh-CN" ? "语音测试。" : "Voice test.",
-          lang,
-          preview: true,
-        }),
-      lang,
-    );
-    assert.equal(result.spoken, true);
-    nativeSpeechCompleted = true;
-  }
+  await page.getByLabel("动作语音音量", { exact: true }).fill("0.5");
+  // A newly uploaded picture must replace the builtin sprite presentation.
+  await page
+    .getByLabel("切换角色")
+    .selectOption(catalog.find((c) => c.slug === "rin").id);
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[aria-label="切换角色"]')?.value ===
+      "ef1143cb-cddb-4d71-8f82-9bf4b8cfd7d2",
+  );
+  await page.getByLabel("外观画风").selectOption("chibi");
+  await app.evaluate(({ dialog }, file) => {
+    dialog.showOpenDialog = async () => ({
+      canceled: false,
+      filePaths: [file],
+    });
+  }, path.resolve("public/characters/rin/idle.png"));
+  await page.getByText("编辑人设 / 导入形象", { exact: true }).click();
+  await page.getByRole("button", { name: "导入角色图片", exact: true }).click();
+  await page.getByTestId("character-images").waitFor();
+  assert.equal(await page.getByLabel("外观画风").inputValue(), "portrait");
+  const custom = await page.evaluate(() => window.animeCodex.bootstrap());
+  assert.ok(!custom.character.builtin);
+  assert.ok(custom.character.artworkRevision);
+  await page
+    .getByLabel("切换角色")
+    .selectOption(catalog.find((c) => c.slug === "rin").id);
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[aria-label="切换角色"]')?.value ===
+      "ef1143cb-cddb-4d71-8f82-9bf4b8cfd7d2",
+  );
+  await page.getByLabel("外观画风").selectOption("chibi");
+  await page.locator(".pet-sprite").waitFor();
+  await page.getByLabel("切换角色").selectOption(custom.character.id);
+  await page.getByTestId("character-images").waitFor();
   // Delete a custom library entry through the real restricted bridge/UI.
   await page.evaluate(async () => {
     const b = await window.animeCodex.bootstrap();
@@ -170,6 +186,7 @@ try {
     "proactive",
     "voice",
     "autoDispatch",
+    "voiceVolume",
   ])
     assert.equal(after[key], before[key]);
   boot = await page.evaluate(() => window.animeCodex.bootstrap());
@@ -187,8 +204,8 @@ try {
     settingsPersist: true,
     keJieRetirement: true,
     customRemoval: true,
-    nativeVoices: voices.map((v) => v.lang),
-    nativeSpeechCompleted,
+    uploadedClipsOnly: true,
+    uploadedPictureOverridesSprite: true,
     physicalPointerMovement: false,
     modelCalls: false,
   };

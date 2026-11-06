@@ -1,4 +1,4 @@
-# macOS 0.8.0
+# macOS 0.8.1
 
 Follow the [Mac installation steps in README](../README.md#install-on-a-mac). Download the DMG matching Apple Silicon or Intel, drag the app into Applications, and quit older copies before opening it.
 
@@ -11,3 +11,5 @@ The optional global input rhythm counter is precompiled and included in architec
 Press **Command+Option+A** to recover a hidden character. The tray/menu-bar menu distinguishes temporarily hiding from quitting. Character images, memories and preferences remain in `~/Library/Application Support/anime-codex/` across upgrades.
 
 For architecture-specific tests and remaining limits see [validation](VALIDATION.md).
+
+User-uploaded action recordings use the same local playback and independent character slots as Windows. No speech engine or voice model is required. See [action audio setup](ACTION_AUDIO.md).

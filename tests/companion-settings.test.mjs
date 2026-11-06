@@ -7,7 +7,6 @@ import { createRequire } from "node:module";
 import { gazeAt } from "../shared/pet-gaze.mjs";
 const require = createRequire(import.meta.url);
 const { Preferences } = require("../electron/preferences.cjs");
-const { NativeSpeech, speechMarkup } = require("../electron/speech.cjs");
 const profile = require("../characters/rin.json");
 const templates = [
   { profile, directory: path.resolve("public/characters/rin") },
@@ -62,26 +61,4 @@ test("legacy Ke Jie retirement archives only exact names once and preserves asse
   await assert.rejects(again.removeCharacter({ id: profile.id }));
   await again.removeCharacter({ id: created.id });
   assert.equal(again.find(created.id), undefined);
-});
-test("native speech rejects invalid requests before launching a helper", async () => {
-  const speech = new NativeSpeech("win32");
-  await assert.rejects(speech.speak({ text: "hi", lang: "../../invalid" }));
-  await assert.rejects(speech.speak({ text: "hi", rate: 100 }));
-  await assert.rejects(speech.speak({ text: "x".repeat(2001) }));
-  await assert.rejects(speech.speak({ text: "hi", pitch: 10 }));
-  await assert.rejects(speech.speak({ text: "hi", voice: {} }));
-  assert.equal(speech.child, null);
-});
-test("speech markup preserves literal text and cannot inject SSML or commands", () => {
-  const ssml = speechMarkup(
-    '你好 <voice name="other"> & $(command)\u0001',
-    "zh-CN",
-    0.94,
-    1.12,
-  );
-  assert.ok(ssml.includes('pitch="+12%" rate="94%"'));
-  assert.ok(
-    ssml.includes("&lt;voice name=&quot;other&quot;&gt; &amp; $(command)"),
-  );
-  assert.ok(!ssml.includes("\u0001"));
 });
