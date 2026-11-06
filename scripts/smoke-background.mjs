@@ -59,6 +59,15 @@ const app = await electron.launch({
     ANIME_CODEX_MODEL_CACHE: cache,
   },
 });
+const processDiagnostics = [];
+app
+  .process()
+  .stderr?.on("data", (chunk) => processDiagnostics.push(chunk.toString()));
+app
+  .process()
+  .on("exit", (code, signal) =>
+    console.log(JSON.stringify({ backgroundAppExit: { code, signal } })),
+  );
 try {
   const page = await app.firstWindow();
   await page.getByTestId("character-images").waitFor();
@@ -146,6 +155,9 @@ try {
     JSON.stringify(report, null, 2),
   );
   console.log(JSON.stringify(report, null, 2));
+} catch (error) {
+  console.error(processDiagnostics.join("").slice(-8000));
+  throw error;
 } finally {
   await app.close();
   model.dispose();

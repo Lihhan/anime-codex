@@ -2,11 +2,13 @@ import { _electron as electron } from "playwright";
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
-if (process.platform !== "darwin") throw new Error("Run this check on macOS.");
+if (process.platform !== "darwin" && !process.env.ANIME_CODEX_EXECUTABLE)
+  throw new Error("Run this check on macOS or specify a packaged executable.");
 const root = path.resolve("release/v0.6.0");
 const dirs = await fs.readdir(root);
-let executable;
+let executable = process.env.ANIME_CODEX_EXECUTABLE;
 for (const dir of dirs.filter((x) => x === "mac" || x === "mac-arm64")) {
+  if (executable) break;
   const candidate = path.join(
     root,
     dir,
@@ -41,7 +43,10 @@ try {
   assert.equal(await page.getByTestId("gal-send").isDisabled(), true);
   const result = await app.evaluate(async ({ app }) => {
     const root = app.getAppPath(),
-      path = require("node:path");
+      require = process
+        .getBuiltinModule("module")
+        .createRequire(root + "/package.json"),
+      path = process.getBuiltinModule("path");
     const { probe } = require(path.join(root, "scripts/native-probe.cjs"));
     return {
       version: app.getVersion(),
