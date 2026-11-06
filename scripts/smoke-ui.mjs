@@ -13,6 +13,8 @@ const app = await electron.launch({
   args: process.env.ANIME_CODEX_EXECUTABLE ? [] : ["."],
   env: {
     ...process.env,
+    // This native file is only resolved; the stub below prevents any launch.
+    CODEX_PATH: electronPath,
     ANIME_CODEX_DEV: "0",
     ANIME_CODEX_DATA_DIR: dataDirectory,
   },
