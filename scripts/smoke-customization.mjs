@@ -47,7 +47,7 @@ try {
   assert.equal(
     await page
       .getByTestId("character-select")
-      .locator("option", { hasText: "Rin" })
+      .locator("option", { hasText: /^Rin$/ })
       .count(),
     1,
   );

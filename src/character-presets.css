@@ -1,0 +1,61 @@
+.preset-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0 22px;
+}
+.preset-gallery button {
+  display: grid;
+  grid-template-columns: 94px 1fr;
+  grid-template-rows: auto auto 1fr auto;
+  column-gap: 12px;
+  text-align: left;
+  min-height: 164px;
+  padding: 12px;
+  background: #221e30;
+  border: 1px solid #695375;
+  border-radius: 14px;
+  align-items: start;
+}
+.preset-gallery button.selected {
+  border-color: #d3b5ef;
+  background: #392c49;
+  box-shadow: 0 0 0 1px #c7a4e563;
+}
+.preset-gallery img {
+  grid-column: 1;
+  grid-row: 1/5;
+  width: 94px;
+  height: 144px;
+  object-fit: contain;
+  object-position: center bottom;
+  border-radius: 8px;
+  background: #171522;
+}
+.preset-gallery strong {
+  font-size: 17px;
+  color: #f4e9ff;
+}
+.preset-gallery span {
+  font-size: 12px;
+  color: #cfbadd;
+}
+.preset-gallery small {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d8cce2;
+}
+.preset-gallery em {
+  font-size: 11px;
+  font-style: normal;
+  color: #c5a6df;
+}
+.preset-gallery button:hover:not(:disabled) {
+  border-color: #d3b5ef;
+  background: #44324f;
+}
+@media (max-width: 640px) {
+  .preset-gallery {
+    grid-template-columns: 1fr;
+  }
+}

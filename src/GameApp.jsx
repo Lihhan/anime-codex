@@ -26,10 +26,9 @@ export function GameApp() {
   const t = createTranslator(data.language);
   const sessions = useRef({});
   const arcade = ["hop", "runner"].includes(mode);
-  const name =
-    data.character?.builtin === "rin" && data.character.name === "Rin"
-      ? data.character.localizedNames?.[data.language] || "Rin"
-      : data.character?.name || "Rin";
+  const name = data.character?.builtin
+    ? data.character.localizedNames?.[data.language] || "Rin"
+    : data.character?.name || "Rin";
   useEffect(() => {
     document.body.classList.add("play-surface");
     const refresh = () =>

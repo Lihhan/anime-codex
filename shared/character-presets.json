@@ -1,0 +1,82 @@
+{
+  "rin": {
+    "name": "Rin",
+    "localizedNames": {
+      "zh": "凛",
+      "en": "Rin",
+      "ja": "凛"
+    }
+  },
+  "furina": {
+    "name": "Furina",
+    "localizedNames": {
+      "zh": "芙宁娜",
+      "en": "Furina",
+      "ja": "フリーナ"
+    },
+    "work": {
+      "zh": "原神",
+      "en": "Genshin Impact",
+      "ja": "原神"
+    },
+    "summary": {
+      "zh": "富有表现力、幽默，也认真关心你的目标",
+      "en": "Expressive, witty, and thoughtful about your goals",
+      "ja": "表情豊かでユーモラス、目標には真剣"
+    }
+  },
+  "nahida": {
+    "name": "Nahida",
+    "localizedNames": {
+      "zh": "纳西妲",
+      "en": "Nahida",
+      "ja": "ナヒーダ"
+    },
+    "work": {
+      "zh": "原神",
+      "en": "Genshin Impact",
+      "ja": "原神"
+    },
+    "summary": {
+      "zh": "温柔、好奇，喜欢把复杂问题讲清楚",
+      "en": "Gentle and curious, with clear explanations",
+      "ja": "優しく好奇心旺盛、難しいことも丁寧に"
+    }
+  },
+  "kaguya": {
+    "name": "Kaguya",
+    "localizedNames": {
+      "zh": "辉夜",
+      "en": "Kaguya",
+      "ja": "かぐや"
+    },
+    "work": {
+      "zh": "超时空辉夜姬！",
+      "en": "Cosmic Princess Kaguya!",
+      "ja": "超かぐや姫！"
+    },
+    "summary": {
+      "zh": "元气、好奇，现实世界的日常形象",
+      "en": "Energetic and curious, in her everyday appearance",
+      "ja": "元気で好奇心いっぱい、現実世界の姿"
+    }
+  },
+  "iroha": {
+    "name": "Iroha Sakayori",
+    "localizedNames": {
+      "zh": "酒寄彩叶",
+      "en": "Iroha Sakayori",
+      "ja": "酒寄彩葉"
+    },
+    "work": {
+      "zh": "超时空辉夜姬！",
+      "en": "Cosmic Princess Kaguya!",
+      "ja": "超かぐや姫！"
+    },
+    "summary": {
+      "zh": "冷静、体贴，现实世界的水手服形象",
+      "en": "Practical and caring, in her real-world school uniform",
+      "ja": "落ち着いていて思いやりのある、現実世界の制服姿"
+    }
+  }
+}

@@ -1,3 +1,13 @@
+## 0.7.0
+
+- Add protected Furina, Nahida, Kaguya and Iroha Sakayori presets alongside original Rin and custom uploads.
+- Use real-world Kaguya/Iroha appearances, with eight transparent pose images per character.
+- Add distinct first-person personality instructions, three-language greetings and character-specific local touch reactions.
+- Reset active conversation selection and stale dialogue on character changes; retain saved Codex threads and gate switching during work/approvals.
+- Preserve custom copies when editing any bundled preset and retain existing libraries on upgrade.
+- Add preset migration, image, switching, persistence and real Codex file-reading checks.
+- Document unofficial fan-art provenance and underlying character rights separately from the code license.
+
 ## 0.6.0
 
 - Add native macOS backend discovery for Finder/Dock launches, standalone installs, Homebrew paths and common app bundles.

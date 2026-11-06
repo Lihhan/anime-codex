@@ -68,10 +68,9 @@ function App() {
     [voiceOn, setVoiceOn] = useState(false),
     [mouth, setMouth] = useState(0),
     [answers, setAnswers] = useState({});
-  const displayName =
-    character?.builtin === "rin" && character.name === "Rin"
-      ? character.localizedNames?.[language] || character.name
-      : character?.name || t("Your character");
+  const displayName = character?.builtin
+    ? character.localizedNames?.[language] || character.name
+    : character?.name || t("Your character");
   const settingsToggle = useRef(null);
   function closeSettings() {
     setSettings(false);
@@ -119,6 +118,17 @@ function App() {
     dockTimer = useRef(null);
   function applyPreferences(result, preserveEdits = false) {
     if (!result) return;
+    if (
+      charRef.current?.id &&
+      result.character?.id &&
+      charRef.current.id !== result.character.id
+    ) {
+      reset(null);
+      setPreviewPhase(null);
+      setReaction(null);
+      setShowChatLog(false);
+      setDialogue(true);
+    }
     if (result.builtinCharacterId)
       builtinId.current = result.builtinCharacterId;
     if (result.interface) setAppearance(result.interface);
@@ -241,7 +251,10 @@ function App() {
     clearTimeout(reactionTimer.current);
     setReaction({
       region,
-      index: Math.floor(Math.random() * 3),
+      index: Math.floor(
+        Math.random() *
+          (character?.reactions?.[language]?.[region]?.length || 3),
+      ),
       id: performance.now(),
     });
     reactionTimer.current = setTimeout(() => setReaction(null), 3000);
@@ -962,7 +975,7 @@ function App() {
               language={language}
               profileName={profileName}
               setProfileName={setProfileName}
-              loading={loading}
+              loading={loading || state.busy || !!state.pending.length}
               busy={state.busy}
               preview={previewPhase}
               setPreview={setPreviewPhase}
@@ -1234,7 +1247,11 @@ function App() {
                 style={avatarY < 170 ? { top: 10, bottom: "auto" } : undefined}
               >
                 <strong>{displayName}</strong>
-                <p>{t(`touch.${reaction.region}.${reaction.index}`)}</p>
+                <p>
+                  {character?.reactions?.[language]?.[reaction.region]?.[
+                    reaction.index
+                  ] || t(`touch.${reaction.region}.${reaction.index}`)}
+                </p>
                 <small>
                   {t(
                     state.busy
@@ -1277,6 +1294,8 @@ function App() {
               <GalDialogue
                 t={t}
                 name={displayName}
+                identity={character?.id}
+                greeting={character?.greetings?.[language]}
                 reply={currentReply}
                 busy={state.busy}
                 phase={state.phase}

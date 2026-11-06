@@ -4,7 +4,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 if (process.platform !== "darwin" && !process.env.ANIME_CODEX_EXECUTABLE)
   throw new Error("Run this check on macOS or specify a packaged executable.");
-const root = path.resolve("release/v0.6.0");
+const version = JSON.parse(
+  await fs.readFile(new URL("../package.json", import.meta.url), "utf8"),
+).version;
+const root = path.resolve("release/v" + version);
 const dirs = await fs.readdir(root);
 let executable = process.env.ANIME_CODEX_EXECUTABLE;
 for (const dir of dirs.filter((x) => x === "mac" || x === "mac-arm64")) {
@@ -57,7 +60,7 @@ try {
       )),
     };
   });
-  assert.equal(result.version, "0.6.0");
+  assert.equal(result.version, version);
   assert.equal(result.arch, process.arch);
   assert.deepEqual(errors, []);
   await fs.writeFile(

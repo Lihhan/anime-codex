@@ -6,6 +6,8 @@ on:
       - "electron/**"
       - "src/**"
       - "shared/**"
+      - "characters/**"
+      - "public/**"
       - "scripts/**"
       - "tests/**"
       - "package*.json"
@@ -15,6 +17,8 @@ on:
       - "electron/**"
       - "src/**"
       - "shared/**"
+      - "characters/**"
+      - "public/**"
       - "scripts/**"
       - "tests/**"
       - "package*.json"
@@ -49,6 +53,7 @@ jobs:
       - run: npm run smoke:native
       - run: npm run build
       - run: npm run smoke:gal
+      - run: npm run smoke:presets
       - run: npm run smoke:ui
       - name: Install official Codex for a real unauthenticated handshake
         run: |
@@ -65,10 +70,10 @@ jobs:
           RUN_PACKAGED_BACKGROUND: "1"
       - uses: actions/upload-artifact@v4
         with:
-          name: Anime-Codex-0.6.0-mac-${{ matrix.arch }}
+          name: Anime-Codex-mac-${{ matrix.arch }}
           path: |
-            release/v0.6.0/*.dmg
-            release/v0.6.0/*.zip
+            release/v*/*.dmg
+            release/v*/*.zip
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()

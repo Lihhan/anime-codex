@@ -10,7 +10,11 @@ class Preferences {
     this.directory = directory;
     this.nativeImage = nativeImage;
     this.processBackground = processBackground;
-    this.builtin = builtin;
+    this.builtins = Array.isArray(builtin) ? builtin : builtin ? [builtin] : [];
+    this.builtin =
+      this.builtins.find(
+        (b) => b.profile.id === "ef1143cb-cddb-4d71-8f82-9bf4b8cfd7d2",
+      ) || this.builtins[0];
     this.queue = Promise.resolve();
     this.data = {
       schemaVersion: 2,
@@ -85,9 +89,13 @@ class Preferences {
     if (this.builtin || recovered) await this.save();
     return this;
   }
-  async ensureBuiltin() {
-    if (!this.builtin) return;
-    const { profile, directory } = this.builtin;
+  async ensureBuiltin(id = null) {
+    for (const template of this.builtins)
+      if (!id || template.profile.id === id)
+        await this.ensureTemplate(template);
+  }
+  async ensureTemplate({ profile, directory }) {
+    const key = profile.slug || "rin";
     const existing = this.find(profile.id);
     const sources = {};
     let pristine =
@@ -117,7 +125,17 @@ class Preferences {
           pristine = false;
         }
     }
-    if (pristine) return;
+    if (pristine) {
+      Object.assign(existing, {
+        localizedNames: profile.localizedNames,
+        greetings: profile.greetings,
+        work: profile.work,
+        summary: profile.summary,
+        reactions: profile.reactions,
+        assetLicense: profile.assetLicense,
+      });
+      return;
+    }
     if (existing) {
       const previousActive = this.data.activeCharacter,
         wasActive = previousActive === existing.id;
@@ -144,7 +162,7 @@ class Preferences {
     }
     const factory = {
       id: profile.id,
-      builtin: "rin",
+      builtin: key,
       name: profile.name,
       localizedNames: profile.localizedNames,
       persona: profile.persona,
@@ -153,27 +171,35 @@ class Preferences {
       height: profile.height,
       voice: profile.voice,
       assetLicense: profile.assetLicense,
+      greetings: profile.greetings,
+      work: profile.work,
+      summary: profile.summary,
+      reactions: profile.reactions,
       images,
     };
     if (existing) {
       for (const c of this.data.characters)
-        if (c.templateSource === "rin" && !c.images.idle)
+        if (c.templateSource === key && !c.images.idle)
           c.images.idle = structuredClone(images.idle);
       Object.assign(existing, factory);
-    } else this.data.characters.unshift(factory);
+    } else this.data.characters.push(factory);
   }
   editable(character) {
-    if (!this.builtin || character.id !== this.builtin.profile.id)
-      return character;
+    const template = this.builtins.find((b) => b.profile.id === character.id);
+    if (!template) return character;
     const copy = structuredClone(character);
     copy.id = randomUUID();
-    copy.templateSource = "rin";
+    copy.templateSource = template.profile.slug || "rin";
     copy.images ||= {};
-    copy.name = { zh: "凛 · 自定义", en: "Rin · Custom", ja: "凛 · カスタム" }[
-      this.data.language
-    ];
+    copy.name =
+      (template.profile.localizedNames?.[this.data.language] ||
+        template.profile.name) +
+      { zh: " · 自定义", en: " · Custom", ja: " · カスタム" }[
+        this.data.language
+      ];
     delete copy.builtin;
     delete copy.localizedNames;
+    delete copy.greetings;
     this.data.characters.push(copy);
     this.data.activeCharacter = copy.id;
     return copy;
@@ -423,7 +449,9 @@ class Preferences {
     if (c.name !== name.trim() || c.persona !== persona) c = this.editable(c);
     Object.assign(c, {
       name:
-        c.id !== id && name.trim() === this.builtin?.profile.name
+        c.id !== id &&
+        name.trim() ===
+          this.builtins.find((b) => b.profile.id === id)?.profile.name
           ? c.name
           : name.trim(),
       persona,
@@ -432,7 +460,8 @@ class Preferences {
     return this.snapshot();
   }
   async selectCharacter(id) {
-    if (id === this.builtin?.profile.id) await this.ensureBuiltin();
+    if (this.builtins.some((b) => b.profile.id === id))
+      await this.ensureBuiltin(id);
     if (!this.find(id)) throw new Error("error.characterMissing");
     this.data.activeCharacter = id;
     await this.save();

@@ -36,15 +36,18 @@ function t(key) {
 }
 function instructions(persona) {
   const c = preferences.find(preferences.data.activeCharacter);
-  const name =
-    c?.builtin === "rin" && c.name === "Rin"
-      ? c.localizedNames?.[preferences.data.language] || c.name
-      : c?.name;
+  const name = c?.builtin
+    ? c.localizedNames?.[preferences.data.language] || c.name
+    : c?.name;
   return (
     persona +
     "\n\n" +
     "Address the user naturally in the first person as the configured character. Use I/my rather than narrating the character in the third person. Keep the character's consistent personality, but never invent physical experiences, execution, progress or test results. Tool evidence and permission boundaries remain authoritative.\n" +
-    (name ? "Character display name: " + JSON.stringify(name) + ".\n" : "") +
+    (name
+      ? "Character display name: " +
+        JSON.stringify(name) +
+        ". Use this configured display name when introducing yourself.\n"
+      : "") +
     {
       zh: "Use natural Simplified Chinese for user-facing replies unless the user asks otherwise.",
       en: "Use natural English for user-facing replies unless the user asks otherwise.",
@@ -214,15 +217,18 @@ const handlers = {
     return preferences.setBackgroundOptions(args);
   },
   async removeBackground(args) {
+    idle();
     return preferences.removeBackground(args);
   },
   async restoreOriginal(args) {
+    idle();
     return preferences.restoreOriginal(args);
   },
   async cancelBackgroundRemoval() {
     background.cancel();
   },
   async importActionImage(args = {}) {
+    idle();
     const phase = args.phase || "idle";
     if (!PHASES.includes(phase)) throw new Error("error.action");
     const d = await dialog.showOpenDialog(win, {
@@ -244,17 +250,22 @@ const handlers = {
     return result;
   },
   async removeActionImage(args) {
+    idle();
     return preferences.removeActionImage(args);
   },
   async setLanguage({ language }) {
     return preferences.setLanguage(language);
   },
   async selectCharacter({ id }) {
+    idle();
+    const changed = preferences.data.activeCharacter !== id;
     const result = await preferences.selectCharacter(id);
+    if (changed) thread = null;
     desktop.setCharacter(result.character);
     return result;
   },
   async updateCharacter(profile) {
+    idle();
     const result = await preferences.updateCharacter(profile);
     desktop.setCharacter(result.character);
     return result;
@@ -447,10 +458,10 @@ app.whenReady().then(async () => {
     app.getPath("userData"),
     nativeImage,
     (bytes) => background.remove(bytes),
-    {
-      profile: require("../characters/rin.json"),
-      directory: path.join(root, "dist/characters/rin"),
-    },
+    require("../characters/catalog.json").map(({ slug }) => ({
+      profile: require("../characters/" + slug + ".json"),
+      directory: path.join(root, "dist/characters", slug),
+    })),
   ).load();
   const area = screen.getPrimaryDisplay().workArea;
   const width = Math.min(1440, area.width),

@@ -4,6 +4,8 @@ import "./gal-dialogue.css";
 export function GalDialogue({
   t,
   name,
+  identity,
+  greeting,
   reply,
   busy,
   phase,
@@ -25,7 +27,7 @@ export function GalDialogue({
   const source =
     reply?.text ||
     (!busy && !pending && !error && phase === "idle"
-      ? t("gal.greeting", { name })
+      ? greeting || t("gal.greeting", { name })
       : "");
   const pages = useMemo(() => dialoguePages(source), [source]),
     index = Math.min(page, pages.length - 1),
@@ -43,7 +45,7 @@ export function GalDialogue({
   useEffect(() => {
     setPage(0);
     setVisible(0);
-  }, [reply?.id, busy && !reply, pending]);
+  }, [identity, reply?.id, busy && !reply, pending]);
   useEffect(() => {
     setVisible(0);
   }, [index]);

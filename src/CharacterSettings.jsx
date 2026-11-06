@@ -1,5 +1,8 @@
 import React from "react";
 import { actions } from "../shared/character-images.mjs";
+import catalog from "../characters/catalog.json";
+import profiles from "../shared/character-presets.json";
+import "./character-presets.css";
 export function CharacterSettings({
   t,
   character,
@@ -24,6 +27,40 @@ export function CharacterSettings({
   return (
     <section className="character-settings">
       <h2>{t("Character library")}</h2>
+      <h3>{t("preset.title")}</h3>
+      <p>{t("preset.help")}</p>
+      <div className="preset-gallery" data-testid="preset-gallery">
+        {catalog.map(({ id, slug }) => {
+          const preset = profiles[slug];
+          if (!library.some((c) => c.id === id)) return null;
+          return (
+            <button
+              type="button"
+              key={id}
+              className={character?.id === id ? "selected" : ""}
+              data-testid={"preset-" + slug}
+              disabled={loading || busy}
+              onClick={() => onSelect(id)}
+              aria-pressed={character?.id === id}
+            >
+              <img
+                src={"./characters/" + slug + "/idle.png"}
+                alt=""
+                loading="lazy"
+                draggable="false"
+              />
+              <strong>
+                {preset.localizedNames?.[language] || preset.name}
+              </strong>
+              <span>{preset.work?.[language] || t("preset.original")}</span>
+              <small>
+                {preset.summary?.[language] || t("preset.rinSummary")}
+              </small>
+              {slug !== "rin" && <em>{t("preset.fanart")}</em>}
+            </button>
+          );
+        })}
+      </div>
       <button
         data-testid="original-rin"
         disabled={loading}
@@ -64,9 +101,7 @@ export function CharacterSettings({
           </option>
           {library.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.builtin === "rin" && c.name === "Rin"
-                ? c.localizedNames?.[language] || c.name
-                : c.name}
+              {c.builtin ? c.localizedNames?.[language] || c.name : c.name}
             </option>
           ))}
         </select>
@@ -94,7 +129,7 @@ export function CharacterSettings({
           data-testid="character-name"
           maxLength="80"
           value={profileName}
-          disabled={!character}
+          disabled={!character || loading || busy}
           onChange={(e) => setProfileName(e.target.value)}
         />
       </label>

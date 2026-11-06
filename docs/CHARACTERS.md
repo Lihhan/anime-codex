@@ -1,5 +1,13 @@
 # Character images and desktop controls
 
+## Included presets
+
+Settings contains protected cards for Rin, Furina, Nahida, Kaguya and Iroha Sakayori. Kaguya and Iroha use their real-world appearances. Each has its own personality and eight pose images. Switch when no task or approval is active; the active conversation selection is cleared, while stored Codex threads are preserved. The first reply after a switch belongs to the new character.
+
+Changing a preset's personality, name or images creates an independent custom copy. You can return to its original card without losing the custom copy. The original Rin button still restores Rin. Custom names are preserved verbatim; bundled names follow the interface language. Missing uploaded poses still use the idle image.
+
+Personality instructions guide tone and reactions, but truthful task status, explicit approvals and your programming instructions take priority. A character may express uncertainty and must report real failures. Local touch lines are playful UI feedback, not agent execution. See [fan-character provenance](../characters/FANART.md) for appearances and rights, and [the character gallery](../README.md#choose-a-character) for examples.
+
 ## Start with one idle image
 
 Rin is included and selected on a fresh install. To create your own character, choose **Settings → Character library → New character from idle image**. The filename supplies an initial name; edit it and the personality in Settings, then save.

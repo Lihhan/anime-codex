@@ -345,7 +345,12 @@
     "gal.send": "说给你听",
     "Choose Codex executable and connect": "选择 Codex 程序并连接",
     "Pick official Codex executable": "选择官方 Codex 可执行程序",
-    "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.": "语音使用系统 TTS，可用声音取决于操作系统。暂未实现精确口型同步。"
+    "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.": "语音使用系统 TTS，可用声音取决于操作系统。暂未实现精确口型同步。",
+    "preset.title": "预设角色",
+    "preset.help": "选择角色会新开对话，原有 Codex 记录仍保留在工作台。修改预设会创建自定义副本。",
+    "preset.original": "原创角色",
+    "preset.fanart": "非官方同人预设",
+    "preset.rinSummary": "冷静、温柔，也保持好奇心"
   },
   "en": {
     "Start the Electron desktop app to connect to Codex.": "Start the Electron desktop app to connect to Codex.",
@@ -693,7 +698,12 @@
     "gal.send": "Say it",
     "Choose Codex executable and connect": "Choose Codex executable and connect",
     "Pick official Codex executable": "Pick official Codex executable",
-    "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.": "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented."
+    "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.": "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.",
+    "preset.title": "Character presets",
+    "preset.help": "Choose a character to start a fresh conversation. Previous Codex threads remain in the workspace. Editing a preset creates a custom copy.",
+    "preset.original": "Original character",
+    "preset.fanart": "Unofficial fan preset",
+    "preset.rinSummary": "Calm, warm and curious"
   },
   "ja": {
     "Start the Electron desktop app to connect to Codex.": "Electron デスクトップアプリから起動してください。",
@@ -1041,6 +1051,11 @@
     "gal.send": "伝える",
     "Choose Codex executable and connect": "Codex 実行ファイルを選択して接続",
     "Pick official Codex executable": "公式 Codex 実行ファイルを選択",
-    "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.": "音声にはシステム TTS を使います。利用できる音声は OS によって異なります。正確なリップシンクは未実装です。"
+    "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.": "音声にはシステム TTS を使います。利用できる音声は OS によって異なります。正確なリップシンクは未実装です。",
+    "preset.title": "プリセットキャラクター",
+    "preset.help": "キャラクターを選ぶと新しい会話を始めます。過去の履歴はワークスペースに残ります。編集するとカスタムコピーを作ります。",
+    "preset.original": "オリジナル",
+    "preset.fanart": "非公式ファンプリセット",
+    "preset.rinSummary": "落ち着いていて優しく、好奇心旺盛"
   }
 }

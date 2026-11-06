@@ -4,7 +4,13 @@ Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3
 
 ## Automated checks
 
-Latest unit results: **52/52 tests passed**, including native Mac executable discovery/validation, one-shot inference-process retirement, exact Unicode dialogue pagination, turn isolation, layout persistence, pixel-beagle frame/alpha validation, animation selection, action-game physics, original Rin protection, earlier game rules, typography, touch geometry, foreground-loss rejection and upgrade-safe character preservation. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+Latest unit results: **55/55 tests passed**, including native Mac executable discovery/validation, one-shot inference-process retirement, exact Unicode dialogue pagination, turn isolation, layout persistence, pixel-beagle frame/alpha validation, animation selection, action-game physics, original Rin protection, earlier game rules, typography, touch geometry, foreground-loss rejection and upgrade-safe character preservation. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+
+## Version 0.7.0: character presets
+
+All 55 unit tests passed locally, including five-template installation, transparent aligned images, editing/copy protection, original restoration and upgrade preservation. The preset UI check passed four identities and thinking poses, clearing stale replies on switch, disabled switching during a work fixture, custom-copy editing, original Rin restoration and selection persistence after restart. Customization, play and arcade source checks also passed. Work/approval fixtures are UI tests, not executed programming tasks.
+
+Four real read-only Codex turns ran through the desktop bubble composer, one per fan character. Each introduced itself in first person, read a uniquely marked file through an actual tool, returned its exact content and responded to the same hypothetical frustrated-user scenario in its configured voice. The four stored threads were independent, no error was shown, and the source file remained unchanged. The local report is test-results/presets-real-codex.json. These checks demonstrate persona instructions and real file reads; subjective resemblance is a fan interpretation, not a guarantee of canonical behavior on every turn.
 
 ## Version 0.6.0: macOS and Windows
 
@@ -34,7 +40,7 @@ For 0.2.4, source and packaged UI checks passed the sticky top-right settings cl
 
 The 0.2.2 source app and Windows packaged executable both passed the UI/customization checks, including switching from a custom character to Rin and back, preserving that custom selection on restart, and transparent approval-state rendering. The packaged 0.2.2 executable also passed the real local background-removal check with Rin present in the library. Real Codex backend evidence below is from the earlier backend implementation, which this character-library update does not change.
 
-The current unit suite contains 52 tests covering:
+The current unit suite contains 55 tests covering:
 
 - Idle-only fallback for every action; selecting an uploaded action and restoring fallback after removal.
 - Charged-hop limits, precise landings/streaks, reachable platform generation, misses, running jump/crouch collisions, bounded deterministic frame stepping, pause behavior and legacy original-Rin copy/restore migration.
