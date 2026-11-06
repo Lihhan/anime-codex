@@ -121,9 +121,25 @@ try {
   );
   assert.ok(opaque > 1000, "Character foreground disappeared");
   assert.equal(rgbUnchanged, true);
-  await page.getByTestId("background-idle").click();
-  await page.locator(".background-progress").waitFor();
-  await page.getByTestId("cancel-background").click();
+  // Trigger the actual cancel-button handler as soon as processing is shown.
+  // Native inference can finish before a slow runner's pointer-stability wait.
+  await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const observer = new MutationObserver(() => {
+          const button = document.querySelector(
+            '[data-testid="cancel-background"]',
+          );
+          if (button) {
+            observer.disconnect();
+            button.click();
+            resolve();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        document.querySelector('[data-testid="background-idle"]').click();
+      }),
+  );
   await page.locator(".background-progress").waitFor({ state: "hidden" });
   await page.getByRole("alert").waitFor();
   assert.equal(

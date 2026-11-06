@@ -435,6 +435,7 @@ app.whenReady().then(async () => {
       path.join(app.getPath("userData"), "models"),
     workerPath: path.join(workerRoot, "electron/background-worker.cjs"),
     mathPath: path.join(workerRoot, "shared/background-math.cjs"),
+    reuseWorker: !(process.platform === "darwin" && process.arch === "x64"),
     workerFactory:
       process.platform === "darwin" && process.arch === "x64"
         ? (file, options) =>

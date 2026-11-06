@@ -20,6 +20,7 @@ class BackgroundRemoval {
     model = MODEL,
     fetchFn = globalThis.fetch,
     workerFactory = (file, options) => new Worker(file, options),
+    reuseWorker = true,
   }) {
     Object.assign(this, {
       directory,
@@ -29,6 +30,7 @@ class BackgroundRemoval {
       model,
       fetchFn,
       workerFactory,
+      reuseWorker,
     });
     this.status = { stage: "idle", percent: 0 };
     this.busy = false;
@@ -162,6 +164,11 @@ class BackgroundRemoval {
         this.job = { id, timer, resolve, reject };
         this.worker.postMessage({ id, image });
       });
+      if (!this.reuseWorker) {
+        const worker = this.worker;
+        this.worker = null;
+        worker?.terminate();
+      }
       this.publish("ready", 100);
       this.idleTimer = setTimeout(() => {
         this.worker?.terminate();
@@ -184,6 +191,7 @@ class BackgroundRemoval {
             model: GENERAL_MODEL,
             fetchFn: this.fetchFn,
             workerFactory: this.workerFactory,
+            reuseWorker: this.reuseWorker,
             emit: (event) => {
               this.status = event.params;
               this.emit(event);
