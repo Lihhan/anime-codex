@@ -21,9 +21,14 @@ try {
   page.on("pageerror", (e) => errors.push(e.message));
   await page.getByTestId("gal-dialogue").waitFor();
   await page.getByTestId("language-select").selectOption("en");
+  await page.waitForFunction(() => document.documentElement.lang === "en");
   assert.equal(await page.getByTestId("gal-input").count(), 1);
   await page.getByTestId("gal-line").click();
-  assert.ok((await page.getByTestId("gal-line").innerText()).includes("Rin"));
+  await page.waitForFunction(() =>
+    document
+      .querySelector('[data-testid="gal-line"]')
+      .textContent.includes("Rin"),
+  );
   await page.getByTestId("gal-input").fill("A preserved draft");
   assert.equal(await page.getByTestId("gal-send").isDisabled(), true);
   assert.equal(
@@ -64,7 +69,11 @@ try {
   assert.ok(count > 1);
   let joined = "";
   for (let i = 0; i < count; i++) {
-    await page.getByTestId("gal-line").click();
+    if (
+      (await page.getByTestId("gal-line").getAttribute("aria-label")) ===
+      "Show full page"
+    )
+      await page.getByTestId("gal-line").click();
     joined += await page
       .getByTestId("gal-line")
       .locator("span")
