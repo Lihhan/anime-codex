@@ -86,7 +86,21 @@ export function useOverlayPointer(api, { selector, dragging, enabled = true }) {
       busy = true;
       try {
         const p = await api.companionCursor();
-        if (!stopped) move(p.x, p.y);
+        if (!stopped) {
+          const world = document.querySelector(".pet-world");
+          if (world) {
+            const r = world.getBoundingClientRect(),
+              target = document.elementFromPoint(p.x, p.y);
+            world.dataset.nativePointer = String(
+              (p.x >= r.left &&
+                p.x < r.right &&
+                p.y >= r.top &&
+                p.y < r.bottom) ||
+                !!target?.closest(".pet-world"),
+            );
+          }
+          move(p.x, p.y);
+        }
       } catch {
         apply(enabled && !dragging.current);
       } finally {

@@ -1366,3 +1366,8 @@ html.companion-mode body {font-family: -apple-system,BlinkMacSystemFont,"Segoe U
 .toggle-row > span {min-width:0;flex:1;}
 .toggle-row input {flex-shrink:0;}
 .companion-panel {max-width:calc(100vw - 24px);}
+
+/* Native cursor sampling also restores controls after focus changes. */
+.pet-world[data-native-pointer="true"] .pet-dock,
+.pet-world[data-native-pointer="true"] .pet-caption,
+.pet-world[data-native-pointer="true"] .mini-toggle {opacity:1;visibility:visible;transition-delay:0s;}

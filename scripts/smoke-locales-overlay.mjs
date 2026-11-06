@@ -258,6 +258,10 @@ try {
       y: b.y + rect.y + rect.height / 2,
     });
   }, bodyBox);
+  await page.waitForFunction(
+    () =>
+      document.querySelector(".pet-world")?.dataset.nativePointer === "true",
+  );
   await page.getByTestId("pet-body").hover();
   await page.getByTitle("设置", { exact: true }).click();
   await page
