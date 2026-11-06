@@ -43,7 +43,7 @@ try {
   await page.getByTestId("gal-dialogue").waitFor();
   await page.getByTestId("gal-input").fill("Packaged Mac UI check; not sent");
   assert.equal(await page.locator(".gal-choices").count(), 0);
-  assert.equal(await page.getByTestId("gal-send").isDisabled(), true);
+  assert.equal(await page.getByTestId("gal-send").isDisabled(), false);
   const result = await app.evaluate(async ({ app }) => {
     const root = app.getAppPath(),
       require = process
