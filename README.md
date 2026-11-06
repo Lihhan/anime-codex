@@ -6,7 +6,7 @@ A transparent Windows desktop programming companion powered by the **real Codex 
 
 ## Meet Rin
 
-**Rin is included in the character library and selected on a fresh install.** Her calm, warm personality and eight original expressions work with the same action-image system as your own characters. Upgrading adds Rin without replacing your selected character, images or settings. You can switch characters, customize Rin, or upload someone entirely different.
+**Original Rin is included in the character library and selected on a fresh install.** Her calm, warm personality and eight expressions use the same image system as custom characters. Editing the original creates a custom copy, preserving the bundled template. **Settings → Use original Rin** restores her original appearance without deleting your custom character. Upgrading also preserves previously modified Rin profiles as custom copies before repairing the original template.
 
 ![Rin in the actual transparent desktop app](docs/images/rin-desktop.png)
 
@@ -28,10 +28,18 @@ Choose **Play with me** to open a separate, resizable window:
 
 - **Anime character · ten questions:** secretly choose from the displayed 12-character offline roster. Rin asks yes/no/not-sure questions and makes a guess within ten questions. Arbitrary characters outside that roster are not supported yet.
 - **Memory pairs:** find six matching pairs, with feedback, a turn counter and replay.
+- **Beagle hop:** hold the mouse or Space, then release to jump between floating islands. Charge controls distance, a glowing arc previews the landing, and center landings earn bonus points and a perfect streak.
+- **Beagle runner:** click, Space or ↑ to jump over crystals; hold ↓ to duck under low flying kites. The pace increases as the run continues.
+
+![Actual charged-hop game after a center landing](docs/images/hop-game.png)
+
+![Actual pixel-art beagle runner](docs/images/runner-game.png)
+
+Both action games use an original **pixel-art beagle** with eight action frames, independently of Rin or the selected character. Stars, platforms, terrain and obstacles use a 400×210 canvas with nearest-neighbor scaling and no smoothing. Pause, replay, local best scores and reduced decorative motion are supported. Switching tabs, losing focus or receiving an approval pauses the round; resuming is explicit. Switching back preserves the round until the game window is closed. [Controls and mechanics](docs/ARCADE.md) · [Beagle artwork and prompts](public/games/beagle/ASSET.md).
 
 ![Actual Rin playroom before any programming test fixture](docs/images/playroom.png)
 
-Games use the selected character and follow the main UI language and text size. **Show main window** minimizes the game without resetting the round; **Play with me** restores it. Closing a game discards that round while your Codex task continues. The work/approval badge follows real backend status. Approvals remain in the main window and require your decision.
+Guessing and memory pairs display the selected conversation character; the action games use the fixed beagle atlas. All games follow the main UI language. **Show main window** minimizes the game without resetting the round; **Play with me** restores it. Closing a game discards that round while your Codex task continues. The work/approval badge follows real backend status. Approvals remain in the main window and require your decision.
 
 Game dialogue and rules run locally without consuming Codex quota. Its restricted window bridge cannot invoke programming tools, answer approvals or access conversation/personality data. See [game details and roster references](docs/PLAY.md).
 
@@ -96,7 +104,7 @@ npm start
 
 The repository is private, so cloning requires GitHub access. Use `npm run dev` for development. If Electron's runtime was not downloaded, run `node node_modules/electron/install.js`.
 
-A packaged `Anime Codex 0.3.0.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.3.0/`.
+A packaged `Anime Codex 0.4.0.exe` runs without Node/npm but still requires your local Codex installation and login. This is an unsigned development build; it bundles neither Codex nor credentials. Packages are written to `release/v0.4.0/`.
 
 ## First use
 
@@ -126,6 +134,7 @@ npm run build
 npm run smoke:ui
 npm run smoke:customization
 npm run smoke:play
+npm run smoke:arcade
 # Real handshake/account read with an empty PATH, including restart persistence:
 npm run smoke:connection
 # Optional real local AI check (downloads the model if missing):

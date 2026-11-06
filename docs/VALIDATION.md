@@ -4,7 +4,11 @@ Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3
 
 ## Automated checks
 
-Latest unit results: **34/34 tests passed**, including game rules, typography persistence, touch geometry, Windows executable discovery, foreground-loss rejection, legacy cutout recovery, fresh Rin installation and upgrade-safe custom selection. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+Latest unit results: **43/43 tests passed**, including pixel-beagle frame/alpha validation, animation selection, action-game physics, original Rin protection, earlier game rules, typography, touch geometry, executable discovery, foreground-loss rejection and upgrade-safe character preservation. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+
+The 0.4.0 source arcade check passed an actual mouse-held hop with a scored landing, runner jump and collision, pause/resume, preserving a previous game tab, best scores after restart, and an approval fixture that blocks resume even after restarting the round. Its character regression replaced default Rin's idle image, verified automatic custom-copy creation, returned to the original and reselected the intact custom image. Legacy-copy preservation and all bundled image restoration are separately covered by unit tests. Source UI, customization and earlier play checks also passed. No real programming turn was rerun for this game/template update; work/approval fixtures are explicitly not execution evidence.
+
+The final Windows 0.4.0 packaged executable passed the arcade, main UI, customization and earlier play checks. The arcade test confirmed the fixed beagle image source, absence of character portrait elements in action mode, a 400×210 canvas, disabled image smoothing and pixelated CSS scaling. Both action-game screenshots were refreshed from that packaged build before work fixtures were injected. Original Rin restoration, custom-image retention and restart/high-score checks passed as well.
 
 The 0.3.0 source play-window smoke check passed font sizing/persistence, touch feedback and opt-out, restricted bridge/data, completing both games, live language refresh and preserving an explicitly marked main-window work fixture. Source UI and customization checks passed. The game fixture is not presented as a real programming task.
 
@@ -14,9 +18,10 @@ For 0.2.4, source and packaged UI checks passed the sticky top-right settings cl
 
 The 0.2.2 source app and Windows packaged executable both passed the UI/customization checks, including switching from a custom character to Rin and back, preserving that custom selection on restart, and transparent approval-state rendering. The packaged 0.2.2 executable also passed the real local background-removal check with Rin present in the library. Real Codex backend evidence below is from the earlier backend implementation, which this character-library update does not change.
 
-The current unit suite contains 34 tests covering:
+The current unit suite contains 43 tests covering:
 
 - Idle-only fallback for every action; selecting an uploaded action and restoring fallback after removal.
+- Charged-hop limits, precise landings/streaks, reachable platform generation, misses, running jump/crouch collisions, bounded deterministic frame stepping, pause behavior and legacy original-Rin copy/restore migration.
 - Guessing every roster character within ten answers, bounded unknown answers, memory flip/match/lock rules, touch geometry/drag separation, saved font/interaction settings and multilingual game copy.
 - Rejection of empty/near-empty masks, general model preprocessing, and restoration of a legacy blank cutout from its saved original.
 - Bundled Rin installed once, transparent aligned action images, preserved profile edits and upgrade-safe custom selection.
@@ -51,7 +56,7 @@ UI-only approval/action fixtures never count as executed commands. A real turn m
 
 ## Packaging and limitations
 
-Windows 0.3.0 packages are built under `release/v0.3.0/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
+Windows 0.4.0 packages are built under `release/v0.4.0/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
 
 Geometry tests cover multiple logical display areas, including negative coordinates. Not every monitor arrangement, DPI transition, GPU, system voice, accessibility tool or managed Codex policy has been physically tested. Image mode does not deform faces or limbs, generate missing artwork, perform Live2D rendering, or provide phoneme-accurate lip sync.
 

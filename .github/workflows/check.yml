@@ -17,4 +17,5 @@ jobs:
       - run: npm run smoke:ui
       - run: npm run smoke:customization
       - run: npm run smoke:play
+      - run: npm run smoke:arcade
       - run: npm audit

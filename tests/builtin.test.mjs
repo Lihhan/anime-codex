@@ -27,16 +27,52 @@ test("Rin is installed once, selected on fresh installs, and has transparent ali
     assert.equal(png.data[3], 0);
     assert.ok(png.data.some((value, index) => index % 4 === 3 && value > 240));
   }
-  await p.updateCharacter({
+  const customized = await p.updateCharacter({
     id: profile.id,
     name: "My Rin",
     persona: "A custom personality.",
   });
-  await p.removeActionImage({ id: profile.id, phase: "thinking" });
+  const customId = customized.character.id;
+  assert.notEqual(customId, profile.id);
+  await p.removeActionImage({ id: customId, phase: "thinking" });
   p = await new Preferences(directory, null, null, builtin).load();
-  assert.equal(p.data.characters.length, 1);
-  assert.equal(p.find(profile.id).name, "My Rin");
-  assert.equal(p.find(profile.id).images.thinking, undefined);
+  assert.equal(p.data.characters.length, 2);
+  assert.equal(p.find(customId).name, "My Rin");
+  assert.equal(p.find(customId).images.thinking, undefined);
+  await p.selectCharacter(profile.id);
+  assert.equal((await p.snapshot()).character.name, "Rin");
+  assert.ok((await p.snapshot()).character.images.thinking);
+});
+
+test("modified legacy Rin is preserved as a custom copy, while selecting Rin restores all bundled images", async (t) => {
+  const directory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "anime-legacy-rin-"),
+  );
+  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  let p = await new Preferences(directory, null, null, builtin).load();
+  const first = (await p.snapshot()).character.images.idle.src;
+  const file = "3be475d7-0229-4d38-af6c-1913e5f0431b.png";
+  const edited = new PNG({ width: 12, height: 20 });
+  edited.data.fill(255);
+  await fs.writeFile(
+    path.join(directory, "characters", file),
+    PNG.sync.write(edited),
+  );
+  p.find(profile.id).images.idle = { file, width: 12, height: 20 };
+  p.find(profile.id).width = 12;
+  p.find(profile.id).height = 20;
+  await p.save();
+  p = await new Preferences(directory, null, null, builtin).load();
+  const custom = (await p.snapshot()).character;
+  assert.notEqual(custom.id, profile.id);
+  assert.equal(custom.images.idle.width, 12);
+  assert.equal(p.data.characters.length, 2);
+  await p.selectCharacter(profile.id);
+  assert.equal((await p.snapshot()).character.images.idle.src, first);
+  await p.selectCharacter(custom.id);
+  assert.equal((await p.snapshot()).character.images.idle.width, 12);
+  p = await new Preferences(directory, null, null, builtin).load();
+  assert.equal(p.data.characters.length, 2);
 });
 
 test("adding Rin on upgrade preserves an existing custom selection and image assignments", async (t) => {

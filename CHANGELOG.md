@@ -1,3 +1,13 @@
+## 0.4.0
+
+- Add charge-controlled platform hopping with landing preview, center bonuses and perfect streaks.
+- Add character running with jump/duck controls, ground/flying obstacles and increasing pace.
+- Add pause/replay, local best scores, tab-session preservation and automatic focus/approval pauses.
+- Render a dedicated eight-frame pixel-art beagle with pixel scenery, independently of conversation portraits.
+- Fix original Rin being overwritten by custom image edits: edit a copy and keep a protected template.
+- Preserve legacy Rin modifications in custom copies and add Use original Rin.
+- Add three-language controls, gameplay checks, character-restoration regressions and real-window demos.
+
 ## 0.3.0
 
 - Raise conversation text to 18 px by default, with persistent 14–24 px sizing and stronger contrast.

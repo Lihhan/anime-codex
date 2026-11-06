@@ -4,7 +4,7 @@
 
 Rin is included and selected on a fresh install. To create your own character, choose **Settings → Character library → New character from idle image**. The filename supplies an initial name; edit it and the personality in Settings, then save.
 
-Create multiple characters from your own idle portraits and switch them from the library. Rin remains available alongside them. Upgrading adds Rin once without changing your current selection, profile edits or action assignments. Rin can be renamed and customized like an imported character. Her default display name follows the UI language until renamed. The app does not synthesize missing pictures. It uses the idle image whenever an action image is absent.
+Create multiple characters from your own idle portraits and switch them from the library. Original Rin remains a protected template. Editing her images or profile creates a separate custom copy. Use **Use original Rin** to return to the original pictures. Upgrades preserve older modified Rin profiles as custom copies before repairing the template; existing custom characters remain available. Original Rin's name follows the UI language; custom names are kept verbatim. Missing action images use idle rather than synthesized artwork.
 
 | Slot | Source | Missing-image behavior |
 |---|---|---|

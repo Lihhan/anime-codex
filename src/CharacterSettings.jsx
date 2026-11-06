@@ -5,6 +5,7 @@ export function CharacterSettings({
   character,
   library,
   language,
+  onOriginalRin,
   profileName,
   setProfileName,
   loading,
@@ -23,6 +24,18 @@ export function CharacterSettings({
   return (
     <section className="character-settings">
       <h2>{t("Character library")}</h2>
+      <button
+        data-testid="original-rin"
+        disabled={loading}
+        onClick={onOriginalRin}
+      >
+        {t("Use original Rin")}
+      </button>
+      <p>
+        {t(
+          "Editing Rin creates a custom copy. Original Rin stays in the library.",
+        )}
+      </p>
       <label className="checkbox-label">
         <input
           data-testid="auto-background"

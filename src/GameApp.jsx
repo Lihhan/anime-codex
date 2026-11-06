@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { ArcadeGame } from "./ArcadeGame";
 import { createTranslator } from "../shared/i18n.mjs";
 import { roster } from "../shared/play-catalog.mjs";
 import {
@@ -23,6 +24,8 @@ export function GameApp() {
   const [memory, setMemory] = useState(newMemory),
     [error, setError] = useState("");
   const t = createTranslator(data.language);
+  const sessions = useRef({});
+  const arcade = ["hop", "runner"].includes(mode);
   const name =
     data.character?.builtin === "rin" && data.character.name === "Rin"
       ? data.character.localizedNames?.[data.language] || "Rin"
@@ -91,7 +94,7 @@ export function GameApp() {
   }
   return (
     <main
-      className="play-app"
+      className={"play-app" + (arcade ? " arcade-mode" : "")}
       style={{ "--chat-font-size": `${data.interface?.fontSize || 18}px` }}
     >
       <header className="play-header">
@@ -126,6 +129,16 @@ export function GameApp() {
       </div>
       {error && <p role="alert">{error}</p>}
       <nav className="play-tabs" aria-label={t("play.choose")}>
+        {["hop", "runner"].map((kind) => (
+          <button
+            key={kind}
+            data-testid={kind + "-tab"}
+            aria-pressed={mode === kind}
+            onClick={() => setMode(kind)}
+          >
+            {t("arcade." + kind + "Title")}
+          </button>
+        ))}
         <button
           data-testid="guess-tab"
           aria-pressed={mode === "guess"}
@@ -141,152 +154,165 @@ export function GameApp() {
           {t("play.memoryTitle")}
         </button>
       </nav>
-      <div className="play-content">
-        <aside className="play-companion">
-          <div className="play-avatar">
-            {data.character && (
-              <ImageCharacter
-                character={data.character}
-                phase={emotion}
-                name={name}
-                t={t}
-              />
+      {arcade ? (
+        <ArcadeGame
+          key={mode}
+          mode={mode}
+          name={name}
+          t={t}
+          sessions={sessions}
+          approval={data.status.approval}
+        />
+      ) : (
+        <div className="play-content">
+          <aside className="play-companion">
+            <div className="play-avatar">
+              {data.character && (
+                <ImageCharacter
+                  character={data.character}
+                  phase={emotion}
+                  name={name}
+                  t={t}
+                />
+              )}
+            </div>
+            <strong>{name}</strong>
+            <p>{t("play.greeting", { name })}</p>
+          </aside>
+          <section
+            className="play-game"
+            aria-label={t(
+              mode === "guess" ? "play.guessTitle" : "play.memoryTitle",
             )}
-          </div>
-          <strong>{name}</strong>
-          <p>{t("play.greeting", { name })}</p>
-        </aside>
-        <section
-          className="play-game"
-          aria-label={t(
-            mode === "guess" ? "play.guessTitle" : "play.memoryTitle",
-          )}
-        >
-          <div
-            className="play-speech"
-            aria-live="polite"
-            data-testid="play-speech"
-            data-question={question || ""}
-            key={`${mode}-${guess.asked.length}-${verdict}-${memory.moves}`}
           >
-            <span>{name}</span>
-            <p>{line}</p>
-          </div>
-          {mode === "guess" ? (
-            <>
-              <p className="play-counter">
-                {t("play.guessCounter", {
-                  count: guess.asked.length,
-                  remaining: guess.candidates.length,
-                })}
-              </p>
-              {question && !verdict && (
-                <div className="play-answers">
-                  {["yes", "no", "unknown"].map((a) => (
-                    <button
-                      key={a}
-                      data-testid={"answer-" + a}
-                      onClick={() =>
-                        setGuess((p) => answerGuess(p, question, a))
-                      }
-                    >
-                      {t("play." + a)}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {!question && !verdict && guess.candidates.length === 1 && (
-                <div className="play-answers">
-                  <button
-                    data-testid="guess-correct"
-                    onClick={() => setVerdict("right")}
-                  >
-                    {t("play.correct")}
-                  </button>
-                  <button onClick={() => setVerdict("wrong")}>
-                    {t("play.wrong")}
-                  </button>
-                </div>
-              )}
-              {!question && !verdict && guess.candidates.length > 1 && (
-                <div className="play-answers">
-                  {guess.candidates.map((id) => (
-                    <button key={id} onClick={() => setVerdict("right")}>
-                      {characterName(roster.find((c) => c.id === id))}
-                    </button>
-                  ))}
-                  <button onClick={() => setVerdict("wrong")}>
-                    {t("play.none")}
-                  </button>
-                </div>
-              )}
-              <details className="play-roster">
-                <summary>{t("play.roster", { count: roster.length })}</summary>
-                <p>{t("play.rosterHint")}</p>
-                <p>{roster.map(characterName).join(" · ")}</p>
-              </details>
-              {!!guess.history.length && (
-                <details>
-                  <summary>{t("play.history")}</summary>
-                  <ol>
-                    {guess.history.map((h) => (
-                      <li key={h.id}>
-                        {t("play.q." + h.id)} — {t("play." + h.answer)}
-                      </li>
+            <div
+              className="play-speech"
+              aria-live="polite"
+              data-testid="play-speech"
+              data-question={question || ""}
+              key={`${mode}-${guess.asked.length}-${verdict}-${memory.moves}`}
+            >
+              <span>{name}</span>
+              <p>{line}</p>
+            </div>
+            {mode === "guess" ? (
+              <>
+                <p className="play-counter">
+                  {t("play.guessCounter", {
+                    count: guess.asked.length,
+                    remaining: guess.candidates.length,
+                  })}
+                </p>
+                {question && !verdict && (
+                  <div className="play-answers">
+                    {["yes", "no", "unknown"].map((a) => (
+                      <button
+                        key={a}
+                        data-testid={"answer-" + a}
+                        onClick={() =>
+                          setGuess((p) => answerGuess(p, question, a))
+                        }
+                      >
+                        {t("play." + a)}
+                      </button>
                     ))}
-                  </ol>
-                </details>
-              )}
-            </>
-          ) : (
-            <>
-              <p className="play-counter">
-                {t("play.memoryCounter", {
-                  moves: memory.moves,
-                  pairs: memory.matched.length / 2,
-                })}
-              </p>
-              <div className="memory-grid">
-                {memory.cards.map((card, index) => {
-                  const visible =
-                    memory.open.includes(card.id) ||
-                    memory.matched.includes(card.id);
-                  return (
+                  </div>
+                )}
+                {!question && !verdict && guess.candidates.length === 1 && (
+                  <div className="play-answers">
                     <button
-                      key={card.id}
-                      data-testid={"memory-card-" + card.id}
-                      className={
-                        "memory-card " +
-                        (visible ? "flipped " : "") +
-                        (memory.matched.includes(card.id) ? "matched" : "")
-                      }
-                      aria-label={
-                        visible
-                          ? card.symbol
-                          : t("play.card", { number: index + 1 })
-                      }
-                      disabled={
-                        memory.matched.includes(card.id) ||
-                        (memory.open.length === 2 && !visible)
-                      }
-                      onClick={() => setMemory((p) => flipCard(p, card.id))}
+                      data-testid="guess-correct"
+                      onClick={() => setVerdict("right")}
                     >
-                      {visible ? card.symbol : "✦"}
+                      {t("play.correct")}
                     </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-          <button
-            className="play-restart"
-            data-testid="play-restart"
-            onClick={restart}
-          >
-            {t("play.restart")}
-          </button>
-        </section>
-      </div>
+                    <button onClick={() => setVerdict("wrong")}>
+                      {t("play.wrong")}
+                    </button>
+                  </div>
+                )}
+                {!question && !verdict && guess.candidates.length > 1 && (
+                  <div className="play-answers">
+                    {guess.candidates.map((id) => (
+                      <button key={id} onClick={() => setVerdict("right")}>
+                        {characterName(roster.find((c) => c.id === id))}
+                      </button>
+                    ))}
+                    <button onClick={() => setVerdict("wrong")}>
+                      {t("play.none")}
+                    </button>
+                  </div>
+                )}
+                <details className="play-roster">
+                  <summary>
+                    {t("play.roster", { count: roster.length })}
+                  </summary>
+                  <p>{t("play.rosterHint")}</p>
+                  <p>{roster.map(characterName).join(" · ")}</p>
+                </details>
+                {!!guess.history.length && (
+                  <details>
+                    <summary>{t("play.history")}</summary>
+                    <ol>
+                      {guess.history.map((h) => (
+                        <li key={h.id}>
+                          {t("play.q." + h.id)} — {t("play." + h.answer)}
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="play-counter">
+                  {t("play.memoryCounter", {
+                    moves: memory.moves,
+                    pairs: memory.matched.length / 2,
+                  })}
+                </p>
+                <div className="memory-grid">
+                  {memory.cards.map((card, index) => {
+                    const visible =
+                      memory.open.includes(card.id) ||
+                      memory.matched.includes(card.id);
+                    return (
+                      <button
+                        key={card.id}
+                        data-testid={"memory-card-" + card.id}
+                        className={
+                          "memory-card " +
+                          (visible ? "flipped " : "") +
+                          (memory.matched.includes(card.id) ? "matched" : "")
+                        }
+                        aria-label={
+                          visible
+                            ? card.symbol
+                            : t("play.card", { number: index + 1 })
+                        }
+                        disabled={
+                          memory.matched.includes(card.id) ||
+                          (memory.open.length === 2 && !visible)
+                        }
+                        onClick={() => setMemory((p) => flipCard(p, card.id))}
+                      >
+                        {visible ? card.symbol : "✦"}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+            <button
+              className="play-restart"
+              data-testid="play-restart"
+              onClick={restart}
+            >
+              {t("play.restart")}
+            </button>
+          </section>
+        </div>
+      )}
       <footer className="play-footer">{t("play.localNote")}</footer>
     </main>
   );

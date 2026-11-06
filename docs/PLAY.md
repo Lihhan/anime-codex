@@ -1,5 +1,7 @@
 # Conversation, touch and games
 
+The playroom also includes **Charge & hop** and **Starlight runner**. See [action-game controls, pause behavior and original Rin protection](ARCADE.md).
+
 ## Character voice
 
 New/resumed coding conversations receive a first-person instruction and the configured character's display name. Rin's default name is localized. User-edited personalities remain saved, while truthful execution reporting and permission rules keep priority. The app does not rewrite responses through another model. Old replies remain unchanged.

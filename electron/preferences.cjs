@@ -84,8 +84,51 @@ class Preferences {
     return this;
   }
   async ensureBuiltin() {
-    if (!this.builtin || this.find(this.builtin.profile.id)) return;
+    if (!this.builtin) return;
     const { profile, directory } = this.builtin;
+    const existing = this.find(profile.id);
+    const sources = {};
+    let pristine =
+      !!existing &&
+      existing.name === profile.name &&
+      existing.persona === profile.persona &&
+      existing.width === profile.width &&
+      existing.height === profile.height;
+    for (const [phase, name] of Object.entries(profile.files)) {
+      if (!PHASES.includes(phase) || !/^[a-z]+\.png$/.test(name))
+        throw new Error("error.imageType");
+      sources[phase] = await fs.readFile(path.join(directory, name));
+      if (existing)
+        try {
+          const entry = existing.images?.[phase];
+          if (
+            !entry ||
+            entry.width !== profile.width ||
+            entry.height !== profile.height ||
+            entry.backgroundRemoved ||
+            !(await fs.readFile(this.assetPath(entry.file))).equals(
+              sources[phase],
+            )
+          )
+            pristine = false;
+        } catch {
+          pristine = false;
+        }
+    }
+    if (pristine) return;
+    if (existing) {
+      const previousActive = this.data.activeCharacter,
+        wasActive = previousActive === existing.id;
+      const copy = this.editable(existing);
+      if (!wasActive) this.data.activeCharacter = previousActive;
+      // Preserve old modifications before restoring the bundled template.
+      for (const phase of Object.keys(copy.images || {}))
+        try {
+          await fs.access(this.assetPath(copy.images[phase].file));
+        } catch {
+          delete copy.images[phase];
+        }
+    }
     const images = {};
     await fs.mkdir(path.join(this.directory, "characters"), {
       recursive: true,
@@ -97,7 +140,7 @@ class Preferences {
       await fs.copyFile(path.join(directory, name), this.assetPath(file));
       images[phase] = { file, width: profile.width, height: profile.height };
     }
-    this.data.characters.unshift({
+    const factory = {
       id: profile.id,
       builtin: "rin",
       name: profile.name,
@@ -109,7 +152,29 @@ class Preferences {
       voice: profile.voice,
       assetLicense: profile.assetLicense,
       images,
-    });
+    };
+    if (existing) {
+      for (const c of this.data.characters)
+        if (c.templateSource === "rin" && !c.images.idle)
+          c.images.idle = structuredClone(images.idle);
+      Object.assign(existing, factory);
+    } else this.data.characters.unshift(factory);
+  }
+  editable(character) {
+    if (!this.builtin || character.id !== this.builtin.profile.id)
+      return character;
+    const copy = structuredClone(character);
+    copy.id = randomUUID();
+    copy.templateSource = "rin";
+    copy.images ||= {};
+    copy.name = { zh: "凛 · 自定义", en: "Rin · Custom", ja: "凛 · カスタム" }[
+      this.data.language
+    ];
+    delete copy.builtin;
+    delete copy.localizedNames;
+    this.data.characters.push(copy);
+    this.data.activeCharacter = copy.id;
+    return copy;
   }
   find(id) {
     return this.data.characters.find((c) => c.id === id);
@@ -196,6 +261,7 @@ class Preferences {
       warning: this.warning,
       backgroundRemoval: this.data.backgroundRemoval,
       interface: this.data.interface,
+      builtinCharacterId: this.builtin?.profile.id,
     };
   }
   async decodeImage(file) {
@@ -261,6 +327,7 @@ class Preferences {
       };
       this.data.characters.push(c);
     }
+    c = this.editable(c);
     c.images[phase] = entry;
     if (phase === "idle") {
       c.width = width;
@@ -271,10 +338,11 @@ class Preferences {
     return this.snapshot();
   }
   async removeActionImage({ id, phase }) {
-    const c = this.find(id);
+    let c = this.find(id);
     if (!c) throw new Error("error.characterMissing");
     if (!PHASES.includes(phase) || phase === "idle")
       throw new Error("error.action");
+    c = this.editable(c);
     delete c.images[phase];
     await this.save();
     return this.snapshot();
@@ -313,7 +381,12 @@ class Preferences {
       cutout = await this.processCutout(bytes, entry.width, entry.height),
       file = randomUUID() + ".png";
     await fs.writeFile(this.assetPath(file), cutout);
-    Object.assign(entry, { file, originalFile, backgroundRemoved: true });
+    const c = this.editable(this.find(id));
+    Object.assign(c.images[phase], {
+      file,
+      originalFile,
+      backgroundRemoved: true,
+    });
     await this.save();
     return this.snapshot();
   }
@@ -335,7 +408,7 @@ class Preferences {
     return { backgroundRemoval: this.data.backgroundRemoval };
   }
   async updateCharacter({ id, name, persona }) {
-    const c = this.find(id);
+    let c = this.find(id);
     if (!c) throw new Error("error.characterMissing");
     if (
       typeof name !== "string" ||
@@ -345,11 +418,19 @@ class Preferences {
       persona.length > 12000
     )
       throw new Error("error.characterProfile");
-    Object.assign(c, { name: name.trim(), persona });
+    if (c.name !== name.trim() || c.persona !== persona) c = this.editable(c);
+    Object.assign(c, {
+      name:
+        c.id !== id && name.trim() === this.builtin?.profile.name
+          ? c.name
+          : name.trim(),
+      persona,
+    });
     await this.save();
     return this.snapshot();
   }
   async selectCharacter(id) {
+    if (id === this.builtin?.profile.id) await this.ensureBuiltin();
     if (!this.find(id)) throw new Error("error.characterMissing");
     this.data.activeCharacter = id;
     await this.save();

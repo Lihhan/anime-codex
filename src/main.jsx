@@ -18,6 +18,7 @@ function App() {
     fontSize: 18,
     interactions: true,
   });
+  const builtinId = useRef(null);
   const [reaction, setReaction] = useState(null);
   const pointerSession = useRef(null),
     hitMask = useRef(null),
@@ -112,6 +113,8 @@ function App() {
     dockTimer = useRef(null);
   function applyPreferences(result, preserveEdits = false) {
     if (!result) return;
+    if (result.builtinCharacterId)
+      builtinId.current = result.builtinCharacterId;
     if (result.interface) setAppearance(result.interface);
     if (result.backgroundRemoval)
       setBackgroundOptions(result.backgroundRemoval);
@@ -877,6 +880,18 @@ function App() {
               </button>
             </div>
             <CharacterSettings
+              onOriginalRin={() =>
+                run(async () => {
+                  if (builtinId.current) {
+                    const restored = await api.selectCharacter({
+                      id: builtinId.current,
+                    });
+                    applyPreferences(restored);
+                    setProfileName(restored.character?.name || "");
+                    setPreviewPhase(null);
+                  }
+                })
+              }
               backgroundAutomatic={backgroundOptions.automatic}
               onBackgroundAutomatic={(automatic) =>
                 run(async () => {

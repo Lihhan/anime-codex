@@ -1,0 +1,59 @@
+{
+  "id": "beagle",
+  "style": "pixel",
+  "sheet": "./games/beagle/sheet-pixel.png",
+  "width": 1774,
+  "height": 887,
+  "columns": 4,
+  "rows": 2,
+  "frames": {
+    "idle": {
+      "x": 41,
+      "y": 80,
+      "width": 354,
+      "height": 327
+    },
+    "runA": {
+      "x": 471,
+      "y": 86,
+      "width": 383,
+      "height": 306
+    },
+    "runB": {
+      "x": 922,
+      "y": 95,
+      "width": 379,
+      "height": 319
+    },
+    "jump": {
+      "x": 1382,
+      "y": 48,
+      "width": 360,
+      "height": 324
+    },
+    "duck": {
+      "x": 41,
+      "y": 582,
+      "width": 357,
+      "height": 272
+    },
+    "land": {
+      "x": 471,
+      "y": 565,
+      "width": 385,
+      "height": 289
+    },
+    "hurt": {
+      "x": 937,
+      "y": 527,
+      "width": 343,
+      "height": 326
+    },
+    "cheer": {
+      "x": 1402,
+      "y": 483,
+      "width": 313,
+      "height": 371
+    }
+  }
+}
