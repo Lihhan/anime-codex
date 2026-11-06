@@ -13,7 +13,7 @@
     "test": "node --test tests/*.test.mjs",
     "smoke:backend": "node scripts/smoke-backend.mjs",
     "smoke:ui": "node scripts/smoke-ui.mjs",
-    "dist:win": "npm run build && electron-builder --win portable --x64",
+    "dist:win": "npm run build && electron-builder --win portable --x64 --publish never",
     "smoke:customization": "node scripts/smoke-customization.mjs",
     "smoke:desktop": "node scripts/smoke-desktop-real.mjs",
     "smoke:background": "node scripts/smoke-background.mjs",
@@ -22,9 +22,9 @@
     "smoke:arcade": "node scripts/smoke-arcade.mjs",
     "smoke:gal": "node scripts/smoke-gal.mjs",
     "smoke:gal-real": "node scripts/smoke-gal-real.mjs",
-    "dist:mac": "npm run build && electron-builder --mac dmg zip",
-    "dist:mac:arm64": "npm run build && electron-builder --mac dmg zip --arm64",
-    "dist:mac:x64": "npm run build && electron-builder --mac dmg zip --x64",
+    "dist:mac": "npm run build && electron-builder --mac dmg zip --publish never",
+    "dist:mac:arm64": "npm run build && electron-builder --mac dmg zip --arm64 --publish never",
+    "dist:mac:x64": "npm run build && electron-builder --mac dmg zip --x64 --publish never",
     "smoke:native": "node scripts/smoke-native.mjs"
   },
   "build": {
@@ -46,7 +46,8 @@
       "target": "portable",
       "signAndEditExecutable": false,
       "files": [
-        "!node_modules/onnxruntime-node/bin/napi-v6/darwin/**"
+        "!node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
+        "!node_modules/onnxruntime-node-intel/**"
       ]
     },
     "directories": {
@@ -57,7 +58,9 @@
       "shared/background-math.cjs",
       "node_modules/onnxruntime-node/**",
       "node_modules/onnxruntime-common/**",
-      "node_modules/pngjs/**"
+      "node_modules/pngjs/**",
+      "electron/inference-runtime.cjs",
+      "node_modules/onnxruntime-node-intel/**"
     ],
     "mac": {
       "target": [
@@ -71,7 +74,10 @@
       "hardenedRuntime": false,
       "notarize": false,
       "files": [
-        "!node_modules/onnxruntime-node/bin/napi-v6/win32/**"
+        "!node_modules/onnxruntime-node/bin/napi-v6/win32/**",
+        "!node_modules/onnxruntime-node-intel/bin/napi-v6/win32/**",
+        "!node_modules/onnxruntime-node-intel/bin/napi-v6/linux/**",
+        "!node_modules/onnxruntime-node-intel/bin/napi-v6/darwin/arm64/**"
       ]
     }
   },
@@ -89,7 +95,11 @@
     "vite": "8.3.6"
   },
   "overrides": {
-    "minimatch": "11.0.1"
+    "minimatch": "11.0.1",
+    "adm-zip": "0.6.1"
   },
-  "author": "Anime Codex contributors"
+  "author": "Anime Codex contributors",
+  "optionalDependencies": {
+    "onnxruntime-node-intel": "npm:onnxruntime-node@1.23.2"
+  }
 }

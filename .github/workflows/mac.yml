@@ -55,6 +55,10 @@ jobs:
           curl -fsSL https://chatgpt.com/codex/install.sh -o "$RUNNER_TEMP/codex-install.sh"
           CODEX_NON_INTERACTIVE=1 sh "$RUNNER_TEMP/codex-install.sh"
       - run: npm run smoke:connection
+      - name: Verify real local background removal on this architecture
+        run: npm run smoke:background -- public/characters/rin/idle.png
+        env:
+          RUN_REAL_BACKGROUND: "1"
       - run: npm run dist:mac:${{ matrix.arch }}
       - run: node scripts/smoke-mac-packaged.mjs
       - uses: actions/upload-artifact@v4

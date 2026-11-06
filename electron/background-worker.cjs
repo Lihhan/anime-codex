@@ -1,6 +1,6 @@
 const { parentPort, workerData } = require("node:worker_threads");
 const { PNG } = require("pngjs");
-const ort = require("onnxruntime-node");
+const ort = require("./inference-runtime.cjs").loadInferenceRuntime();
 const {
   prepareInput,
   prepareGeneralInput,

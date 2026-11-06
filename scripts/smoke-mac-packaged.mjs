@@ -46,7 +46,9 @@ try {
     return {
       version: app.getVersion(),
       ...(await probe(
-        require(path.join(root, "node_modules/onnxruntime-node")),
+        require(
+          path.join(root, "electron/inference-runtime.cjs"),
+        ).loadInferenceRuntime(),
       )),
     };
   });
