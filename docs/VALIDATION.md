@@ -4,7 +4,19 @@ Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3
 
 ## Automated checks
 
-Latest unit results: **46/46 tests passed**, including exact Unicode dialogue pagination, turn isolation, layout persistence, pixel-beagle frame/alpha validation, animation selection, action-game physics, original Rin protection, earlier game rules, typography, touch geometry, executable discovery, foreground-loss rejection and upgrade-safe character preservation. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+Latest unit results: **52/52 tests passed**, including native Mac executable discovery/validation, one-shot inference-process retirement, exact Unicode dialogue pagination, turn isolation, layout persistence, pixel-beagle frame/alpha validation, animation selection, action-game physics, original Rin protection, earlier game rules, typography, touch geometry, foreground-loss rejection and upgrade-safe character preservation. The production build passed. Version-specific UI and real Codex checks are described below. The dependency audit reported zero vulnerabilities.
+
+## Version 0.6.0: macOS and Windows
+
+Both architectures passed the complete [macOS 15 workflow](https://github.com/Lihhan/anime-codex/actions/runs/42146775526): Apple Silicon on macos-15 and Intel on macos-15-intel. Each ran all 52 unit tests, a real native ONNX Identity-model inference, the production build, source bubble/full-chat UI checks, and a real Codex App Server handshake/account read with an empty PATH, including saved discovery after restart. The Mac runners had no signed-in Codex account and did not run a model turn or consume model quota.
+
+Both Mac jobs also verified actual local Anime Segmentation inference against Rin composited onto an opaque test background, visible foreground retention, RGB preservation, exact restoration, cancellation and unchanged source files. Each built architecture-matched DMG and ZIP files with ad-hoc signing, launched the packaged application, checked its bubble/input UI and version/architecture, ran native inference from its packaged libraries, then reran the real background-removal/restoration/cancellation check against that packaged executable. Intel uses ONNX Runtime 1.23.2 in a fresh utility process per operation; Windows and Apple Silicon retain 1.31.1. The compatibility dependency's adm-zip is overridden to 0.6.1; npm audit reported zero vulnerabilities.
+
+Local Windows 0.6.0 checks passed all 52 unit tests, source bubble/full-chat/customization UI, real backend discovery/restart with an empty PATH, and native CPU inference. The final packaged Windows application passed startup, version/architecture, bubble/input and actual background removal/restoration/cancellation checks. Its ASAR root allowlist was inspected and contained no workspace files, test results or release directories. Windows CI runs are recorded separately in repository Actions.
+
+Limits: Mac verification was performed on GitHub-hosted macOS 15 machines. The configured minimum is macOS 14, which was not separately exercised. Interactive Gatekeeper approval of a browser-downloaded file, a user's authenticated Mac programming turn, physical multi-monitor arrangements and every game/voice were not covered by these Mac checks. These development packages have no Apple Developer ID notarization. Existing Windows real model-turn evidence remains version-specific below; fixtures are not presented as execution evidence.
+
+## Earlier versions
 
 The 0.5.0 source bubble UI check passed persistent input without preset choices, draft preservation, exact paginated Unicode/whitespace, original history, new-turn isolation, explicit approval/failure fixtures and persisted layout selection. Task status and input are outside the speech bubble. The existing source UI, customization, play and arcade checks also passed. A real Codex task sent through the bubble composer read hello.js, returned a first-person Rin reply and the expected greeting, and preserved tool records and resumable history. These real results are separate from the explicitly marked UI fixtures.
 
@@ -22,7 +34,7 @@ For 0.2.4, source and packaged UI checks passed the sticky top-right settings cl
 
 The 0.2.2 source app and Windows packaged executable both passed the UI/customization checks, including switching from a custom character to Rin and back, preserving that custom selection on restart, and transparent approval-state rendering. The packaged 0.2.2 executable also passed the real local background-removal check with Rin present in the library. Real Codex backend evidence below is from the earlier backend implementation, which this character-library update does not change.
 
-The current unit suite contains 46 tests covering:
+The current unit suite contains 52 tests covering:
 
 - Idle-only fallback for every action; selecting an uploaded action and restoring fallback after removal.
 - Charged-hop limits, precise landings/streaks, reachable platform generation, misses, running jump/crouch collisions, bounded deterministic frame stepping, pause behavior and legacy original-Rin copy/restore migration.
@@ -60,7 +72,7 @@ UI-only approval/action fixtures never count as executed commands. A real turn m
 
 ## Packaging and limitations
 
-Windows 0.5.0 packages are built under `release/v0.5.0/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
+Windows and Mac 0.6.0 packages are built under `release/v0.6.0/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
 
 Geometry tests cover multiple logical display areas, including negative coordinates. Not every monitor arrangement, DPI transition, GPU, system voice, accessibility tool or managed Codex policy has been physically tested. Image mode does not deform faces or limbs, generate missing artwork, perform Live2D rendering, or provide phoneme-accurate lip sync.
 

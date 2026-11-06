@@ -2,7 +2,8 @@
 
 Anime Codex application code remains MIT-licensed. Dependencies and model weights retain their respective licenses.
 
-- **ONNX Runtime / onnxruntime-node 1.31.1** — Microsoft and contributors, MIT. Windows CPU inference. The package retains its own bundled notices. See `third_party/onnxruntime-LICENSE.txt` and https://github.com/microsoft/onnxruntime.
+- **ONNX Runtime / onnxruntime-node 1.31.1** — Microsoft and contributors, MIT. Windows and Apple Silicon CPU inference. The package retains its own bundled notices. See `third_party/onnxruntime-LICENSE.txt` and https://github.com/microsoft/onnxruntime.
+- **ONNX Runtime / onnxruntime-node 1.23.2**, installed under the alias **onnxruntime-node-intel** — Microsoft and contributors, MIT. Intel Mac CPU inference only; recent upstream packages omit Intel Mac binaries ([upstream issue](https://github.com/microsoft/onnxruntime/issues/27961)). This pinned compatibility runtime retains its own bundled notices and matching onnxruntime-common dependency. It is excluded from Windows packages. The installer-only adm-zip dependency is overridden to 0.6.1 to include its security fixes; model inference does not extract user-supplied archives.
 - **pngjs 7.0.0** — contributors, MIT. PNG parsing/encoding; its license remains in the installed package. https://github.com/pngjs/pngjs.
 - **Anime Segmentation ISNet** — SkyTNT and contributors, Apache-2.0. The model card declares Apache-2.0 separately from the runtime license. See `third_party/anime-segmentation-LICENSE.txt`, https://github.com/SkyTNT/anime-segmentation and https://huggingface.co/skytnt/anime-seg.
 

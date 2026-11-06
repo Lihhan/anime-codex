@@ -1,3 +1,14 @@
+## 0.6.0
+
+- Add native macOS backend discovery for Finder/Dock launches, standalone installs, Homebrew paths and common app bundles.
+- Validate executable permissions and native Mach-O headers; support symlinks without launching npm or shell wrappers.
+- Remove Windows-only executable filtering and translate platform-neutral controls into all three languages.
+- Add Apple Silicon and Intel DMG/ZIP packaging with ad-hoc signing and architecture-specific native libraries.
+- Isolate a pinned ONNX Runtime 1.23.2 compatibility dependency for Intel Mac; keep 1.31.1 for Windows/Apple Silicon.
+- Run Intel Mac background removal in a separate utility process to isolate native cancellation and failure from the desktop UI.
+- Add macOS CI for unit tests, native CPU inference, source UI, real unauthenticated Codex handshake, background removal and packaged application checks.
+- Document Mac installation, first launch, architecture selection, permissions and troubleshooting.
+
 ## 0.5.0
 
 - Default to character-side visual-novel dialogue with a nameplate and progressive text.

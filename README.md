@@ -1,12 +1,26 @@
 # Anime Codex
 
-A transparent Windows desktop programming companion powered by the **real Codex App Server**. Upload your own character images, talk naturally, and watch the character change expression as Codex actually works.
+A transparent Windows and macOS desktop programming companion powered by the **real Codex App Server**. Upload your own character images, talk naturally, and watch the character change expression as Codex actually works.
 
 **UI languages:** Simplified Chinese, English and Japanese, selectable from the desktop toolbar. The preference is saved locally. Repository documentation is maintained in English.
 
-**Platform support:** Version 0.5.0 supports **Windows x64 only**. There is currently no macOS installer. The Windows `.exe` does not run natively on a Mac, and running the current source on macOS is not a supported workaround: backend discovery and selection require a Windows `codex.exe`, and the packaging configuration excludes macOS inference libraries. A working macOS release requires native backend discovery/selection, platform-specific packaging and verification on a Mac. Neither Apple Silicon nor Intel Mac support has been validated.
+**Platform support:** Version 0.6.0 adds macOS 14+ builds for Apple Silicon and Intel, alongside Windows x64. Mac packages are ad-hoc signed development builds without Apple notarization; see [Mac installation](docs/MACOS.md). Version-specific verification is recorded in [validation evidence](docs/VALIDATION.md).
 
-**Get started:** [Install on Windows](#install-on-windows) · [Troubleshooting](#installation-troubleshooting) · [Character features](#meet-rin) · [Build from source](#build-from-source-for-developers)
+**Get started:** [Install on a Mac](#install-on-a-mac) · [Install on Windows](#install-on-windows) · [Troubleshooting](#installation-troubleshooting) · [Character features](#meet-rin) · [Build from source](#build-from-source-for-developers)
+
+## Install on a Mac
+
+**You do not need Node.js, npm or Git to use the downloaded application.**
+
+1. Install the official Codex backend using the [macOS CLI guide](https://learn.chatgpt.com/docs/codex/cli), then run `codex login` in Terminal and complete sign-in. If you already use a native, signed-in Codex CLI, keep that installation.
+2. Open **Apple menu → About This Mac**. Download **[Apple Silicon .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.6.0/Anime-Codex-0.6.0-mac-arm64.dmg)** for an Apple M-series chip, or **[Intel .dmg](https://github.com/Lihhan/anime-codex/releases/download/v0.6.0/Anime-Codex-0.6.0-mac-x64.dmg)** for an Intel processor. macOS 14 or later is required. Downloads are private; sign in to an authorized GitHub account.
+3. Open the **.dmg**, drag **Anime Codex.app** into **Applications**, eject the disk image, then open the app from Applications. If Gatekeeper blocks this ad-hoc-signed development build, follow the [documented first-launch steps](docs/MACOS.md#if-macos-blocks-the-first-launch).
+4. Select **English** to match these instructions. Click **Connect and choose project**, then select the folder you want help with.
+5. Type in the input below Rin's bubble and press **Return** or click **Say it**. The default permission is **Read-only**.
+
+**[Full Mac guide: installation, sign-in, first launch and troubleshooting](docs/MACOS.md)**
+
+Finder/Dock launches do not need Terminal's PATH: the app also checks the standalone installer's `~/.local/bin/codex`, common Homebrew paths and common desktop app bundles. If needed, use **Settings → Choose Codex executable and connect** to select your native Mac `codex` file. **Command+Option+A** reveals a hidden overlay. See the full guide for source builds and the Intel-specific local inference runtime.
 
 ## Install on Windows
 
@@ -32,17 +46,17 @@ Complete the browser sign-in when asked. The first command should print a versio
 
 ### 2. Download Anime Codex
 
-1. Open [Anime Codex 0.5.0 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.5.0).
+1. Open [Anime Codex 0.6.0 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.6.0).
 2. Expand **Assets** if necessary.
-3. Click **Anime.Codex.0.5.0.exe** and save it somewhere easy to find, such as a new `Anime Codex` folder in Documents.
+3. Click **Anime.Codex.0.6.0.exe** and save it somewhere easy to find, such as a new `Anime Codex` folder in Documents.
 
-**[Download Anime.Codex.0.5.0.exe directly](https://github.com/Lihhan/anime-codex/releases/download/v0.5.0/Anime.Codex.0.5.0.exe)**
+**[Download Anime.Codex.0.6.0.exe directly](https://github.com/Lihhan/anime-codex/releases/download/v0.6.0/Anime.Codex.0.6.0.exe)**
 
 Choose the **.exe**, rather than GitHub's **Source code (zip)** or **Source code (tar.gz)**. Those archives contain code and need the developer build steps below. The repository and downloads are private: sign in to a GitHub account with repository access. A 404 usually means you are signed out or do not have access.
 
 ### 3. Double-click the downloaded file
 
-Close an older Anime Codex instance first, then double-click **Anime.Codex.0.5.0.exe**. This is a **portable application**: there is no installation wizard. Wait for Rin and the bottom toolbar to appear; first launch can take longer while the application extracts its bundled files.
+Close an older Anime Codex instance first, then double-click **Anime.Codex.0.6.0.exe**. This is a **portable application**: there is no installation wizard. Wait for Rin and the bottom toolbar to appear; first launch can take longer while the application extracts its bundled files.
 
 This development build is unsigned. If Windows displays a SmartScreen warning, verify you downloaded it from this repository. If Windows offers **More info → Run anyway**, use that only after verifying the source. Organization-managed computers may require administrator approval; do not disable Windows protection to launch it.
 
@@ -100,7 +114,7 @@ This permits changes inside the selected project without asking about every file
 Anime Codex needs a **native Windows `codex.exe`**, not an npm `codex.cmd`/`codex.ps1` launcher or a Linux/WSL executable.
 
 1. Open **Settings** on the bottom toolbar.
-2. Click **Choose codex.exe and connect**.
+2. Click **Choose Codex executable and connect**.
 3. Select the native `codex.exe` from your official Windows Codex installation. The successful choice is remembered.
 4. Close Settings, click **Choose project** on the bottom toolbar (or the current folder name if one is shown), select your folder, then try sending again.
 
@@ -187,7 +201,7 @@ In **Settings → Character library**, create another character, rename it, edit
 
 Enable **Automatically remove background on import** in Character library, or click **Remove background** for an image you already imported. Each action keeps its own original copy; **Restore original** returns to that copy. Removing a background changes alpha only, preserving RGB colors, dimensions and alignment. If processing fails or is cancelled, the current image remains unchanged.
 
-The first operation downloads a pinned 176,069,933-byte Anime Segmentation model (about 168 MiB), verifies SHA-256, and caches it under the application's local `models/` directory. Later operations work offline. Character images are never uploaded, and image processing does not require Codex login or consume Codex quota. Download/inference progress can be cancelled. Processing runs in a background CPU worker so the desktop UI remains responsive.
+The first operation downloads a pinned 176,069,933-byte Anime Segmentation model (about 168 MiB), verifies SHA-256, and caches it under the application's local `models/` directory. Later operations work offline. Character images are never uploaded, and image processing does not require Codex login or consume Codex quota. Download/inference progress can be cancelled. Processing runs in the background so the desktop UI remains responsive; Intel Mac uses a separate utility process to isolate the compatibility runtime during cancellation.
 
 The first model is optimized for anime illustrations. If its result would remove almost the entire visible foreground, the app tries a small general foreground model (U2NetP, an additional 4,574,861-byte download). Both downloads are checksum-verified and cached. If neither result retains a substantial foreground, processing is rejected and the original stays in place. On startup, old near-empty processed assignments with saved originals are restored automatically. This is a conservative transparency check, not a guarantee of correct person recognition; tiny subjects, fine hair and complex backgrounds can still need a different image or a prepared transparent PNG. Already-transparent pixels remain transparent. Original source files are never overwritten. Model/runtime sources and licenses are in [third-party notices](THIRD_PARTY_NOTICES.md).
 
@@ -197,7 +211,7 @@ The first model is optimized for anime illustrations. If its result would remove
 - Resize with minus/plus, the Settings slider, or Alt + mouse wheel (50–180%).
 - Drag near any screen edge to collapse to a small tab; hover over or click it to restore.
 - Pending approvals prevent hiding; a new approval request automatically reveals the UI.
-- Toggle always-on-top and transparent-area click-through. `Ctrl + Alt + A` reveals the overlay and restores mouse input.
+- Toggle always-on-top and transparent-area click-through. `Ctrl + Alt + A` (Windows) or `Command + Option + A` (Mac) reveals the overlay and restores mouse input.
 - Position, scale, selected character, action images, personality, auto-hide and language survive restarts.
 - Close Character and connection with its top-right × or Escape. The close control stays visible while scrolling. Closing preserves unsaved input; use Save character to persist profile edits. Escape does not dismiss an approval or cancel image processing.
 
@@ -211,7 +225,7 @@ A success image means the server completed the turn; it does not guarantee that 
 
 The language selector translates application controls, settings, action labels, local errors and native picker titles. It also sets the response-language preference for new/resumed Codex conversations and the preferred system TTS language. Existing replies, tool output, code, diffs and server-supplied requests remain verbatim. Changing language mid-turn does not rewrite that turn's instructions.
 
-Preferences and copied images live in `%APPDATA%\anime-codex\`. Uploaded images are never sent to Codex or GitHub; your chosen name and personality are included in conversation instructions. Windows voices vary by installation. TTS is optional; image switching is not phoneme-accurate lip synchronization.
+Preferences and copied images live in `%APPDATA%\anime-codex\` on Windows and normally `~/Library/Application Support/anime-codex/` on macOS. Uploaded images are never sent to Codex or GitHub; your chosen name and personality are included in conversation instructions. System voices vary by operating system and installation. TTS is optional; image switching is not phoneme-accurate lip synchronization.
 
 ## Build from source (for developers)
 
@@ -246,7 +260,7 @@ For development with automatic UI reload, use `npm.cmd run dev`. To create a por
 npm.cmd run dist:win
 ```
 
-The current output is `release/v0.5.0/Anime Codex 0.5.0.exe`. The build does not bundle Codex or account credentials. Downloaded releases provide `SHA256SUMS.txt`; you can compare it with `Get-FileHash -Algorithm SHA256 -LiteralPath '.\Anime.Codex.0.5.0.exe'` in the folder containing your downloaded executable.
+The current output is `release/v0.6.0/Anime Codex 0.6.0.exe`. The build does not bundle Codex or account credentials. Downloaded releases provide `SHA256SUMS.txt`; you can compare it with `Get-FileHash -Algorithm SHA256 -LiteralPath '.\Anime.Codex.0.6.0.exe'` in the folder containing your downloaded executable.
 
 ## Test and package
 
@@ -272,7 +286,7 @@ npm.cmd run dist:win
 
 Real-backend tests use your Codex quota. They operate on disposable fixture directories. UI-only action/approval events are explicitly marked test fixtures, not claimed execution results. UI tests use isolated application data directories and do not change your own character library.
 
-See [validation evidence](docs/VALIDATION.md). Windows Actions checks run unit tests, the production build, UI/customization checks and dependency audit. A local pass does not claim that an uninspected remote Actions run passed.
+See [validation evidence](docs/VALIDATION.md). Windows Actions checks run unit tests, the production build, UI/customization checks and dependency audit. The separate macOS workflow runs on Apple Silicon and Intel runners and builds DMG/ZIP artifacts after source checks, real unauthenticated backend handshakes and local inference checks. Packaged Mac startup and native inference are checked before artifacts are uploaded. A local pass does not claim that an uninspected remote Actions run passed.
 
 ## Boundaries and implementation
 
