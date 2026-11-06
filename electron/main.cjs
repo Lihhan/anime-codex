@@ -6,6 +6,7 @@ const {
   screen,
   nativeImage,
   globalShortcut,
+  utilityProcess,
 } = require("electron");
 const path = require("node:path");
 
@@ -15,6 +16,7 @@ const { resolveCodex, isCodexExecutable } = require("./codex-executable.cjs");
 const { Preferences, PHASES } = require("./preferences.cjs");
 const { Desktop } = require("./desktop.cjs");
 const { BackgroundRemoval } = require("./background.cjs");
+const { createBackgroundProcess } = require("./background-process.cjs");
 const messages = require("../shared/messages.json");
 let preferences, desktop, background;
 function t(key) {
@@ -433,6 +435,11 @@ app.whenReady().then(async () => {
       path.join(app.getPath("userData"), "models"),
     workerPath: path.join(workerRoot, "electron/background-worker.cjs"),
     mathPath: path.join(workerRoot, "shared/background-math.cjs"),
+    workerFactory:
+      process.platform === "darwin" && process.arch === "x64"
+        ? (file, options) =>
+            createBackgroundProcess(utilityProcess, file, options)
+        : undefined,
     emit,
   });
   preferences = await new Preferences(

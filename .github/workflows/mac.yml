@@ -61,6 +61,8 @@ jobs:
           RUN_REAL_BACKGROUND: "1"
       - run: npm run dist:mac:${{ matrix.arch }}
       - run: node scripts/smoke-mac-packaged.mjs
+        env:
+          RUN_PACKAGED_BACKGROUND: "1"
       - uses: actions/upload-artifact@v4
         with:
           name: Anime-Codex-0.6.0-mac-${{ matrix.arch }}

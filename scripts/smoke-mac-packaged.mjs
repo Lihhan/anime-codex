@@ -68,3 +68,27 @@ try {
 } finally {
   await app.close();
 }
+// Reuse the cached, real model to verify the packaged worker path and cancellation.
+if (process.env.RUN_PACKAGED_BACKGROUND === "1") {
+  const { spawn } = await import("node:child_process");
+  await new Promise((resolve, reject) => {
+    const child = spawn(
+      process.execPath,
+      ["scripts/smoke-background.mjs", "public/characters/rin/idle.png"],
+      {
+        stdio: "inherit",
+        env: {
+          ...process.env,
+          ANIME_CODEX_EXECUTABLE: executable,
+          RUN_REAL_BACKGROUND: "1",
+        },
+      },
+    );
+    child.once("error", reject);
+    child.once("exit", (code) =>
+      code === 0
+        ? resolve()
+        : reject(new Error("Packaged background check failed: " + code)),
+    );
+  });
+}

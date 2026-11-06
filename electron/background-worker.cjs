@@ -1,4 +1,6 @@
-const { parentPort, workerData } = require("node:worker_threads");
+const thread = require("node:worker_threads");
+const parentPort = thread.parentPort || process.parentPort;
+const workerData = thread.workerData || JSON.parse(process.argv[2]);
 const { PNG } = require("pngjs");
 const ort = require("./inference-runtime.cjs").loadInferenceRuntime();
 const {
@@ -9,7 +11,8 @@ const {
   assertForeground,
 } = require(workerData.mathPath);
 let session;
-parentPort.on("message", async ({ id, image }) => {
+parentPort.on("message", async (event) => {
+  const { id, image } = thread.parentPort ? event : event.data;
   try {
     if (!session)
       session = await ort.InferenceSession.create(workerData.modelPath, {
