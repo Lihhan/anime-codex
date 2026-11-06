@@ -1,5 +1,9 @@
+import { tr } from "./locale";
 import React, { useEffect, useRef, useState } from "react";
-import { transitionPlan, transitionDurations } from "../shared/pet-transitions.mjs";
+import {
+  transitionPlan,
+  transitionDurations,
+} from "../shared/pet-transitions.mjs";
 export function PetSprite({
   activity: requestedActivity,
   name,
@@ -8,16 +12,24 @@ export function PetSprite({
   onTransition,
 }) {
   const [activity, setActivity] = useState(requestedActivity);
-  const requested = useRef(requestedActivity), inTransition = useRef(false);
+  const requested = useRef(requestedActivity),
+    inTransition = useRef(false);
   requested.current = requestedActivity;
   useEffect(() => {
     // Finish the current physical movement, then route to the latest request.
     // Picking up the pet must remain immediate and interrupts any activity.
-    if (!inTransition.current || requestedActivity === "drag" || activity === "drag")
+    if (
+      !inTransition.current ||
+      requestedActivity === "drag" ||
+      activity === "drag"
+    )
       setActivity(requestedActivity);
   }, [requestedActivity, activity]);
   const keyFor = (action) => (action === "walk" ? `walk_${facing}` : action);
-  const resolve = (key) => pack.clips[key] || (key === "drag" ? pack.clips.attention : null) || pack.clips.idle;
+  const resolve = (key) =>
+    pack.clips[key] ||
+    (key === "drag" ? pack.clips.attention : null) ||
+    pack.clips.idle;
   useEffect(() => {
     // Decode sheets before the first activity switch, avoiding an empty frame.
     for (const src of new Set(
@@ -48,9 +60,18 @@ export function PetSprite({
     previous.current = { activity, pack };
     const target = keyFor(activity);
     const stages = [];
-    if (old.pack === pack && old.activity !== activity && old.activity !== "drag" && activity !== "drag" && !reduced) {
+    if (
+      old.pack === pack &&
+      old.activity !== activity &&
+      old.activity !== "drag" &&
+      activity !== "drag" &&
+      !reduced
+    ) {
       for (const step of transitionPlan(pack.clips, old.activity, activity))
-        stages.push({...step,durations:transitionDurations(resolve(step.key).durations)});
+        stages.push({
+          ...step,
+          durations: transitionDurations(resolve(step.key).durations),
+        });
     }
     inTransition.current = stages.length > 0;
     callback.current?.(stages.length > 0);
@@ -112,11 +133,13 @@ export function PetSprite({
     : rows * 100;
   const backgroundY = crop
     ? (crop.top / (crop.sheetHeight - crop.height)) * 100
-    : rows === 1 ? 0 : ((clip.row + Math.floor(cell / columns)) * 100) / (rows - 1);
+    : rows === 1
+      ? 0
+      : ((clip.row + Math.floor(cell / columns)) * 100) / (rows - 1);
   return (
     <div
       role="img"
-      aria-label={`${name} · ${activity}`}
+      aria-label={`${name} · ${tr({ idle: "待机", read: "读书", office: "办公", meal: "吃饭", sleep: "睡觉", gaming: "玩游戏", walk: "散散步", walk_left: "向左跑", walk_right: "向右跑", walk_up: "向上跑", walk_down: "向下跑", pet: "摸摸头", attention: "思考", drag: "Moving character" }[activity] || activity)}`}
       className={`pet-sprite transition-${view.stage}`}
       data-row={clip.row}
       data-activity={activity}
@@ -124,6 +147,14 @@ export function PetSprite({
       data-transition={view.stage}
       data-direction={facing}
       data-frame={cell}
+      data-hit-x={(cell % columns) / columns}
+      data-hit-y={
+        crop
+          ? crop.top / crop.sheetHeight
+          : (clip.row + Math.floor(cell / columns)) / rows
+      }
+      data-hit-width={1 / columns}
+      data-hit-height={crop ? crop.height / crop.sheetHeight : 1 / rows}
       style={{
         width: `${Math.min(1, aspect) * 100}%`,
         left: `${(1 - Math.min(1, aspect)) * 50}%`,

@@ -42,7 +42,8 @@
     "smoke:portable-real": "node scripts/smoke-portable-real.mjs",
     "smoke:settings": "node scripts/smoke-settings.mjs",
     "smoke:audio": "node scripts/smoke-voice-clips.mjs",
-    "smoke:packs": "node scripts/smoke-builtin-packs.mjs"
+    "smoke:packs": "node scripts/smoke-builtin-packs.mjs",
+    "smoke:locales-overlay": "node scripts/smoke-locales-overlay.mjs"
   },
   "build": {
     "appId": "io.animecodex.desktop",

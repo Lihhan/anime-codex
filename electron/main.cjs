@@ -38,10 +38,13 @@ const { BackgroundRemoval } = require("./background.cjs");
 const { createBackgroundProcess } = require("./background-process.cjs");
 const messages = require("../shared/messages.json");
 let preferences, desktop, background, translator, translationTest, studio;
+let createUITranslator,
+  responseLanguage,
+  refreshTray = () => {};
 function backend() {
   return preferences?.data.backend === "claude" ? "claude" : "codex";
 }
-function t(key) {
+function t(key, variables) {
   if (
     typeof key === "string" &&
     key.startsWith("error.") &&
@@ -50,6 +53,11 @@ function t(key) {
     const at = key.indexOf(":");
     return t(key.slice(0, at)) + " (" + key.slice(at + 1) + ")";
   }
+  if (createUITranslator)
+    return createUITranslator(preferences?.data.language || "zh")(
+      key,
+      variables,
+    );
   return (
     messages[preferences?.data.language || "zh"]?.[key] ??
     messages.en[key] ??
@@ -161,6 +169,44 @@ async function playSnapshot() {
     status: playStatus(),
   };
 }
+let dialogDepth = 0;
+let pendingExternalFocus = false;
+function collapseForExternalFocus() {
+  if (
+    pendingExternalFocus &&
+    win &&
+    !win.isDestroyed() &&
+    !win.isFocused() &&
+    dialogDepth === 0
+  ) {
+    pendingExternalFocus = false;
+    emit({
+      method: "client/externalFocus",
+      params: {
+        collapsePanels:
+          companion?.store.state.settings.collapseOnBlur !== false,
+      },
+    });
+  }
+}
+async function showOpenDialog(options) {
+  dialogDepth++;
+  try {
+    return await dialog.showOpenDialog(win, options);
+  } finally {
+    dialogDepth--;
+    setTimeout(collapseForExternalFocus, 100).unref();
+  }
+}
+async function showMessageBox(options) {
+  dialogDepth++;
+  try {
+    return await dialog.showMessageBox(win, options);
+  } finally {
+    dialogDepth--;
+    setTimeout(collapseForExternalFocus, 100).unref();
+  }
+}
 function openPlay() {
   if (playWindow && !playWindow.isDestroyed()) {
     if (playWindow.isMinimized()) playWindow.restore();
@@ -174,8 +220,7 @@ function openPlay() {
     height: 790,
     minWidth: 700,
     minHeight: 600,
-    parent: win,
-    title: "Anime Codex · Play",
+    title: t("play.title") + " · Anime Codex",
     backgroundColor: "#171923",
     show: false,
     autoHideMenuBar: true,
@@ -305,7 +350,7 @@ async function connectNative(executable) {
         throw new Error();
       cwd = savedWorkspace;
     } catch {
-      workspaceWarning = "上次的项目目录已不可访问，请重新选择项目。";
+      workspaceWarning = t("上次的项目目录已不可访问，请重新选择项目。");
     }
   }
   return {
@@ -342,12 +387,15 @@ const handlers = {
   },
   async chooseVoiceClip({ id, action }) {
     if (!preferences.find(id) || !Object.hasOwn(voiceActions, action))
-      throw Error("无效的角色或语音动作。");
-    const d = await dialog.showOpenDialog(win, {
-      title: "上传自己的动作音频",
+      throw Error(t("无效的角色或语音动作。"));
+    const d = await showOpenDialog({
+      title: t("上传自己的动作音频"),
       properties: ["openFile"],
       filters: [
-        { name: "Audio", extensions: ["wav", "mp3", "ogg", "flac", "m4a"] },
+        {
+          name: t("Audio files"),
+          extensions: ["wav", "mp3", "ogg", "flac", "m4a"],
+        },
       ],
     });
     return d.canceled
@@ -396,8 +444,8 @@ const handlers = {
     return companion.snapshot();
   },
   async companionWorkspace() {
-    const d = await dialog.showOpenDialog(win, {
-      title: "选择任务执行项目",
+    const d = await showOpenDialog({
+      title: t("选择任务执行项目"),
       properties: ["openDirectory"],
     });
     if (d.canceled) return null;
@@ -420,7 +468,7 @@ const handlers = {
   async companionTaskControl({ action, id, text }) {
     if (action === "cancel") return companion.tasks.cancel(id);
     if (action === "resume") return companion.tasks.resume(id, text);
-    throw Error("任务操作无效。");
+    throw Error(t("任务操作无效。"));
   },
   async companionAnswer(args) {
     return companion.tasks.answer(args);
@@ -446,8 +494,8 @@ const handlers = {
   },
   async companionFiles({ paths } = {}) {
     if (!paths) {
-      const d = await dialog.showOpenDialog(win, {
-        title: "选择要投喂的文件",
+      const d = await showOpenDialog({
+        title: t("选择要投喂的文件"),
         properties: ["openFile", "multiSelections"],
       });
       if (d.canceled) return null;
@@ -465,7 +513,7 @@ const handlers = {
   },
   async companionReveal({ id }) {
     const m = companion.store.state.meals.find((m) => m.id === id);
-    if (!m) throw Error("文件记录不存在。");
+    if (!m) throw Error(t("文件记录不存在。"));
     shell.showItemInFolder(m.path);
   },
   async companionIdle() {
@@ -524,7 +572,8 @@ const handlers = {
       thread = null;
       return result;
     }
-    if (!candidate || !job.profile) throw new Error("请先选择并确认形象候选。");
+    if (!candidate || !job.profile)
+      throw new Error(t("请先选择并确认形象候选。"));
     await preferences.importActionImage(
       {},
       path.join(studio.directory, id, pet ? job.petPortrait : candidate.file),
@@ -539,7 +588,7 @@ const handlers = {
     return preferences.snapshot();
   },
   async listModels() {
-    if (backend() !== "codex" || !rpc) throw new Error("请先连接 Codex。");
+    if (backend() !== "codex" || !rpc) throw new Error(t("请先连接 Codex。"));
     const models = [];
     let cursor = null;
     do {
@@ -555,10 +604,10 @@ const handlers = {
   async setCodexModel({ model = "", effort = "" }) {
     idle();
     if (typeof model !== "string" || typeof effort !== "string")
-      throw new Error("模型设置无效。");
+      throw new Error(t("模型设置无效。"));
     const models = await handlers.listModels();
     const entry = model ? models.find((m) => m.model === model) : null;
-    if (model && !entry) throw new Error("请选择当前 Codex 提供的模型。");
+    if (model && !entry) throw new Error(t("请选择当前 Codex 提供的模型。"));
     if (
       effort &&
       (!entry ||
@@ -566,7 +615,7 @@ const handlers = {
           (e) => e.reasoningEffort === effort,
         ))
     )
-      throw new Error("该模型不支持所选推理强度。");
+      throw new Error(t("该模型不支持所选推理强度。"));
     preferences.data.codexModel = { model, effort };
     await preferences.save();
     thread = null;
@@ -600,7 +649,7 @@ const handlers = {
     translationTest = new AbortController();
     try {
       const english = await translator.translate(
-        "请解释这个函数，保留变量名，不要修改文件。",
+        t("请解释这个函数，保留变量名，不要修改文件。"),
         "input",
         translationTest.signal,
       );
@@ -639,7 +688,7 @@ const handlers = {
     idle();
     const phase = args.phase || "idle";
     if (!PHASES.includes(phase)) throw new Error("error.action");
-    const d = await dialog.showOpenDialog(win, {
+    const d = await showOpenDialog({
       title: t("Upload image") + " · " + t("action." + phase),
       properties: ["openFile"],
       filters: [
@@ -662,7 +711,16 @@ const handlers = {
     return preferences.removeActionImage(args);
   },
   async setLanguage({ language }) {
-    return preferences.setLanguage(language);
+    const result = await preferences.setLanguage(language);
+    refreshTray();
+    desktop?.publish();
+    if (playWindow && !playWindow.isDestroyed())
+      playWindow.setTitle(t("play.title") + " · Anime Codex");
+    emit({
+      method: "client/language",
+      params: { language: preferences.data.language },
+    });
+    return result;
   },
   async selectCharacter({ id }) {
     idle();
@@ -689,7 +747,7 @@ const handlers = {
           ["running", "queued", "waiting"].includes(t.status),
       )
     )
-      throw Error("请先停止这个角色的对话或任务，再删除角色。");
+      throw Error(t("请先停止这个角色的对话或任务，再删除角色。"));
     const result = await preferences.removeCharacter({ id });
     thread = null;
     desktop.setCharacter(result.character);
@@ -702,8 +760,13 @@ const handlers = {
   async windowControl({ action, value } = {}) {
     if (action === "close") win.hide();
     else if (action === "minimize") win.minimize();
-    else if (action === "alwaysOnTop") win.setAlwaysOnTop(!!value, "floating");
-    else if (action === "passthrough") desktop.setPassthrough(value);
+    else if (action === "alwaysOnTop") {
+      win.setAlwaysOnTop(!!value, "floating");
+      preferences.data.desktop.alwaysOnTop = !!value;
+      desktop.layout.alwaysOnTop = !!value;
+      await preferences.save();
+      desktop.publish();
+    } else if (action === "passthrough") desktop.setPassthrough(value);
     else throw new Error("error.windowAction");
   },
   async bootstrap() {
@@ -732,7 +795,7 @@ const handlers = {
     return connect(executable);
   },
   async chooseExecutable() {
-    const d = await dialog.showOpenDialog(win, {
+    const d = await showOpenDialog({
       title:
         backend() === "claude"
           ? "Choose native Claude Code executable"
@@ -747,7 +810,7 @@ const handlers = {
   },
   async chooseWorkspace() {
     idle();
-    const d = await dialog.showOpenDialog(win, {
+    const d = await showOpenDialog({
       title: t("Choose the project Codex may work on"),
       properties: ["openDirectory"],
     });
@@ -887,6 +950,9 @@ app.on("second-instance", () => {
 });
 if (primaryInstance)
   app.whenReady().then(async () => {
+    ({ createTranslator: createUITranslator, responseLanguage } = await import(
+      "../shared/i18n.mjs"
+    ));
     app.dock?.setIcon(appIcon);
     studio = new CharacterStudio(
       path.join(app.getPath("userData"), "character-studio"),
@@ -900,6 +966,7 @@ if (primaryInstance)
           companion?.store.state.settings.brainEffort ||
           preferences?.data.codexModel?.effort ||
           "",
+        language: preferences?.data.language || "zh",
       }),
     );
     if (
@@ -933,12 +1000,16 @@ if (primaryInstance)
         directory: path.join(root, "dist/characters", slug),
       })),
     ).load();
-    translator = new TranslationService(app.getPath("userData"));
+    translator = new TranslationService(app.getPath("userData"), {
+      language: () => preferences.data.language,
+    });
     await translator.load(preferences.data.translation);
     voiceClips = await new VoiceClips(
       path.join(app.getPath("userData"), "voice-clips"),
     ).load();
     companion = await new Companion({
+      translate: t,
+      responseLanguage,
       clips: voiceClips,
       directory: path.join(app.getPath("userData"), "companion"),
       preferences,
@@ -973,10 +1044,11 @@ if (primaryInstance)
       backgroundColor: "#00000000",
       hasShadow: false,
       resizable: false,
-      alwaysOnTop: true,
+      alwaysOnTop: preferences.data.desktop.alwaysOnTop !== false,
       title: "Anime Codex",
       webPreferences: {
         autoplayPolicy: "no-user-gesture-required",
+        backgroundThrottling: false,
         preload: path.join(__dirname, "preload.cjs"),
         contextIsolation: true,
         nodeIntegration: false,
@@ -1008,7 +1080,13 @@ if (primaryInstance)
     desktop.resizeSurface();
     desktop.setCharacter(preferences.find(preferences.data.activeCharacter));
     win.on("hide", () => emit({ method: "client/voiceStop", params: {} }));
-    win.on("show", () => emit({ method: "client/voiceResume", params: {} }));
+    win.on("show", () => {
+      win.setAlwaysOnTop(
+        preferences.data.desktop.alwaysOnTop !== false,
+        "floating",
+      );
+      emit({ method: "client/voiceResume", params: {} });
+    });
     win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     tray = new Tray(
       nativeImage.createFromPath(appIcon).resize({ width: 18, height: 18 }),
@@ -1026,9 +1104,9 @@ if (primaryInstance)
         idle();
       } catch {
         showCompanion();
-        void dialog.showMessageBox(win, {
+        void showMessageBox({
           type: "info",
-          message: "请先等待或停止工作台中的任务，再切换界面。",
+          message: t("请先等待或停止工作台中的任务，再切换界面。"),
         });
         return;
       }
@@ -1045,29 +1123,68 @@ if (primaryInstance)
         })
         .catch((error) => {
           if (!win.isDestroyed())
-            void dialog.showMessageBox(win, {
+            void showMessageBox({
               type: "error",
               message: error.message,
             });
         });
     };
-    tray.setContextMenu(
-      Menu.buildFromTemplate([
-        { label: "唤出角色", click: showCompanion },
-        { label: "桌面伙伴", click: () => switchSurface("companion") },
-        { label: "编程工作台", click: () => switchSurface("workbench") },
-        {
-          label: "任务与聊天",
-          click: () => {
-            showCompanion();
-            emit({ method: "client/openCompanion", params: { tab: "chat" } });
+    refreshTray = () => {
+      tray.setContextMenu(
+        Menu.buildFromTemplate([
+          { label: t("唤出角色"), click: showCompanion },
+          { label: t("桌面伙伴"), click: () => switchSurface("companion") },
+          { label: t("编程工作台"), click: () => switchSurface("workbench") },
+          {
+            label: t("任务与聊天"),
+            click: () => {
+              showCompanion();
+              emit({ method: "client/openCompanion", params: { tab: "chat" } });
+            },
           },
-        },
-        { label: "暂时隐藏", click: () => win.hide() },
-        { type: "separator" },
-        { label: "退出角色应用", click: () => app.quit() },
-      ]),
-    );
+          { label: t("暂时隐藏"), click: () => win.hide() },
+          { type: "separator" },
+          { label: t("退出角色应用"), click: () => app.quit() },
+        ]),
+      );
+      tray.setToolTip("Anime Codex · " + t("桌面伙伴"));
+      const menu = [];
+      if (process.platform === "darwin")
+        menu.push({
+          label: "Anime Codex",
+          submenu: [
+            { label: t("About Anime Codex"), role: "about" },
+            { type: "separator" },
+            { label: t("Hide Anime Codex"), role: "hide" },
+            { label: t("Hide others"), role: "hideOthers" },
+            { label: t("Show all"), role: "unhide" },
+            { type: "separator" },
+            { label: t("Quit app"), role: "quit" },
+          ],
+        });
+      menu.push({
+        label: t("Edit"),
+        submenu: [
+          { label: t("Undo"), role: "undo" },
+          { label: t("Redo"), role: "redo" },
+          { type: "separator" },
+          { label: t("Cut"), role: "cut" },
+          { label: t("Copy"), role: "copy" },
+          { label: t("Paste"), role: "paste" },
+          { label: t("Select all"), role: "selectAll" },
+        ],
+      });
+      menu.push({
+        label: t("Window"),
+        submenu: [
+          { label: t("Minimize"), role: "minimize" },
+          { label: t("Show character"), click: showCompanion },
+          { label: t("Close"), role: "close" },
+        ],
+      });
+      Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
+    };
+    refreshTray();
     tray.on("click", showCompanion);
     app.on("activate", showCompanion);
     win.on("close", (e) => {
@@ -1085,7 +1202,13 @@ if (primaryInstance)
       emit({ method: "client/inputRestored", params: {} });
     });
     win.on("blur", () => {
+      pendingExternalFocus = true;
+      setTimeout(collapseForExternalFocus, 100).unref();
       if (desktop.drag) desktop.control({ action: "endDrag" }).catch(() => {});
+    });
+    win.on("focus", () => {
+      pendingExternalFocus = false;
+      emit({ method: "client/windowFocus", params: {} });
     });
     const dev = process.env.ANIME_CODEX_DEV === "1";
     let url = dev

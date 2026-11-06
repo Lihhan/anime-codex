@@ -14,6 +14,10 @@ The 0.8.1 work restores the same companion controls on both platforms. Configura
 
 The cursor effect changes the orientation of the supplied artwork. Separate pupil/head deformation requires suitable layered or rigged character assets; the current PNG pipeline supplies finite action frames. Tests substitute cursor positions through the native API and verify both axes, all appearance types and reset behavior. They do not claim a physical mouse-movement test.
 
+## Language and nonintrusive overlay
+
+Chinese, English and Japanese are available throughout the companion and retained workbench. Topmost state is persisted. The default position lock allows dragging while preventing automatic wandering. Panels open beside the same character anchor and can collapse when another window becomes active. [Behavior and validation boundaries](LANGUAGES_AND_OVERLAY.md).
+
 ## Prerecorded action audio
 
 Both platforms use local HTML audio playback for user-uploaded recordings. There is no system synthesizer, neural voice model or voice cloning. Clips are independent per character/action, stay local, and are silent when absent. See [upload, preview and playback instructions](ACTION_AUDIO.md).

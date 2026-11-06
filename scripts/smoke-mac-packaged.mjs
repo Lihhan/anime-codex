@@ -160,3 +160,20 @@ await new Promise((resolve, reject) => {
       : reject(Error("Packaged companion check failed: " + code)),
   );
 });
+
+await new Promise((resolve, reject) => {
+  const child = spawnDock(
+    process.execPath,
+    ["scripts/smoke-locales-overlay.mjs"],
+    {
+      stdio: "inherit",
+      env: { ...process.env, ANIME_CODEX_EXECUTABLE: executable },
+    },
+  );
+  child.once("error", reject);
+  child.once("exit", (code) =>
+    code === 0
+      ? resolve()
+      : reject(Error("Packaged languages/overlay failed: " + code)),
+  );
+});

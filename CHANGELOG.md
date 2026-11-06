@@ -1,5 +1,9 @@
 # 0.8.1 — Complete animation packs and uploaded action audio
 
+- Trilingual refresh: complete Chinese, English and Japanese companion controls, tutorials, local reactions, status/error labels, character studio, uploaded-audio controls and native menus; persist language and apply it to future character replies/profiles.
+- Preserve the character anchor across panels, persist native topmost settings, default to a draggable fixed position, and pass clicks through transparent artwork with cursor polling independent of renderer hover forwarding.
+- Collapse app panels on external focus by default without stopping tasks or losing drafts; keep the character visible and guard native file pickers. The behavior can be disabled.
+
 - Same-version refresh: retire exact legacy photo copies even when renamed as Rin Custom; preserve unrelated custom characters, source images and backups.
 
 - Add seven validated sheets and 112 generated frames each for Rin, Nahida, Kaguya, Iroha and Elysia using the original production pipeline; retain Furina unchanged.

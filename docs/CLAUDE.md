@@ -7,15 +7,15 @@ This source build adds a selectable local Claude Code backend. Codex remains ava
 1. Install and sign in to native Claude Code and Codex on this computer.
 2. Open Settings → Programming backend → Claude Code.
 3. Leave **Independent translation · Codex subscription** enabled. A blank translation-model field uses the installed Codex CLI's default model. Save after changing settings; the next message starts a new conversation.
-4. Connect and choose your project. Type Chinese normally.
-5. Use History to inspect the original input, the English prompt actually sent, Claude's original English, and the Chinese translation. Tool records and approval payloads are verbatim.
+4. Connect and choose your project. Type normally in your preferred language.
+5. Use History to inspect the original input, the English prompt actually sent, Claude's original reply, and the translation into the selected interface language. Tool records and approval payloads are verbatim.
 
 The flow is:
 
 ```
-Chinese input → separate Codex translation/polishing call
+User input → separate Codex English translation/polishing call
              → local Claude Code (actual project work)
-             → separate Codex Chinese translation call → character dialogue
+             → separate Codex translation into the selected interface language → character dialogue
 ```
 
 Codex translation uses the installed CLI and its ChatGPT login, not a paid API-key endpoint and not Claude Code. It consumes Codex usage allowance. Every translated assistant message can require an additional Codex call, with corresponding latency and quota use. Translation can be explicitly disabled. The Settings test button uses two real Codex translation calls.

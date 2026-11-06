@@ -49,12 +49,13 @@ These development packages are **ad-hoc signed and not Apple-notarized**. If mac
 - **Programming workbench:** right-click the tray/menu-bar icon and choose `编程工作台`. Choose `桌面伙伴` to return. Finish or stop any active workbench task before switching.
 - **Settings:** click `设置` → `角色、模型与更多设置 ↗`. Select characters, appearance, personality, models/effort and companion behavior here.
 - **Memory:** use the full panel's `记忆` tab. Suggested memories require confirmation; confirmed memories can be edited or forgotten. Original conversation history remains available separately from summaries.
+- **Keep the character visible:** full Settings includes **Keep character on top** and **Keep position (dragging is still allowed)**. Both start enabled. Panels open beside the character; transparent image areas pass clicks through. By default, switching to another window collapses app panels while leaving the character visible. You can disable that preference.
 - **Move and resize:** drag the character and use the quick size slider. Settings includes idle motion, wandering, quiet mode and uploaded action audio.
 - **Mini mode:** quick Settings → `收成小挂件`; click the mini character's expand control to return.
 - **Hide versus quit:** closing a panel leaves the companion running. Use the system tray/menu-bar icon to show, temporarily hide or quit it.
 - **Recover a hidden character:** press **Ctrl+Alt+A** on Windows or **Command+Option+A** on Mac. The retained workbench also has a separate native edge-recovery tab.
 
-The companion panels currently use Chinese labels. The retained workbench supports Chinese, English and Japanese. Imported code, native output, diffs and approval payloads are not rewritten by the interface language selector.
+The companion, workbench and games support **中文 / English / 日本語**. Open full Settings → **Language** to switch; the choice is saved and shared across app windows. Controls, tutorials, local reactions, progress/error labels, action-audio settings and native app menus follow the selection. New replies and generated profiles use that language; original chat history, user content, code, native output, diffs and approval payloads keep their original text. [Language and overlay details](docs/LANGUAGES_AND_OVERLAY.md).
 
 ### Global keyboard and mouse rhythm — Windows and Mac
 
@@ -76,7 +77,7 @@ For Claude tasks, install and sign in to **native Claude Code on the same OS** u
 
 Worker tasks inherit the selected native CLI's configuration and permissions. The app does not silently replace those rules with full access. Review live approvals before accepting. A worker's completion is distinct from verification: a separately configured check command must actually pass before it is marked checked. Windows checks run with the native command processor; Mac checks use the user's shell.
 
-In the retained Claude workbench, independent translation can polish Chinese input into English and translate Claude's reply into Chinese using separate Codex subscription calls. Original/sent/translated text remains inspectable, and fenced/inline code is preserved byte-for-byte. Translation uses additional Codex quota and latency; it can be disabled. No CLI credentials are bundled or copied into the app. [Claude integration details](docs/CLAUDE.md) · [Companion architecture](docs/SUPERAGENT.md).
+In the retained Claude workbench, independent translation can polish input into English and translate Claude's reply into the selected interface language using separate Codex subscription calls. Original/sent/translated text remains inspectable, and fenced/inline code is preserved byte-for-byte. Translation uses additional Codex quota and latency; it can be disabled. No CLI credentials are bundled or copied into the app. [Claude integration details](docs/CLAUDE.md) · [Companion architecture](docs/SUPERAGENT.md).
 
 ### Characters and artwork
 

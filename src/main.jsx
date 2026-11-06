@@ -1,3 +1,5 @@
+import { useOverlayPointer } from "./useOverlayPointer";
+import { setLocale } from "./locale";
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { initialState, reduceEvent } from "../shared/state.mjs";
@@ -74,6 +76,7 @@ function App() {
           .replaceAll("codex login", "claude auth login")
       : text;
   };
+  const [overlayActive, setOverlayActive] = useState(true);
   const [workbench, setWorkbench] = useState(false),
     [dialogue, setDialogue] = useState(true),
     [pinned, setPinned] = useState(true),
@@ -156,6 +159,9 @@ function App() {
     dockTimer = useRef(null);
   function applyPreferences(result, preserveEdits = false) {
     if (!result) return;
+    if (result.language) setLocale(result.language);
+    if (result.desktop?.alwaysOnTop !== undefined)
+      setPinned(result.desktop.alwaysOnTop);
     if (result.backend) setBackend(result.backend);
     if (result.codexModel) setCodexModel(result.codexModel);
     if (result.translation) setTranslation(result.translation);
@@ -345,6 +351,22 @@ function App() {
       if (initial.autoConnect !== false) await connectBackend();
     });
     return api.onEvent((e) => {
+      if (e.method === "client/externalFocus" && e.params.collapsePanels) {
+        setOverlayActive(false);
+        setSettings(false);
+        setWorkbench(false);
+        setDialogue(false);
+        setShowChatLog(false);
+      }
+      if (e.method === "client/windowFocus") {
+        setOverlayActive(true);
+        return;
+      }
+      if (e.method === "client/language") {
+        setLocale(e.params.language);
+        setLanguage(e.params.language);
+        return;
+      }
       if (e.method === "client/translation") {
         setTranslationStatus(e.params);
         return;
@@ -358,7 +380,6 @@ function App() {
         return;
       }
       if (e.method === "client/inputRestored") {
-        setClickthrough(false);
         return;
       }
       if (
@@ -456,40 +477,12 @@ function App() {
         key: activeTurn.current + ":" + state.phase,
       });
   }, [state.phase]);
-  useEffect(() => {
-    if (!api) return;
-    let ignored = false;
-    const move = (e) => {
-      if (dragging.current) return;
-      const target =
-        document.elementFromPoint(e.clientX, e.clientY) || e.target;
-      const interactive =
-        target instanceof Element &&
-        target.closest(
-          "button,input,textarea,select,.sidebar,.conversation,.evidence,.settings,.approval-shade,.overlay-controls,.character,.dock-tab,.background-progress",
-        );
-      const next = clickthrough && !interactive;
-      if (next !== ignored) {
-        ignored = next;
-        api
-          .windowControl({ action: "passthrough", value: next })
-          .catch(() => {});
-      }
-      const x = (e.clientX / window.innerWidth - 0.5) * 2,
-        y = (e.clientY / window.innerHeight - 0.5) * 2;
-      document.documentElement.style.setProperty("--look-x", `${x * 2}px`);
-      document.documentElement.style.setProperty("--look-y", `${y * 1.5}px`);
-    };
-    window.addEventListener("mousemove", move);
-    if (!clickthrough)
-      api.windowControl({ action: "passthrough", value: false });
-    return () => {
-      window.removeEventListener("mousemove", move);
-      api
-        .windowControl({ action: "passthrough", value: false })
-        .catch(() => {});
-    };
-  }, [clickthrough]);
+  useOverlayPointer(api, {
+    selector:
+      "button,input,textarea,select,.sidebar,.conversation,.evidence,.settings,.approval-shade,.overlay-controls,.character,.dock-tab,.background-progress",
+    dragging,
+    enabled: clickthrough,
+  });
   async function refresh(cursor = null) {
     const r = await api.listThreads({ cursor });
     setThreads((old) => (cursor ? [...old, ...r.data] : r.data));
@@ -1835,7 +1828,7 @@ function App() {
           </aside>
         </div>
       </main>
-      {state.pending.length > 0 && (
+      {state.pending.length > 0 && overlayActive && (
         <div className="approval-shade">
           <section
             className="approval"

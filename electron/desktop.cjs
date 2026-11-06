@@ -70,6 +70,7 @@ class Desktop {
   }
   async persist() {
     this.preferences.data.desktop = {
+      ...this.preferences.data.desktop,
       x: this.layout.x,
       y: this.layout.y,
       scale: this.layout.scale,

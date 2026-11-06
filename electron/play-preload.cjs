@@ -1,8 +1,17 @@
 const { contextBridge, ipcRenderer } = require("electron");
+const call = (method) =>
+  ipcRenderer.invoke("companion:call", method).catch((error) => {
+    throw new Error(
+      error.message.replace(
+        /^Error invoking remote method '[^']+': (?:Error: )?/,
+        "",
+      ),
+    );
+  });
 contextBridge.exposeInMainWorld("animePlay", {
-  bootstrap: () => ipcRenderer.invoke("companion:call", "bootstrap"),
-  close: () => ipcRenderer.invoke("companion:call", "close"),
-  showMain: () => ipcRenderer.invoke("companion:call", "showMain"),
+  bootstrap: () => call("bootstrap"),
+  close: () => call("close"),
+  showMain: () => call("showMain"),
   onStatus(callback) {
     const listener = (_, status) => callback(status);
     ipcRenderer.on("companion:status", listener);

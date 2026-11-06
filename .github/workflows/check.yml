@@ -17,6 +17,7 @@ jobs:
       - run: npm run build
       - run: npm run smoke:native
       - run: npm run smoke:input
+      - run: npm run smoke:locales-overlay
       - run: npm run smoke:packs
       - run: npm run smoke:audio
       - run: npm run smoke:settings

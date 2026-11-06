@@ -1,3 +1,6 @@
+import { useOverlayPointer } from "./useOverlayPointer";
+import { tr, useLocale, setLocale } from "./locale";
+import { languages } from "../shared/i18n.mjs";
 import React, { useEffect, useRef, useState } from "react";
 import {
   chooseLifeActivity,
@@ -46,13 +49,14 @@ const tabs = [
   ["settings", "设置"],
 ];
 export function CompanionApp() {
+  const language = useLocale();
   const [boot, setBoot] = useState(null),
     [state, setState] = useState(null),
     [panel, setPanel] = useState(null),
     [chatOpen, setChatOpen] = useState(false),
     [quickMenu, setQuickMenu] = useState(null),
     [sizeCardAnchor, setSizeCardAnchor] = useState(null),
-    [orbitHint, setOrbitHint] = useState("选择一个互动"),
+    [orbitHint, setOrbitHint] = useState(tr("选择一个互动")),
     [styles, setStyles] = useState(() => {
       try {
         return JSON.parse(localStorage.getItem("companion.styles")) || {};
@@ -123,6 +127,7 @@ export function CompanionApp() {
     panelRef = useRef(null),
     lastInteraction = useRef(Date.now()),
     lastInvitation = useRef(Date.now()),
+    bubbleOriginal = useRef(false),
     bubbleTimer = useRef(null),
     activityTimer = useRef(null),
     messagesEnd = useRef(null),
@@ -132,33 +137,14 @@ export function CompanionApp() {
   stateRef.current = state;
   panelRef.current = panel || quickMenu || (chatOpen ? "bubble" : null);
   mealRef.current = meal;
-  const renderPosition = {
-    x:
-      panel && innerWidth > 800
-        ? Math.min(position.x, innerWidth - 710)
-        : Math.max(
-            125 - petWidth / 2,
-            Math.min(position.x, innerWidth - 125 - petWidth / 2),
-          ),
-    y: Math.min(position.y, innerHeight - petHeight - (chatOpen ? 65 : 12)),
-  };
+  useOverlayPointer(api, {
+    selector: ".companion-interactive",
+    dragging: drag,
+  });
+  const renderPosition = { x: position.x, y: position.y };
   const orbitRadiusX = Math.max(110, 95 * petScale + 38);
   const orbitRadiusY = Math.max(110, 102.5 * petScale + 38);
   const orbitTop = 102.5 * petScale - orbitRadiusY;
-  // Reserve the outer orbit at screen edges without covering the pet.
-  if (quickMenu === "life") {
-    const margin = Math.max(130, orbitRadiusX + 26) - petWidth / 2;
-    renderPosition.x = Math.max(
-      margin,
-      Math.min(renderPosition.x, innerWidth - petWidth - margin),
-    );
-    renderPosition.y = Math.max(70 - orbitTop, renderPosition.y);
-  }
-  if (tourStep < tourSteps.length)
-    renderPosition.y = Math.max(
-      quickMenu === "life" ? 250 - orbitTop : 170,
-      renderPosition.y,
-    );
   // Keep the native range control in screen coordinates throughout resizing.
   // Relative offsets look stable but Chromium can retain the moving parent origin.
   const quickStyle =
@@ -181,7 +167,8 @@ export function CompanionApp() {
             ),
           };
   const character = boot?.character,
-    name = character?.localizedNames?.zh || character?.name || "搭档";
+    name =
+      character?.localizedNames?.[language] || character?.name || tr("搭档");
   const tasks = state?.tasks || [],
     active = tasks.filter((t) =>
       ["queued", "running", "waiting"].includes(t.status),
@@ -231,7 +218,8 @@ export function CompanionApp() {
       return null;
     }
   }
-  function say(value, duration = 12000) {
+  function say(value, duration = 12000, original = false) {
+    bubbleOriginal.current = original;
     setBubble(value);
     clearTimeout(bubbleTimer.current);
     bubbleTimer.current = setTimeout(() => setBubble(""), duration);
@@ -247,14 +235,29 @@ export function CompanionApp() {
   }
   async function refresh() {
     const b = await api.bootstrap();
+    setLocale(b.language);
     setBoot(b);
     setState(await api.companionState());
+  }
+  async function changeLanguage(next) {
+    const result = await run(() => api.setLanguage({ language: next }));
+    if (result) await refresh();
   }
   useEffect(() => {
     document.documentElement.classList.add("companion-mode");
     void run(refresh);
     bubbleTimer.current = setTimeout(() => setBubble(""), 12000);
     const stop = api.onEvent((e) => {
+      if (e.method === "client/externalFocus" && e.params.collapsePanels) {
+        setPanel(null);
+        setQuickMenu(null);
+        setChatOpen(false);
+        setSizeCardAnchor(null);
+      }
+      if (e.method === "client/language") {
+        void run(refresh);
+        return;
+      }
       if (e.method === "client/inputPulse") {
         if (e.params.error) setError(e.params.error);
         else if (e.params.keys || e.params.clicks) {
@@ -268,19 +271,10 @@ export function CompanionApp() {
         else setPanel(e.params.tab);
       }
       if (e.method === "client/inputRestored") {
-        setBubble("我在。");
+        bubbleOriginal.current = false;
+        setBubble(tr("我在。"));
       }
     });
-    let passthrough = false;
-    const move = (e) => {
-      const hit =
-        !!e.target.closest?.(".companion-interactive") || !!drag.current;
-      if (passthrough === !hit) return;
-      passthrough = !hit;
-      void api
-        .windowControl({ action: "passthrough", value: passthrough })
-        .catch(() => {});
-    };
     const key = (e) => {
       if (e.key === "Escape") {
         setQuickMenu(null);
@@ -290,12 +284,18 @@ export function CompanionApp() {
         setGame(null);
       }
     };
-    window.addEventListener("pointermove", move);
+
+    const blur = () => {
+      setQuickMenu(null);
+      setSizeCardAnchor(null);
+    };
+    window.addEventListener("blur", blur);
     window.addEventListener("keydown", key);
     return () => {
       stop();
       document.documentElement.classList.remove("companion-mode");
-      window.removeEventListener("pointermove", move);
+
+      window.removeEventListener("blur", blur);
       window.removeEventListener("keydown", key);
       clearTimeout(bubbleTimer.current);
       clearTimeout(activityTimer.current);
@@ -310,9 +310,18 @@ export function CompanionApp() {
       const task = state.tasks.find((t) => t.id === report.taskId);
       say(
         task
-          ? `「${task.title.slice(0, 35)}」${task.status !== "completed" ? "遇到问题" : task.verification === "failed" ? "检查没通过" : "有结果了"}。点我看汇报。`
+          ? tr("「{v0}」{v1}。点我看汇报。", {
+              v0: task.title.slice(0, 35),
+              v1:
+                task.status !== "completed"
+                  ? tr("遇到问题")
+                  : task.verification === "failed"
+                    ? tr("检查没通过")
+                    : tr("有结果了"),
+            })
           : report.text.slice(0, 85),
         18000,
+        !task,
       );
       animate("attention", 7000);
     }
@@ -323,13 +332,16 @@ export function CompanionApp() {
       clearTimeout(activityTimer.current);
       setPreview(null);
       setActivity("sleep");
-    } else if (!settings.wander && activityRef.current === "walk") {
+    } else if (
+      (!settings.wander || settings.lockPosition) &&
+      activityRef.current === "walk"
+    ) {
       clearTimeout(activityTimer.current);
       setActivity("idle");
     } else if (previousQuiet.current && activityRef.current === "sleep")
       setActivity("idle");
     previousQuiet.current = !!settings.quiet;
-  }, [settings.quiet, settings.wander]);
+  }, [settings.quiet, settings.wander, settings.lockPosition]);
   useEffect(() => {
     const timer = setInterval(async () => {
       const s = stateRef.current;
@@ -364,6 +376,7 @@ export function CompanionApp() {
         wanderChance: behavior.wanderChance,
         wander:
           s.settings.wander &&
+          !s.settings.lockPosition &&
           !matchMedia("(prefers-reduced-motion: reduce)").matches,
       });
       clearTimeout(activityTimer.current);
@@ -393,7 +406,7 @@ export function CompanionApp() {
         Date.now() - lastInvitation.current > 35 * 60 * 1000
       ) {
         lastInvitation.current = Date.now();
-        say(behavior.invitation, 10000);
+        say(tr(behavior.invitation), 10000);
       }
     }, 5000);
     return () => clearInterval(timer);
@@ -425,6 +438,7 @@ export function CompanionApp() {
       state?.busy ||
       active.length ||
       !settings.wander ||
+      settings.lockPosition ||
       settings.quiet
     )
       return;
@@ -459,6 +473,7 @@ export function CompanionApp() {
     state?.busy,
     active.length,
     settings.wander,
+    settings.lockPosition,
     settings.quiet,
   ]);
   useEffect(() => {
@@ -534,7 +549,7 @@ export function CompanionApp() {
     const r = await run(() => api.companionChat({ text: message }));
     setActivity("idle");
     if (r) {
-      say(r.reply.replace(/[*`#]/g, ""), 30000);
+      say(r.reply.replace(/[*`#]/g, ""), 30000, true);
       tourEvent("message");
     }
   }
@@ -588,7 +603,7 @@ export function CompanionApp() {
       let index = Math.floor(Math.random() * lines.length);
       if (index === lastTouchLine.current) index = (index + 1) % lines.length;
       lastTouchLine.current = index;
-      say(lines[index], 7000);
+      say(tr(lines[index]), 7000);
       nextActivity.current = Date.now() + 8000;
       void run(() => api.companionLife());
     }
@@ -598,7 +613,7 @@ export function CompanionApp() {
     if (preview) {
       setMeal(preview);
       setPanel("life");
-      say("这些可以吃。先看看名单？");
+      say(tr("这些可以吃。先看看名单？"));
     }
   }
   async function eat() {
@@ -610,7 +625,9 @@ export function CompanionApp() {
     animate(result ? "pet" : "idle");
     if (result)
       say(
-        `吃好啦，${result.filter((m) => m.status === "eaten").length} 个文件进入废纸篓。需要的话可以吐回来。`,
+        tr("吃好啦，{v0} 个文件进入废纸篓。需要的话可以吐回来。", {
+          v0: result.filter((m) => m.status === "eaten").length,
+        }),
       );
   }
   async function dispatch(prompt, engine, title) {
@@ -626,7 +643,9 @@ export function CompanionApp() {
       setTaskText("");
       setPanel("tasks");
       say(
-        `交给 ${engine === "claude" ? "Claude Code" : "Codex"} 了。我们可以继续聊天。`,
+        tr("交给 {v0} 了。我们可以继续聊天。", {
+          v0: engine === "claude" ? "Claude Code" : "Codex",
+        }),
       );
     }
   }
@@ -654,14 +673,14 @@ export function CompanionApp() {
     gameTimer.current = setTimeout(() => {
       setGame((g) => (g ? { ...g, finished: true } : g));
       void run(() => api.companionLife({ game: true }));
-      say("这局结束，伸伸手指也不错。");
+      say(tr("这局结束，伸伸手指也不错。"));
       setActivity("idle");
     }, 20000);
   }
   if (!boot || !state)
     return (
       <div className="companion-loading companion-interactive">
-        {error || "角色正在醒来…"}
+        {error || tr("角色正在醒来…")}
       </div>
     );
   const workingTask = active.find((t) => t.status === "running");
@@ -770,18 +789,22 @@ export function CompanionApp() {
             className="tour-coach companion-interactive"
             role="status"
             style={{
-              bottom:
-                quickMenu === "life"
-                  ? petHeight - orbitTop + 70
-                  : petHeight + 12,
+              top: Math.max(8 - renderPosition.y, -180),
+              bottom: "auto",
+              left: Math.max(
+                160 - renderPosition.x,
+                Math.min(petWidth / 2, innerWidth - 160 - renderPosition.x),
+              ),
             }}
           >
             <small>
-              {name} · 初次见面 {tourStep + 1}/4
+              {name}
+              {tr("· 初次见面")}
+              {tourStep + 1}/4
             </small>
-            <p>{tourSteps[tourStep].text}</p>
+            <p>{tr(tourSteps[tourStep].text)}</p>
             <button onClick={() => setTourStep(tourSteps.length)}>
-              稍后再认识
+              {tr("稍后再认识")}
             </button>
           </aside>
         )}
@@ -792,9 +815,9 @@ export function CompanionApp() {
           >
             <textarea
               autoFocus
-              aria-label="气泡输入"
+              aria-label={tr("气泡输入")}
               onFocus={() => void audio.event("listening")}
-              placeholder="想和我说些什么？"
+              placeholder={tr("想和我说些什么？")}
               rows={1}
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -812,13 +835,13 @@ export function CompanionApp() {
             />
             <button
               className="bubble-send"
-              aria-label="发送消息"
-              title="发送消息"
+              aria-label={tr("发送消息")}
+              title={tr("发送消息")}
               disabled={state.busy || !text.trim()}
             >
               <CompanionIcon name="send" />
             </button>
-            {error && <p role="alert">{error}</p>}
+            {error && <p role="alert">{tr(error)}</p>}
           </form>
         )}
         {(bubble || (chatOpen && state.busy)) &&
@@ -829,7 +852,13 @@ export function CompanionApp() {
               className="pet-bubble companion-interactive"
               onClick={() => open(waiting ? "tasks" : "chat")}
             >
-              <span>{state.busy ? "正在想怎么回答你…" : bubble}</span>
+              <span>
+                {state.busy
+                  ? tr("正在想怎么回答你…")
+                  : bubbleOriginal.current
+                    ? bubble
+                    : tr(bubble)}
+              </span>
               <span className="bubble-corner">↗</span>
             </button>
           )}
@@ -908,7 +937,9 @@ export function CompanionApp() {
               }
             >
               <span>▤</span>
-              <small>{activity === "eat" ? "文件点心" : "还给你"}</small>
+              <small>
+                {activity === "eat" ? tr("文件点心") : tr("还给你")}
+              </small>
             </div>
           )}
           {activity === "sleep" && <span className="pet-emote">z z Z</span>}
@@ -919,7 +950,7 @@ export function CompanionApp() {
           <div className="pet-keyboard" key={pulse}>
             <span>⌨</span>
             {pulse > 0 && <i>♪</i>}
-            <small>一起敲敲</small>
+            <small>{tr("一起敲敲")}</small>
           </div>
         )}
         <div className="pet-caption">
@@ -927,17 +958,33 @@ export function CompanionApp() {
           <strong>{name}</strong>
           <span>
             {active.length
-              ? `${active.length} 件事进行中`
-              : activities[activity]}
+              ? tr("{v0} 件事进行中", { v0: active.length })
+              : tr(activities[activity])}
           </span>
         </div>
         {quickMenu && (
           <div
             className={`pet-quick pet-quick-${quickMenu} companion-interactive`}
-            aria-label="角色快捷选项"
+            aria-label={tr("角色快捷选项")}
             style={
               quickMenu === "life"
-                ? { "--orbit-top": `${orbitTop}px` }
+                ? {
+                    "--orbit-top": `${orbitTop}px`,
+                    left:
+                      Math.max(
+                        0,
+                        orbitRadiusX + 30 - renderPosition.x - petWidth / 2,
+                      ) -
+                      Math.max(
+                        0,
+                        renderPosition.x +
+                          petWidth / 2 +
+                          orbitRadiusX +
+                          30 -
+                          innerWidth,
+                      ),
+                    top: Math.max(0, 70 - orbitTop - renderPosition.y),
+                  }
                 : quickStyle
             }
             onKeyDown={(e) => {
@@ -946,7 +993,7 @@ export function CompanionApp() {
           >
             <button
               className="quick-close"
-              aria-label="收起快捷选项"
+              aria-label={tr("收起快捷选项")}
               onClick={() => setQuickMenu(null)}
             >
               <CompanionIcon name="close" />
@@ -958,25 +1005,25 @@ export function CompanionApp() {
                 </div>
                 <div className="life-orbit">
                   {[
-                    ["pet", "摸摸头", "life"],
-                    ["read", "读书", "book"],
-                    ["meal", "吃饭", "meal"],
-                    ["gaming", "玩游戏", "game"],
-                    ["office", "办公", "office"],
-                    ["sleep", "睡觉", "moon"],
-                    ["walk", "出去跑跑", "walk"],
-                    ["idle", "休息一下", "rest"],
-                    ["more", "文件投喂与小游戏", "more"],
+                    ["pet", tr("摸摸头"), "life"],
+                    ["read", tr("读书"), "book"],
+                    ["meal", tr("吃饭"), "meal"],
+                    ["gaming", tr("玩游戏"), "game"],
+                    ["office", tr("办公"), "office"],
+                    ["sleep", tr("睡觉"), "moon"],
+                    ["walk", tr("出去跑跑"), "walk"],
+                    ["idle", tr("休息一下"), "rest"],
+                    ["more", tr("文件投喂与小游戏"), "more"],
                   ].map(([id, label, icon], index) => {
                     const angle = ((-210 + index * 30) * Math.PI) / 180;
                     return (
                       <button
                         key={id}
-                        aria-label={label}
+                        aria-label={tr(label)}
                         onMouseEnter={() => setOrbitHint(label)}
-                        onMouseLeave={() => setOrbitHint("选择一个互动")}
+                        onMouseLeave={() => setOrbitHint(tr("选择一个互动"))}
                         onFocus={() => setOrbitHint(label)}
-                        onBlur={() => setOrbitHint("选择一个互动")}
+                        onBlur={() => setOrbitHint(tr("选择一个互动"))}
                         style={{
                           left: petWidth / 2 + Math.cos(angle) * orbitRadiusX,
                           top:
@@ -985,6 +1032,7 @@ export function CompanionApp() {
                         disabled={
                           id === "walk" &&
                           (!settings.wander ||
+                            settings.lockPosition ||
                             settings.quiet ||
                             !!active.length)
                         }
@@ -1012,19 +1060,21 @@ export function CompanionApp() {
             )}
             {quickMenu === "tasks" && (
               <>
-                <strong>我在照看的事</strong>
+                <strong>{tr("我在照看的事")}</strong>
                 {tourStep === 1 && (
                   <button
                     onClick={() => {
                       say(
-                        "任务会交给你选择的 Codex 或 Claude Code 线程执行，我会收集结果并向你汇报。",
+                        tr(
+                          "任务会交给你选择的 Codex 或 Claude Code 线程执行，我会收集结果并向你汇报。",
+                        ),
                         18000,
                       );
                       setQuickMenu(null);
                       tourEvent("tasks-understood");
                     }}
                   >
-                    了解任务分发
+                    {tr("了解任务分发")}
                   </button>
                 )}
                 {active.length ? (
@@ -1035,39 +1085,44 @@ export function CompanionApp() {
                       onClick={() => open("tasks")}
                     >
                       <span>
-                        {t.title || t.prompt || t.text || "进行中的任务"}
+                        {t.title || t.prompt || t.text || tr("进行中的任务")}
                       </span>
                       <small>
                         {t.status === "waiting"
-                          ? "等你决定"
+                          ? tr("等你决定")
                           : t.status === "queued"
-                            ? "排队中"
-                            : "进行中"}
+                            ? tr("排队中")
+                            : tr("进行中")}
                       </small>
                     </button>
                   ))
                 ) : (
-                  <p>暂时没有进行中的任务</p>
+                  <p>{tr("暂时没有进行中的任务")}</p>
                 )}
-                <button onClick={() => open("tasks")}>交给我一件事 ↗</button>
-                <button onClick={() => open("chat")}>聊聊任务想法</button>
+                <button onClick={() => open("tasks")}>
+                  {tr("交给我一件事 ↗")}
+                </button>
+                <button onClick={() => open("chat")}>
+                  {tr("聊聊任务想法")}
+                </button>
               </>
             )}
             {quickMenu === "settings" && (
               <>
-                <strong>陪伴偏好</strong>
+                <strong>{tr("陪伴偏好")}</strong>
                 <button
                   onClick={() => {
                     setQuickMenu(null);
                     setTourStep(0);
                   }}
                 >
-                  重新认识一下 · 新手引导
+                  {tr("重新认识一下 · 新手引导")}
                 </button>
                 <label className="pet-size-control">
-                  角色大小 <output>{Math.round(petScale * 100)}%</output>
+                  {tr("角色大小")}
+                  <output>{Math.round(petScale * 100)}%</output>
                   <input
-                    aria-label="快捷角色大小"
+                    aria-label={tr("快捷角色大小")}
                     type="range"
                     min="40"
                     max="140"
@@ -1089,27 +1144,27 @@ export function CompanionApp() {
                       tourEvent("preference");
                     }}
                   >
-                    {settings.quiet ? "恢复陪伴" : "安静陪伴"}
+                    {settings.quiet ? tr("恢复陪伴") : tr("安静陪伴")}
                   </button>
                   <button
                     aria-pressed={!!settings.wander}
                     onClick={() => saveSettings({ wander: !settings.wander })}
                   >
-                    {settings.wander ? "留在身边" : "自由走动"}
+                    {settings.wander ? tr("留在身边") : tr("自由走动")}
                   </button>
                 </div>
                 <button onClick={() => open("settings")}>
-                  角色、模型与更多设置 ↗
+                  {tr("角色、模型与更多设置 ↗")}
                 </button>
                 <button
-                  title="收成小挂件"
+                  title={tr("收成小挂件")}
                   onClick={() => {
                     setQuickMenu(null);
                     setChatOpen(false);
                     setMini(true);
                   }}
                 >
-                  收成小挂件
+                  {tr("收成小挂件")}
                 </button>
                 <button
                   onClick={() => {
@@ -1117,7 +1172,7 @@ export function CompanionApp() {
                     setPanel("chat");
                   }}
                 >
-                  对话历史 ↗
+                  {tr("对话历史 ↗")}
                 </button>
               </>
             )}
@@ -1126,34 +1181,34 @@ export function CompanionApp() {
         {!mini && (
           <nav
             className="pet-dock companion-interactive"
-            aria-label="角色工具栏"
+            aria-label={tr("角色工具栏")}
             data-tour={tourSteps[tourStep]?.id || ""}
           >
             <button
-              title="聊天"
-              aria-label="聊天"
+              title={tr("聊天")}
+              aria-label={tr("聊天")}
               onClick={() => toggleQuick("chat")}
             >
               <CompanionIcon name="chat" />
             </button>
             <button
-              title="任务"
-              aria-label="任务"
+              title={tr("任务")}
+              aria-label={tr("任务")}
               onClick={() => toggleQuick("tasks")}
             >
               <CompanionIcon name="tasks" />
               {active.length > 0 && <b>{active.length}</b>}
             </button>
             <button
-              title="生活与文件投喂"
-              aria-label="生活与文件投喂"
+              title={tr("生活与文件投喂")}
+              aria-label={tr("生活与文件投喂")}
               onClick={() => toggleQuick("life")}
             >
               <CompanionIcon name="life" />
             </button>
             <button
-              title="设置"
-              aria-label="设置"
+              title={tr("设置")}
+              aria-label={tr("设置")}
               onClick={() => toggleQuick("settings")}
             >
               <CompanionIcon name="settings" />
@@ -1163,7 +1218,7 @@ export function CompanionApp() {
         {mini && (
           <button
             className="mini-toggle companion-interactive"
-            title={mini ? "展开角色" : "收成小挂件"}
+            title={mini ? tr("展开角色") : tr("收成小挂件")}
             onClick={() => setMini(!mini)}
           >
             <CompanionIcon name="expand" />
@@ -1174,18 +1229,32 @@ export function CompanionApp() {
         <section
           className="companion-panel companion-interactive"
           data-testid="companion-panel"
+          style={{
+            left: Math.max(
+              12,
+              Math.min(
+                innerWidth - 452,
+                renderPosition.x > 460
+                  ? renderPosition.x - 460
+                  : renderPosition.x + petWidth + 20,
+              ),
+            ),
+            right: "auto",
+          }}
         >
           <header className="companion-header">
             <img src="./app-icon.png" alt="" />
             <div>
-              <span className="companion-kicker">YOUR EVERYDAY COMPANION</span>
+              <span className="companion-kicker">
+                {tr("YOUR EVERYDAY COMPANION")}
+              </span>
               <h1>
                 {name}
-                <span>的陪伴空间</span>
+                <span>{tr("的陪伴空间")}</span>
               </h1>
             </div>
             <button
-              title="收起面板，角色继续陪伴"
+              title={tr("收起面板，角色继续陪伴")}
               onClick={() => setPanel(null)}
             >
               ×
@@ -1198,15 +1267,15 @@ export function CompanionApp() {
                 key={id}
                 onClick={() => open(id)}
               >
-                {label}
+                {tr(label)}
                 {id === "tasks" && waiting && <i />}
               </button>
             ))}
           </nav>
           {error && (
             <div className="companion-error" role="alert">
-              {error}
-              <button aria-label="关闭错误" onClick={() => setError("")}>
+              {tr(error)}
+              <button aria-label={tr("关闭错误")} onClick={() => setError("")}>
                 ×
               </button>
             </div>
@@ -1215,8 +1284,8 @@ export function CompanionApp() {
             <>
               <div className="conversation-tools">
                 <input
-                  aria-label="搜索对话历史"
-                  placeholder="找回我们聊过的话…"
+                  aria-label={tr("搜索对话历史")}
+                  placeholder={tr("找回我们聊过的话…")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -1227,7 +1296,7 @@ export function CompanionApp() {
                     )
                   }
                 >
-                  搜索
+                  {tr("搜索")}
                 </button>
                 {history && (
                   <button
@@ -1236,7 +1305,7 @@ export function CompanionApp() {
                       setSearch("");
                     }}
                   >
-                    返回
+                    {tr("返回")}
                   </button>
                 )}
               </div>
@@ -1244,21 +1313,23 @@ export function CompanionApp() {
                 {!displayMessages.length && (
                   <div className="conversation-welcome">
                     <span>✦</span>
-                    <h2>今天，从哪件小事开始？</h2>
+                    <h2>{tr("今天，从哪件小事开始？")}</h2>
                     <p>
-                      可以聊聊你的想法，也可以交给我一件事。
+                      {tr("可以聊聊你的想法，也可以交给我一件事。")}
                       <br />
-                      工作交给执行线程，我留在这里陪你。
+                      {tr("工作交给执行线程，我留在这里陪你。")}
                     </p>
                     <button
                       onClick={() =>
-                        setText("我们先聊聊吧，你希望怎么陪伴我？")
+                        setText(tr("我们先聊聊吧，你希望怎么陪伴我？"))
                       }
                     >
-                      认识一下
+                      {tr("认识一下")}
                     </button>
-                    <button onClick={() => setText("我想安排一个 Codex 任务")}>
-                      安排任务
+                    <button
+                      onClick={() => setText(tr("我想安排一个 Codex 任务"))}
+                    >
+                      {tr("安排任务")}
                     </button>
                   </div>
                 )}
@@ -1276,7 +1347,7 @@ export function CompanionApp() {
                       )
                     }
                   >
-                    更早的对话
+                    {tr("更早的对话")}
                   </button>
                 )}
                 {displayMessages.map((m) => (
@@ -1289,13 +1360,16 @@ export function CompanionApp() {
                     }
                   >
                     <div className="message-byline">
-                      {m.role === "user" ? "你" : name}
-                      {m.report ? " · 任务汇报" : ""}
+                      {m.role === "user" ? tr("你") : name}
+                      {m.report ? tr(" · 任务汇报") : ""}
                       <time>
-                        {new Date(m.time).toLocaleTimeString("zh-CN", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(m.time).toLocaleTimeString(
+                          { zh: "zh-CN", en: "en-US", ja: "ja-JP" }[language],
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
                       </time>
                     </div>
                     <div className="message-text">
@@ -1304,14 +1378,14 @@ export function CompanionApp() {
                     {m.proposal && (
                       <div className="task-proposal">
                         <strong>
-                          准备交给{" "}
+                          {tr("准备交给")}{" "}
                           {m.proposal.engine === "claude"
                             ? "Claude Code"
                             : "Codex"}
                         </strong>
                         <p>{m.proposal.title}</p>
                         <details>
-                          <summary>查看完整任务</summary>
+                          <summary>{tr("查看完整任务")}</summary>
                           <pre>{m.proposal.prompt}</pre>
                         </details>
                         <button
@@ -1324,13 +1398,13 @@ export function CompanionApp() {
                             )
                           }
                         >
-                          发送任务
+                          {tr("发送任务")}
                         </button>
                         {!settings.workspace && (
                           <button
                             onClick={() => run(() => api.companionWorkspace())}
                           >
-                            先选项目
+                            {tr("先选项目")}
                           </button>
                         )}
                       </div>
@@ -1340,22 +1414,24 @@ export function CompanionApp() {
                         className="text-link"
                         onClick={() => toggleQuick("tasks")}
                       >
-                        查看执行记录 ↗
+                        {tr("查看执行记录 ↗")}
                       </button>
                     )}
                   </article>
                 ))}
                 {state.busy && (
                   <div className="thinking-dots">
-                    {name} 正在想 <span>● ● ●</span>
+                    {name}
+                    {tr("正在想")}
+                    <span>● ● ●</span>
                   </div>
                 )}
                 <div ref={messagesEnd} />
               </div>
               <form className="companion-composer" onSubmit={send}>
                 <textarea
-                  aria-label="和角色说话"
-                  placeholder="跟我说说…"
+                  aria-label={tr("和角色说话")}
+                  placeholder={tr("跟我说说…")}
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   onKeyDown={(e) => {
@@ -1370,17 +1446,17 @@ export function CompanionApp() {
                   }}
                 />
                 <div>
-                  <span>记忆随角色保留 · Shift ↵ 换行</span>
+                  <span>{tr("记忆随角色保留 · Shift ↵ 换行")}</span>
                   {state.busy ? (
                     <button
                       type="button"
                       onClick={() => run(() => api.companionStop())}
                     >
-                      停止回复
+                      {tr("停止回复")}
                     </button>
                   ) : (
                     <button className="accent" disabled={!text.trim()}>
-                      发送 ↗
+                      {tr("发送 ↗")}
                     </button>
                   )}
                 </div>
@@ -1390,20 +1466,22 @@ export function CompanionApp() {
           {panel === "tasks" && (
             <div className="companion-scroll">
               <div className="section-heading">
-                <span>HAND IT OVER</span>
-                <h2>事情交给他们，我陪着你。</h2>
-                <p>每个任务拥有独立线程。同一项目顺序执行，避免同时修改。</p>
+                <span>{tr("HAND IT OVER")}</span>
+                <h2>{tr("事情交给他们，我陪着你。")}</h2>
+                <p>
+                  {tr("每个任务拥有独立线程。同一项目顺序执行，避免同时修改。")}
+                </p>
               </div>
               <div className="companion-card">
                 <button
                   className="workspace-button"
                   onClick={() => run(() => api.companionWorkspace())}
                 >
-                  ▱ {settings.workspace || "选择项目文件夹"}
+                  ▱ {settings.workspace || tr("选择项目文件夹")}
                 </button>
                 <div className="inline-fields">
                   <select
-                    aria-label="任务执行器"
+                    aria-label={tr("任务执行器")}
                     value={taskEngine}
                     onChange={(e) => setTaskEngine(e.target.value)}
                   >
@@ -1411,18 +1489,18 @@ export function CompanionApp() {
                     <option value="claude">Claude Code</option>
                   </select>
                   <button onClick={() => toggleQuick("settings")}>
-                    模型 / effort ↗
+                    {tr("模型 / effort ↗")}
                   </button>
                 </div>
                 <textarea
-                  aria-label="任务内容"
-                  placeholder="目标、范围，以及怎样算完成…"
+                  aria-label={tr("任务内容")}
+                  placeholder={tr("目标、范围，以及怎样算完成…")}
                   value={taskText}
                   onChange={(e) => setTaskText(e.target.value)}
                 />
                 <input
-                  aria-label="完成后复跑的检查命令"
-                  placeholder="可选：完成后复跑检查，如 npm test"
+                  aria-label={tr("完成后复跑的检查命令")}
+                  placeholder={tr("可选：完成后复跑检查，如 npm test")}
                   value={checkCommand}
                   onChange={(e) => setCheckCommand(e.target.value)}
                 />
@@ -1431,19 +1509,20 @@ export function CompanionApp() {
                   disabled={!settings.workspace || !taskText.trim()}
                   onClick={() => dispatch(taskText, taskEngine)}
                 >
-                  交给 {taskEngine === "codex" ? "Codex" : "Claude"}
+                  {tr("交给")}
+                  {taskEngine === "codex" ? "Codex" : "Claude"}
                 </button>
               </div>
               {!tasks.length && (
                 <p className="empty-note">
-                  还没有任务。开始后，你可以继续聊天或收起面板。
+                  {tr("还没有任务。开始后，你可以继续聊天或收起面板。")}
                 </p>
               )}
               {[...tasks].reverse().map((t) => (
                 <article className="companion-card task-card" key={t.id}>
                   <div className="task-topline">
                     <span className={"task-status " + t.status}>
-                      {labels[t.status]}
+                      {tr(labels[t.status])}
                     </span>
                     <small>
                       {t.engine === "codex" ? "Codex" : "Claude Code"}
@@ -1451,19 +1530,19 @@ export function CompanionApp() {
                   </div>
                   <h3>{t.title}</h3>
                   <small className="path-note">{t.workspace}</small>
-                  {t.error && <p className="inline-error">{t.error}</p>}
+                  {t.error && <p className="inline-error">{tr(t.error)}</p>}
                   {t.requests?.map((r) => (
                     <Approval key={r.id} request={r} taskId={t.id} run={run} />
                   ))}
                   {t.output && (
                     <details open={t.status === "completed"}>
                       <summary>
-                        执行器结果 ·{" "}
+                        {tr("执行器结果 ·")}{" "}
                         {t.verification === "passed"
-                          ? "复跑检查通过"
+                          ? tr("复跑检查通过")
                           : t.verification === "failed"
-                            ? "复跑检查未通过"
-                            : "未独立验收"}
+                            ? tr("复跑检查未通过")
+                            : tr("未独立验收")}
                       </summary>
                       <pre>{t.output}</pre>
                     </details>
@@ -1471,8 +1550,10 @@ export function CompanionApp() {
                   {t.check && (
                     <details open={t.verification === "failed"}>
                       <summary>
-                        复跑检查 ·{" "}
-                        {t.verification === "passed" ? "通过" : "未通过"}
+                        {tr("复跑检查 ·")}{" "}
+                        {t.verification === "passed"
+                          ? tr("通过")
+                          : tr("未通过")}
                       </summary>
                       <pre>
                         {t.check.command +
@@ -1484,12 +1565,17 @@ export function CompanionApp() {
                     </details>
                   )}
                   <details>
-                    <summary>线程与执行证据（{t.events.length}）</summary>
+                    <summary>
+                      {tr("线程与执行证据（")}
+                      {t.events.length}）
+                    </summary>
                     <small>
-                      线程：{t.threadId || "正在创建"}
+                      {tr("线程：")}
+                      {t.threadId || tr("正在创建")}
                       <br />
-                      模型：{t.effectiveModel || t.model || "继承本机"} ·
-                      effort：{t.effort || "继承本机"}
+                      {tr("模型：")}
+                      {t.effectiveModel || t.model || tr("继承本机")} · effort：
+                      {t.effort || tr("继承本机")}
                     </small>
                     {t.events.map((e, i) => (
                       <pre key={i}>
@@ -1513,13 +1599,13 @@ export function CompanionApp() {
                         )
                       }
                     >
-                      停止任务
+                      {tr("停止任务")}
                     </button>
                   ) : (
                     t.threadId && (
                       <div className="followup">
                         <input
-                          placeholder="补充要求，继续原线程…"
+                          placeholder={tr("补充要求，继续原线程…")}
                           value={resumeText[t.id] || ""}
                           onChange={(e) =>
                             setResumeText({
@@ -1539,7 +1625,7 @@ export function CompanionApp() {
                             )
                           }
                         >
-                          继续
+                          {tr("继续")}
                         </button>
                       </div>
                     )
@@ -1551,16 +1637,18 @@ export function CompanionApp() {
           {panel === "memory" && (
             <div className="companion-scroll">
               <div className="section-heading">
-                <span>THINGS WE KEEP</span>
-                <h2>那些值得记住的小事</h2>
+                <span>{tr("THINGS WE KEEP")}</span>
+                <h2>{tr("那些值得记住的小事")}</h2>
                 <p>
-                  确认的记忆会带入聊天。模型提出的建议先留在这里，你可以改写或删除。
+                  {tr(
+                    "确认的记忆会带入聊天。模型提出的建议先留在这里，你可以改写或删除。",
+                  )}
                 </p>
               </div>
               <div className="companion-card">
                 <textarea
-                  placeholder="希望我一直记得什么？"
-                  aria-label="新增记忆"
+                  placeholder={tr("希望我一直记得什么？")}
+                  aria-label={tr("新增记忆")}
                   value={memoryText}
                   onChange={(e) => setMemoryText(e.target.value)}
                 />
@@ -1574,16 +1662,20 @@ export function CompanionApp() {
                     })
                   }
                 >
-                  记住这件事
+                  {tr("记住这件事")}
                 </button>
               </div>
               {state.summaries?.[character.id] && (
                 <details className="companion-card">
                   <summary>
-                    对话阶段摘要 · {state.summaries[character.id].count} 条历史
+                    {tr("对话阶段摘要 ·")}
+                    {state.summaries[character.id].count}
+                    {tr("条历史")}
                   </summary>
                   <p>{state.summaries[character.id].text}</p>
-                  <small>模型整理的摘要可能有误；完整对话仍可搜索。</small>
+                  <small>
+                    {tr("模型整理的摘要可能有误；完整对话仍可搜索。")}
+                  </small>
                 </details>
               )}
               {state.memories.map((m) => (
@@ -1591,7 +1683,7 @@ export function CompanionApp() {
               ))}
               {!state.memories.length && (
                 <p className="empty-note">
-                  我们可以慢慢积累。对话历史会另行保存。
+                  {tr("我们可以慢慢积累。对话历史会另行保存。")}
                 </p>
               )}
             </div>
@@ -1599,21 +1691,23 @@ export function CompanionApp() {
           {panel === "life" && (
             <div className="companion-scroll">
               <div className="section-heading">
-                <span>A LITTLE LIFE ON YOUR DESKTOP</span>
-                <h2>工作之外，也一起生活。</h2>
-                <p>摸摸头、散散步，或者来一场接星星。</p>
+                <span>{tr("A LITTLE LIFE ON YOUR DESKTOP")}</span>
+                <h2>{tr("工作之外，也一起生活。")}</h2>
+                <p>{tr("摸摸头、散散步，或者来一场接星星。")}</p>
               </div>
               {chibi && (
                 <div className="companion-card">
-                  <h3>今天想做什么</h3>
-                  <p>这些是角色的生活动作；办公动画本身不会执行电脑操作。</p>
+                  <h3>{tr("今天想做什么")}</h3>
+                  <p>
+                    {tr("这些是角色的生活动作；办公动画本身不会执行电脑操作。")}
+                  </p>
                   <div className="animation-preview">
                     {[
-                      ["read", "读书"],
-                      ["meal", "吃饭"],
-                      ["gaming", "玩游戏"],
-                      ["office", "办公"],
-                      ["sleep", "睡觉"],
+                      ["read", tr("读书")],
+                      ["meal", tr("吃饭")],
+                      ["gaming", tr("玩游戏")],
+                      ["office", tr("办公")],
+                      ["sleep", tr("睡觉")],
                     ].map(([id, label]) => (
                       <button
                         key={id}
@@ -1623,12 +1717,15 @@ export function CompanionApp() {
                           animate(id, 20000);
                         }}
                       >
-                        {label}
+                        {tr(label)}
                       </button>
                     ))}
                     <button
                       disabled={
-                        !settings.wander || settings.quiet || !!active.length
+                        !settings.wander ||
+                        settings.lockPosition ||
+                        settings.quiet ||
+                        !!active.length
                       }
                       onClick={() => {
                         setPreview(null);
@@ -1638,7 +1735,7 @@ export function CompanionApp() {
                         animate("walk", 15000);
                       }}
                     >
-                      出去跑跑
+                      {tr("出去跑跑")}
                     </button>
                     <button
                       onClick={() => {
@@ -1646,7 +1743,7 @@ export function CompanionApp() {
                         animate("idle");
                       }}
                     >
-                      休息一下
+                      {tr("休息一下")}
                     </button>
                   </div>
                 </div>
@@ -1654,33 +1751,38 @@ export function CompanionApp() {
               <div className="life-stats">
                 <div>
                   <b>{state.life.affection}</b>
-                  <span>次互动</span>
+                  <span>{tr("次互动")}</span>
                 </div>
                 <div>
                   <b>{state.life.games}</b>
-                  <span>场小游戏</span>
+                  <span>{tr("场小游戏")}</span>
                 </div>
                 <div>
                   <b>
                     {state.meals.filter((m) => m.status === "eaten").length}
                   </b>
-                  <span>份文件点心</span>
+                  <span>{tr("份文件点心")}</span>
                 </div>
               </div>
               <div className="companion-card">
-                <h3>接星星 ✦</h3>
-                <p>20 秒内点击星星。角色陪你一起活动一下。</p>
+                <h3>{tr("接星星 ✦")}</h3>
+                <p>{tr("20 秒内点击星星。角色陪你一起活动一下。")}</p>
                 {game && (
                   <div className="star-game">
                     {game.finished ? (
                       <div className="game-result">
-                        这次接住了 <b>{game.score}</b> 颗星星
+                        {tr("这次接住了")}
+                        <b>{game.score}</b>
+                        {tr("颗星星")}
                       </div>
                     ) : (
                       <>
-                        <span>已接住 {game.score}</span>
+                        <span>
+                          {tr("已接住")}
+                          {game.score}
+                        </span>
                         <button
-                          aria-label="接住星星"
+                          aria-label={tr("接住星星")}
                           style={{ left: game.x + "%", top: game.y + "%" }}
                           onClick={() =>
                             setGame((g) => ({
@@ -1698,26 +1800,28 @@ export function CompanionApp() {
                   </div>
                 )}
                 <button onClick={startGame}>
-                  {game ? "再玩一局" : "一起玩"}
+                  {game ? tr("再玩一局") : tr("一起玩")}
                 </button>
                 <button onClick={() => run(() => api.openPlay())}>
-                  打开街机房 ↗
+                  {tr("打开街机房 ↗")}
                 </button>
               </div>
               <div className="companion-card food-card">
                 <span className="food-icon">▤</span>
-                <h3>给我一份文件点心</h3>
+                <h3>{tr("给我一份文件点心")}</h3>
                 <p>
-                  把普通文件拖到角色身上，或在这里选择。吃掉后进入系统废纸篓，本机保留恢复副本。
+                  {tr(
+                    "把普通文件拖到角色身上，或在这里选择。吃掉后进入系统废纸篓，本机保留恢复副本。",
+                  )}
                 </p>
-                <button onClick={() => files()}>挑选文件</button>
+                <button onClick={() => files()}>{tr("挑选文件")}</button>
                 <small>
-                  每次最多 20 个文件，共 100 MB；单文件不超过 50 MB。
+                  {tr("每次最多 20 个文件，共 100 MB；单文件不超过 50 MB。")}
                 </small>
               </div>
               {meal && (
                 <div className="companion-card meal-preview">
-                  <h3>准备吃掉这些文件</h3>
+                  <h3>{tr("准备吃掉这些文件")}</h3>
                   {meal.files.map((f) => (
                     <div key={f.path}>
                       <strong>{f.name}</strong>
@@ -1732,16 +1836,16 @@ export function CompanionApp() {
                       disabled={fileBusy}
                       onClick={eat}
                     >
-                      {fileBusy ? "正在处理…" : "吃掉 · 移到废纸篓"}
+                      {fileBusy ? tr("正在处理…") : tr("吃掉 · 移到废纸篓")}
                     </button>
                     <button disabled={fileBusy} onClick={() => setMeal(null)}>
-                      先不吃
+                      {tr("先不吃")}
                     </button>
                   </div>
                 </div>
               )}
               {state.meals.length > 0 && (
-                <h3 className="subheading">投喂记录</h3>
+                <h3 className="subheading">{tr("投喂记录")}</h3>
               )}
               {[...state.meals].reverse().map((m) => (
                 <div className="companion-card meal-record" key={m.id}>
@@ -1750,25 +1854,25 @@ export function CompanionApp() {
                   <span>
                     {
                       {
-                        eaten: "已进入废纸篓",
-                        restored: "已恢复到原处",
-                        preparing: "操作曾中断，请检查文件",
-                        failed: "处理失败",
+                        eaten: tr("已进入废纸篓"),
+                        restored: tr("已恢复到原处"),
+                        preparing: tr("操作曾中断，请检查文件"),
+                        failed: tr("处理失败"),
                       }[m.status]
                     }
                   </span>
-                  {m.error && <p className="inline-error">{m.error}</p>}
+                  {m.error && <p className="inline-error">{tr(m.error)}</p>}
                   {["eaten", "preparing", "failed"].includes(m.status) && (
                     <button
                       onClick={() =>
                         run(async () => {
                           await api.companionRestore({ id: m.id });
                           animate("restore");
-                          say("吐回来啦，文件已恢复到原位置。");
+                          say(tr("吐回来啦，文件已恢复到原位置。"));
                         })
                       }
                     >
-                      吐回来 · 恢复副本
+                      {tr("吐回来 · 恢复副本")}
                     </button>
                   )}
                   {m.status === "restored" && (
@@ -1778,15 +1882,17 @@ export function CompanionApp() {
                       }
                     >
                       {boot.platform === "win32"
-                        ? "在文件资源管理器中查看"
-                        : "在 Finder 中查看"}
+                        ? tr("在文件资源管理器中查看")
+                        : tr("在 Finder 中查看")}
                     </button>
                   )}
                 </div>
               ))}
               {state.meals.length > 0 && (
                 <p className="empty-note">
-                  恢复不会覆盖同名文件。废纸篓内的原件仍由系统管理，恢复副本保存在本机。
+                  {tr(
+                    "恢复不会覆盖同名文件。废纸篓内的原件仍由系统管理，恢复副本保存在本机。",
+                  )}
                 </p>
               )}
             </div>
@@ -1794,22 +1900,75 @@ export function CompanionApp() {
           {panel === "settings" && (
             <div className="companion-scroll">
               <div className="section-heading">
-                <span>MAKE YOURSELF AT HOME</span>
-                <h2>角色与工作，各有自己的节奏。</h2>
+                <span>{tr("MAKE YOURSELF AT HOME")}</span>
+                <h2>{tr("角色与工作，各有自己的节奏。")}</h2>
               </div>
               <div className="companion-card">
-                <h3>陪伴方式</h3>
+                <h3>{tr("陪伴方式")}</h3>
+                <label>
+                  {tr("Language")}
+                  <select
+                    data-testid="companion-language"
+                    aria-label={tr("Language")}
+                    value={language}
+                    onChange={(e) => changeLanguage(e.target.value)}
+                  >
+                    {Object.entries(languages).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="toggle-row">
+                  <span>{tr("Keep character on top")}</span>
+                  <input
+                    aria-label={tr("Keep character on top")}
+                    type="checkbox"
+                    checked={boot.desktop?.alwaysOnTop !== false}
+                    onChange={(e) => {
+                      const value = e.target.checked;
+                      setBoot((old) => ({
+                        ...old,
+                        desktop: { ...old.desktop, alwaysOnTop: value },
+                      }));
+                      void run(async () => {
+                        try {
+                          await api.windowControl({
+                            action: "alwaysOnTop",
+                            value,
+                          });
+                        } finally {
+                          await refresh();
+                        }
+                      });
+                    }}
+                  />
+                </label>
+                <small>
+                  {tr(
+                    "The character stays in place. Transparent areas pass clicks to other windows.",
+                  )}
+                </small>
                 {[
-                  ["autoDispatch", "明确任务自动分发（需先选择项目）"],
-                  ["cursor", "视线跟随鼠标"],
-                  ["keyboard", "跟随全局键鼠节奏（只读取计数）"],
-                  ["wander", "在桌面散步"],
-                  ["proactive", "偶尔邀请互动（至少间隔 35 分钟）"],
-                  ["quiet", "安静休息，不显示日常气泡"],
-                  ["voice", "播放我上传的动作语音"],
+                  ["autoDispatch", tr("明确任务自动分发（需先选择项目）")],
+                  ["cursor", tr("视线跟随鼠标")],
+                  ["keyboard", tr("跟随全局键鼠节奏（只读取计数）")],
+                  [
+                    "collapseOnBlur",
+                    tr("Collapse panels when another window is active"),
+                  ],
+                  [
+                    "lockPosition",
+                    tr("Keep position (dragging is still allowed)"),
+                  ],
+                  ["wander", tr("在桌面散步")],
+                  ["proactive", tr("偶尔邀请互动（至少间隔 35 分钟）")],
+                  ["quiet", tr("安静休息，不显示日常气泡")],
+                  ["voice", tr("播放我上传的动作语音")],
                 ].map(([key, label]) => (
                   <label className="toggle-row" key={key}>
-                    <span>{label}</span>
+                    <span>{tr(label)}</span>
                     <input
                       type="checkbox"
                       disabled={settingsBusy}
@@ -1822,14 +1981,16 @@ export function CompanionApp() {
                 ))}
                 <small>
                   {settingsBusy
-                    ? "正在应用设置并启动键鼠反馈…"
-                    : "主动邀请和动作由本地逻辑驱动，不会在后台反复调用模型。"}
+                    ? tr("正在应用设置并启动键鼠反馈…")
+                    : tr(
+                        "主动邀请和动作由本地逻辑驱动，不会在后台反复调用模型。",
+                      )}
                 </small>
                 <label>
-                  动作语音音量{" "}
+                  {tr("动作语音音量")}{" "}
                   {Math.round((settings.voiceVolume ?? 0.75) * 100)}%
                   <input
-                    aria-label="动作语音音量"
+                    aria-label={tr("动作语音音量")}
                     type="range"
                     min="0"
                     max="1"
@@ -1852,7 +2013,7 @@ export function CompanionApp() {
               />
               <div className="companion-card">
                 <div className="inline-fields">
-                  <h3>模型与 effort</h3>
+                  <h3>{tr("模型与 effort")}</h3>
                   <button
                     disabled={loadingModels}
                     onClick={() =>
@@ -1866,15 +2027,16 @@ export function CompanionApp() {
                       })
                     }
                   >
-                    {loadingModels ? "读取中…" : "读取可用模型"}
+                    {loadingModels ? tr("读取中…") : tr("读取可用模型")}
                   </button>
                 </div>
                 <p>
-                  角色聊天使用 Codex
-                  订阅的独立文字会话；执行线程继续继承本机环境。
+                  {tr(
+                    "角色聊天使用 Codex 订阅的独立文字会话；执行线程继续继承本机环境。",
+                  )}
                 </p>
                 <ModelChoice
-                  label="角色大脑"
+                  label={tr("角色大脑")}
                   modelKey="brainModel"
                   effortKey="brainEffort"
                   settings={settings}
@@ -1882,7 +2044,7 @@ export function CompanionApp() {
                   save={saveSettings}
                 />
                 <ModelChoice
-                  label="Codex 任务执行器"
+                  label={tr("Codex 任务执行器")}
                   modelKey="taskModel"
                   effortKey="taskEffort"
                   settings={settings}
@@ -1890,7 +2052,7 @@ export function CompanionApp() {
                   save={saveSettings}
                 />
                 <label className="stacked-label">
-                  角色建议任务时优先使用
+                  {tr("角色建议任务时优先使用")}
                   <select
                     value={settings.executor}
                     onChange={(e) => saveSettings({ executor: e.target.value })}
@@ -1900,14 +2062,15 @@ export function CompanionApp() {
                   </select>
                 </label>
                 <small>
-                  Claude
-                  执行器使用其本机模型配置。这里的选择仅影响本应用后续请求。
+                  {tr(
+                    "Claude 执行器使用其本机模型配置。这里的选择仅影响本应用后续请求。",
+                  )}
                 </small>
               </div>
               <div className="companion-card">
-                <h3>我的角色</h3>
+                <h3>{tr("我的角色")}</h3>
                 <select
-                  aria-label="切换角色"
+                  aria-label={tr("切换角色")}
                   value={character?.id}
                   disabled={state.busy}
                   onChange={(e) =>
@@ -1915,17 +2078,19 @@ export function CompanionApp() {
                       await api.selectCharacter({ id: e.target.value });
                       await refresh();
                       setHistory(null);
-                      say("我来啦。");
+                      say(tr("我来啦。"));
                     })
                   }
                 >
                   {boot.characters.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.localizedNames?.zh || c.name}
+                      {c.localizedNames?.[language] || c.name}
                     </option>
                   ))}
                 </select>
-                <p>每个角色保存自己的对话和记忆。任务继续在后台运行。</p>
+                <p>
+                  {tr("每个角色保存自己的对话和记忆。任务继续在后台运行。")}
+                </p>
                 {!character.builtin && (
                   <button
                     data-testid="remove-character"
@@ -1942,13 +2107,14 @@ export function CompanionApp() {
                       })
                     }
                   >
-                    移出角色库（保留历史和备份）
+                    {tr("移出角色库（保留历史和备份）")}
                   </button>
                 )}
                 <label className="pet-size-control">
-                  角色大小 <output>{Math.round(petScale * 100)}%</output>
+                  {tr("角色大小")}
+                  <output>{Math.round(petScale * 100)}%</output>
                   <input
-                    aria-label="角色大小"
+                    aria-label={tr("角色大小")}
                     type="range"
                     min="40"
                     max="140"
@@ -1957,11 +2123,11 @@ export function CompanionApp() {
                     onChange={(e) => setPetScale(Number(e.target.value) / 100)}
                   />
                 </label>
-                <small>只调整角色，聊天文字大小不变。默认 70%。</small>
+                <small>{tr("只调整角色，聊天文字大小不变。默认 70%。")}</small>
                 <label>
-                  外观画风
+                  {tr("外观画风")}
                   <select
-                    aria-label="外观画风"
+                    aria-label={tr("外观画风")}
                     value={selectedStyle}
                     onChange={(e) => {
                       const next = {
@@ -1975,38 +2141,42 @@ export function CompanionApp() {
                       );
                     }}
                   >
-                    <option value="portrait">原版立绘</option>
+                    <option value="portrait">{tr("原版立绘")}</option>
                     {appearance?.sticker && (
-                      <option value="sticker">表情包参考 · 清爽平涂</option>
+                      <option value="sticker">
+                        {tr("表情包参考 · 清爽平涂")}
+                      </option>
                     )}
                     {chibiAvailable && (
-                      <option value="chibi">Q 版桌宠 · 逐帧动画</option>
+                      <option value="chibi">{tr("Q 版桌宠 · 逐帧动画")}</option>
                     )}
                   </select>
                 </label>
                 {!chibiAvailable && (
-                  <small>该角色尚未制作 Q 版动作素材，继续使用原版立绘。</small>
+                  <small>
+                    {tr("该角色尚未制作 Q 版动作素材，继续使用原版立绘。")}
+                  </small>
                 )}
                 {chibi && (
                   <div className="animation-preview">
-                    <small>预览动作</small>
+                    <small>{tr("预览动作")}</small>
                     {[
-                      ["idle", "待机"],
-                      ["walk", "跑步"],
-                      ["sleep", "睡觉"],
-                      ["eat", "吃点心"],
-                      ["read", "读书"],
-                      ["meal", "吃饭"],
-                      ["gaming", "玩游戏"],
-                      ["office", "办公"],
-                      ["walk_left", "向左跑"],
-                      ["walk_right", "向右跑"],
-                      ["walk_up", "向上跑"],
-                      ["walk_down", "向下跑"],
+                      ["idle", tr("待机")],
+                      ["walk", tr("跑步")],
+                      ["sleep", tr("睡觉")],
+                      ["eat", tr("吃点心")],
+                      ["read", tr("读书")],
+                      ["meal", tr("吃饭")],
+                      ["gaming", tr("玩游戏")],
+                      ["office", tr("办公")],
+                      ["walk_left", tr("向左跑")],
+                      ["walk_right", tr("向右跑")],
+                      ["walk_up", tr("向上跑")],
+                      ["walk_down", tr("向下跑")],
                       ...(animationPack.clips.pet
                         ? [
-                            ["pet", "挥手"],
-                            ["attention", "思考"],
+                            ["pet", tr("挥手")],
+                            ["attention", tr("思考")],
                           ]
                         : []),
                     ].map(([id, label]) => (
@@ -2021,13 +2191,13 @@ export function CompanionApp() {
                           );
                         }}
                       >
-                        {label}
+                        {tr(label)}
                       </button>
                     ))}
                   </div>
                 )}
                 <details>
-                  <summary>编辑人设 / 导入形象</summary>
+                  <summary>{tr("编辑人设 / 导入形象")}</summary>
                   <Persona character={character} run={run} refresh={refresh} />
                   <button
                     onClick={() =>
@@ -2037,48 +2207,52 @@ export function CompanionApp() {
                       })
                     }
                   >
-                    导入角色图片
+                    {tr("导入角色图片")}
                   </button>
                 </details>
               </div>
               <details className="companion-card">
-                <summary>创建新角色 · 档案与形象</summary>
+                <summary>{tr("创建新角色 · 档案与形象")}</summary>
                 <CharacterStudio
                   api={api}
                   busy={false}
                   onApply={async () => {
                     await refresh();
-                    say("新的搭档准备好了。");
+                    say(tr("新的搭档准备好了。"));
                   }}
                 />
               </details>
               <div className="companion-card">
-                <h3>窗口与常驻</h3>
+                <h3>{tr("窗口与常驻")}</h3>
                 <p>
-                  收起面板后角色继续留在桌面。
-                  {boot.platform === "win32" ? "系统托盘" : "菜单栏"}
-                  可以随时唤出；快捷键{" "}
+                  {tr("收起面板后角色继续留在桌面。")}
+                  {boot.platform === "win32" ? tr("系统托盘") : tr("菜单栏")}
+                  {tr("可以随时唤出；快捷键")}{" "}
                   {boot.platform === "win32" ? "Ctrl+Alt+A" : "⌘⌥A"}。
                 </p>
                 <button onClick={() => api.windowControl({ action: "close" })}>
-                  暂时隐藏角色
+                  {tr("暂时隐藏角色")}
                 </button>
-                <button onClick={() => api.companionQuit()}>退出应用</button>
+                <button onClick={() => api.companionQuit()}>
+                  {tr("退出应用")}
+                </button>
                 <small>
-                  版本 {boot.version} · 本机保存对话、记忆和任务记录
+                  {tr("版本")}
+                  {boot.version}
+                  {tr("· 本机保存对话、记忆和任务记录")}
                 </small>
               </div>
             </div>
           )}
           <footer className="companion-footer">
             <span className="presence-dot" />
-            常驻陪伴
+            {tr("常驻陪伴")}
             <span>
               {state.busy
-                ? "正在回复"
+                ? tr("正在回复")
                 : active.length
-                  ? `${active.length} 个后台任务`
-                  : "现在有空"}
+                  ? tr("{v0} 个后台任务", { v0: active.length })
+                  : tr("现在有空")}
             </span>
           </footer>
         </section>
@@ -2088,7 +2262,7 @@ export function CompanionApp() {
           className="companion-toast companion-interactive"
           onClick={() => toggleQuick("chat")}
         >
-          {error}
+          {tr(error)}
         </button>
       )}
     </main>
@@ -2099,16 +2273,18 @@ function ModelChoice({ label, modelKey, effortKey, settings, models, save }) {
   return (
     <div className="model-choice">
       <label>
-        {label}
+        {tr(label)}
         <select
-          aria-label={label + "模型"}
+          aria-label={label + tr("模型")}
           value={settings[modelKey]}
           onChange={(e) =>
             save({ [modelKey]: e.target.value, [effortKey]: "" })
           }
         >
           <option value="">
-            {modelKey === "brainModel" ? "Codex 默认模型" : "继承本机模型"}
+            {modelKey === "brainModel"
+              ? tr("Codex 默认模型")
+              : tr("继承本机模型")}
           </option>
           {settings[modelKey] && !selected && (
             <option value={settings[modelKey]}>{settings[modelKey]}</option>
@@ -2121,14 +2297,14 @@ function ModelChoice({ label, modelKey, effortKey, settings, models, save }) {
         </select>
       </label>
       <label>
-        Effort
+        {tr("Reasoning effort")}
         <select
-          aria-label={label + "effort"}
+          aria-label={label + " " + tr("Reasoning effort")}
           value={settings[effortKey]}
           onChange={(e) => save({ [effortKey]: e.target.value })}
         >
           <option value="">
-            {modelKey === "brainModel" ? "默认 low" : "继承本机"}
+            {modelKey === "brainModel" ? tr("默认 low") : tr("继承本机")}
           </option>
           {(
             selected?.supportedReasoningEfforts?.map(
@@ -2136,7 +2312,7 @@ function ModelChoice({ label, modelKey, effortKey, settings, models, save }) {
             ) || ["low", "medium", "high", "xhigh"]
           ).map((e) => (
             <option key={e} value={e}>
-              {e}
+              {tr("effort." + e)}
             </option>
           ))}
         </select>
@@ -2150,10 +2326,10 @@ function Memory({ item, run }) {
     <div className="companion-card memory-card">
       <span className="memory-tag">
         {item.status === "suggested"
-          ? "待确认的记忆建议"
+          ? tr("待确认的记忆建议")
           : item.global
-            ? "跨角色共享"
-            : "已经记住"}
+            ? tr("跨角色共享")
+            : tr("已经记住")}
       </span>
       <textarea value={value} onChange={(e) => setValue(e.target.value)} />
       <div className="inline-fields">
@@ -2168,7 +2344,7 @@ function Memory({ item, run }) {
             )
           }
         >
-          {item.status === "suggested" ? "确认记住" : "保存修改"}
+          {item.status === "suggested" ? tr("确认记住") : tr("保存修改")}
         </button>
         <button
           onClick={() =>
@@ -2181,14 +2357,14 @@ function Memory({ item, run }) {
             )
           }
         >
-          {item.global ? "仅此角色" : "设为共享"}
+          {item.global ? tr("仅此角色") : tr("设为共享")}
         </button>
         <button
           onClick={() =>
             run(() => api.companionMemory({ action: "delete", id: item.id }))
           }
         >
-          忘记
+          {tr("忘记")}
         </button>
       </div>
     </div>
@@ -2200,11 +2376,11 @@ function Persona({ character, run, refresh }) {
   return (
     <>
       <label className="stacked-label">
-        名字
+        {tr("名字")}
         <input value={name} onChange={(e) => setName(e.target.value)} />
       </label>
       <label className="stacked-label">
-        人设与说话风格
+        {tr("人设与说话风格")}
         <textarea
           value={persona}
           onChange={(e) => setPersona(e.target.value)}
@@ -2219,7 +2395,7 @@ function Persona({ character, run, refresh }) {
           })
         }
       >
-        保存角色
+        {tr("保存角色")}
       </button>
     </>
   );
@@ -2228,7 +2404,7 @@ function Approval({ request: r, taskId, run }) {
   const [answers, setAnswers] = useState({});
   return (
     <div className="approval-card">
-      <strong>执行器需要你决定</strong>
+      <strong>{tr("执行器需要你决定")}</strong>
       <pre>{r.params?.command || r.params?.reason || r.method}</pre>
       {r.method === "item/tool/requestUserInput" ? (
         <>
@@ -2248,7 +2424,7 @@ function Approval({ request: r, taskId, run }) {
               run(() => api.companionAnswer({ taskId, id: r.id, answers }))
             }
           >
-            提交回答
+            {tr("提交回答")}
           </button>
         </>
       ) : (
@@ -2270,7 +2446,7 @@ function Approval({ request: r, taskId, run }) {
                   )
                 }
               >
-                允许这一次
+                {tr("允许这一次")}
               </button>
             )}
           <button
@@ -2280,10 +2456,10 @@ function Approval({ request: r, taskId, run }) {
               )
             }
           >
-            拒绝 / 不授予权限
+            {tr("拒绝 / 不授予权限")}
           </button>
           <details>
-            <summary>完整请求</summary>
+            <summary>{tr("完整请求")}</summary>
             <pre>{JSON.stringify(r.params, null, 2)}</pre>
           </details>
         </>

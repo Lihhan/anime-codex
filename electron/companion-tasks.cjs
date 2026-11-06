@@ -10,13 +10,21 @@ const { execFile } = require("node:child_process");
 const { promisify } = require("node:util");
 const { checkCommand } = require("./check-command.cjs");
 class TaskManager {
-  constructor({ store, notify, onFinish, translator, createConnection }) {
+  constructor({
+    store,
+    notify,
+    onFinish,
+    translator,
+    createConnection,
+    languageInstruction = () => "",
+  }) {
     Object.assign(this, {
       store,
       notify,
       onFinish,
       translator,
       createConnection,
+      languageInstruction,
     });
     this.active = new Map();
     this.closed = false;
@@ -185,7 +193,8 @@ class TaskManager {
       const options = {
         cwd: t.workspace,
         developerInstructions:
-          "Complete the user task in this workspace. Preserve native permission boundaries. Report files changed, commands actually run, exit results, and unresolved limitations. Do not claim checks you did not run.",
+          "Complete the user task in this workspace. Preserve native permission boundaries. Report files changed, commands actually run, exit results, and unresolved limitations. Do not claim checks you did not run. " +
+          this.languageInstruction(),
       };
       if (t.engine === "codex") {
         if (t.model) options.model = t.model;

@@ -1360,3 +1360,9 @@ html.companion-mode #root {
 .voice-clip-row .inline-fields {flex:0 0 auto;gap:6px;}
 .voice-clip-row button {white-space:nowrap;padding:7px 10px;}
 @media(max-width:600px){.voice-clip-settings .voice-clip-row {align-items:flex-start;flex-direction:column;}.voice-clip-row .inline-fields {flex-wrap:wrap;}}
+
+/* Keep localized labels readable without changing the desktop anchor. */
+html.companion-mode body {font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic UI","Meiryo","Microsoft YaHei UI",sans-serif;}
+.toggle-row > span {min-width:0;flex:1;}
+.toggle-row input {flex-shrink:0;}
+.companion-panel {max-width:calc(100vw - 24px);}

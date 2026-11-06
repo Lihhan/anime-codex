@@ -1609,3 +1609,7 @@ body {
     animation: none !important;
   }
 }
+
+/* Keep permission decisions local to their card, leaving the desktop usable. */
+.approval-shade {background:transparent;backdrop-filter:none;pointer-events:none;}
+.approval-shade > .approval {pointer-events:auto;}

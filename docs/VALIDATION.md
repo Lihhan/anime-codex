@@ -1,3 +1,11 @@
+# Trilingual interface and stable overlay — local validation
+
+123 unit tests passed for this refresh, including all UI translation literals, locale key/variable coverage, preserving unknown records and code, selected companion/optional translation reply language, position-lock behavior, alpha masks, letterboxing and active sprite-cell hit testing. Source UI checks passed three-language panels and native menus, saved language and pin state, unchanged character anchors, actual native topmost/focus flags, transparent-area ignore settings, optional panel retention, automatic collapse and the native-dialog guard fixture. Existing quick-menu geometry, workbench approval/failure UI, image customization and uploaded-audio checks also passed. These fixtures make no model calls and do not claim physical OS mouse injection or a live model's language quality.
+
+Architecture-specific source and packaged results for this runtime are recorded after the Windows and Mac workflows complete. Historical sections below refer to their stated snapshots.
+
+---
+
 # 0.8.1 same-version refresh
 
 The renamed-photo cleanup passed 118 unit tests and the source settings UI check. Regression coverage verifies retirement of renamed copies and original-file references, default Rin and genuine custom-copy preservation, recoverable backups, and explicit later reimports. Only exact known file hashes are bundled; no photograph or user profile is distributed.

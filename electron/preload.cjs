@@ -68,7 +68,15 @@ contextBridge.exposeInMainWorld("animeCodex", {
   ...Object.fromEntries(
     names.map((name) => [
       name,
-      (args) => ipcRenderer.invoke("codex:call", name, args),
+      (args) =>
+        ipcRenderer.invoke("codex:call", name, args).catch((error) => {
+          throw new Error(
+            error.message.replace(
+              /^Error invoking remote method '[^']+': (?:Error: )?/,
+              "",
+            ),
+          );
+        }),
     ]),
   ),
   onEvent(callback) {

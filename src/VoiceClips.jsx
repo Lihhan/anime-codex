@@ -1,3 +1,4 @@
+import { tr, useLocale } from "./locale";
 import React, { useEffect, useRef, useState } from "react";
 import actions from "../shared/voice-actions.json";
 import { ClipPlayer } from "../shared/clip-player.mjs";
@@ -11,7 +12,7 @@ export function useVoiceClips({ api, character, state, activity, onError }) {
     player.current = new ClipPlayer({
       source: (args) => api.voiceClipSource(args),
       createAudio: (src) => new Audio(src),
-      onError: (message) => error.current(message),
+      onError: (message) => error.current(tr(message)),
       onStatus: setPlaying,
     });
   const id = state?.characterId,
@@ -155,7 +156,7 @@ export function probeAudio(src) {
   return new Promise((resolve, reject) => {
     const audio = new Audio(),
       timer = setTimeout(
-        () => finish(Error("音频读取超时，请更换文件。")),
+        () => finish(Error(tr("音频读取超时，请更换文件。"))),
         10000,
       );
     function finish(error) {
@@ -173,11 +174,11 @@ export function probeAudio(src) {
         !Number.isFinite(audio.duration) ||
           audio.duration <= 0 ||
           audio.duration > 45
-          ? Error("请使用 45 秒以内、可正常播放的音频。")
+          ? Error(tr("请使用 45 秒以内、可正常播放的音频。"))
           : null,
       );
     audio.onerror = () =>
-      finish(Error("本机无法解码这个音频，请使用 WAV、MP3 或 OGG。"));
+      finish(Error(tr("本机无法解码这个音频，请使用 WAV、MP3 或 OGG。")));
     audio.src = src;
   });
 }
@@ -189,6 +190,7 @@ export function VoiceClipSettings({
   refresh,
   audio,
 }) {
+  useLocale();
   const [busy, setBusy] = useState(false);
   const upload = (action) =>
     run(async () => {
@@ -209,15 +211,18 @@ export function VoiceClipSettings({
       className="companion-card voice-clip-settings"
       data-testid="voice-clip-settings"
     >
-      <h3>自己的动作语音包</h3>
+      <h3>{tr("自己的动作语音包")}</h3>
       <p>
-        上传预录音频后，打开“播放我上传的动作语音”，即可在对应动作发生时播放。每个角色独立保存；缺少音频的动作保持安静。文字回复继续显示在气泡里。
+        {tr(
+          "上传预录音频后，打开“播放我上传的动作语音”，即可在对应动作发生时播放。每个角色独立保存；缺少音频的动作保持安静。文字回复继续显示在气泡里。",
+        )}
       </p>
       <small>
-        支持 WAV / MP3 / OGG / FLAC / M4A（以本机解码能力为准），每段最多 45
-        秒、8 MB。文件仅保存在本机。
+        {tr(
+          "支持 WAV / MP3 / OGG / FLAC / M4A（以本机解码能力为准），每段最多 45 秒、8 MB。文件仅保存在本机。",
+        )}
       </small>
-      {state.audioWarning && <p role="alert">{state.audioWarning}</p>}
+      {state.audioWarning && <p role="alert">{tr(state.audioWarning)}</p>}
       {Object.entries(actions).map(([action, label]) => {
         const clip = state.audio?.[action];
         return (
@@ -227,16 +232,19 @@ export function VoiceClipSettings({
             data-testid={"voice-slot-" + action}
           >
             <div>
-              <strong>{label}</strong>
+              <strong>{tr(label)}</strong>
               <small>
                 {clip
-                  ? `${clip.name} · ${clip.duration.toFixed(1)} 秒`
-                  : "尚未上传"}
+                  ? tr("{v0} · {v1} 秒", {
+                      v0: clip.name,
+                      v1: clip.duration.toFixed(1),
+                    })
+                  : tr("尚未上传")}
               </small>
             </div>
             <div className="inline-fields">
               <button disabled={busy} onClick={() => upload(action)}>
-                {clip ? "替换" : "上传"}
+                {clip ? tr("替换") : tr("上传")}
               </button>
               <button
                 disabled={
@@ -247,7 +255,7 @@ export function VoiceClipSettings({
                 }
                 onClick={() => audio.preview(action)}
               >
-                {audio.playing === action ? "播放中…" : "试听"}
+                {audio.playing === action ? tr("播放中…") : tr("试听")}
               </button>
               <button
                 disabled={busy || !clip}
@@ -259,15 +267,17 @@ export function VoiceClipSettings({
                   })
                 }
               >
-                删除
+                {tr("删除")}
               </button>
             </div>
           </div>
         );
       })}
-      <button onClick={audio.stop}>停止播放</button>
+      <button onClick={audio.stop}>{tr("停止播放")}</button>
       <small>
-        不会合成新语音，也不会上传到语音服务。自动播放有间隔限制，不会叠加多段声音。
+        {tr(
+          "不会合成新语音，也不会上传到语音服务。自动播放有间隔限制，不会叠加多段声音。",
+        )}
       </small>
     </section>
   );

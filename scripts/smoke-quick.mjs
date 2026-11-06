@@ -25,7 +25,7 @@ try {
    const boxes=await page.locator('.life-orbit button, .pet-quick-life .quick-close').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};}));
    for(let i=0;i<boxes.length;i++) for(let j=i+1;j<boxes.length;j++) {const a=boxes[i],b=boxes[j];assert.ok(a.x+a.w<=b.x || b.x+b.w<=a.x || a.y+a.h<=b.y || b.y+b.h<=a.y, `overlap at ${scale}: ${i},${j}`);}
    const viewport=await page.evaluate(()=>({w:innerWidth,h:innerHeight}));
-   for(const b of boxes) assert.ok(b.x>=0 && b.y>=0 && b.x+b.w<=viewport.w && b.y+b.h<=viewport.h);
+   for(const b of boxes) assert.ok(b.x>=0 && b.y>=0 && b.x+b.w<=viewport.w && b.y+b.h<=viewport.h, JSON.stringify({scale,b,viewport}));
    await page.getByRole('button',{name:'读书',exact:true}).hover();await page.getByText('读书',{exact:true}).waitFor();
    const hint=await page.locator('.orbit-hint').boundingBox();for(const b of boxes.slice(1)) assert.ok(hint.y+hint.height<=b.y);
    await page.keyboard.press('Escape');await pet.hover();

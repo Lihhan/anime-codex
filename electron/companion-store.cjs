@@ -14,7 +14,9 @@ class CompanionStore {
       tasks: [],
       meals: [],
       settings: {
-        wander: true,
+        wander: false,
+        lockPosition: true,
+        collapseOnBlur: true,
         proactive: true,
         quiet: false,
         voice: false,
@@ -39,6 +41,11 @@ class CompanionStore {
         await fs.readFile(path.join(this.directory, "state.json"), "utf8"),
       );
       this.isNew = false;
+      if (saved.settings?.lockPosition === undefined) {
+        saved.settings ||= {};
+        saved.settings.lockPosition = true;
+        saved.settings.wander = false;
+      }
       this.state = {
         ...this.state,
         ...saved,
@@ -67,6 +74,8 @@ class CompanionStore {
     } catch (e) {
       if (e.code !== "ENOENT") throw e;
     }
+    if (this.state.settings.lockPosition === undefined)
+      this.state.settings.lockPosition = true;
     for (const key of ["voiceStyle", "voiceName", "voiceRate", "voicePitch"])
       delete this.state.settings[key];
     if (
