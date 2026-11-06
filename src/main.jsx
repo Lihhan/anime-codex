@@ -1100,7 +1100,7 @@ function App() {
                   })
                 }
               >
-                {t("Choose codex.exe and connect")}
+                {t("Choose Codex executable and connect")}
               </button>
             </div>
             <label>
@@ -1131,7 +1131,7 @@ function App() {
             </label>
             <p>
               {t(
-                "Voice uses system TTS. Available voices depend on Windows. Accurate lip sync is not implemented.",
+                "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.",
               )}
             </p>
           </section>

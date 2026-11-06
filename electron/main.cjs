@@ -11,7 +11,7 @@ const path = require("node:path");
 
 const { pathToFileURL } = require("node:url");
 const { Rpc } = require("./rpc.cjs");
-const { resolveCodex } = require("./codex-executable.cjs");
+const { resolveCodex, isCodexExecutable } = require("./codex-executable.cjs");
 const { Preferences, PHASES } = require("./preferences.cjs");
 const { Desktop } = require("./desktop.cjs");
 const { BackgroundRemoval } = require("./background.cjs");
@@ -283,17 +283,18 @@ const handlers = {
     if (
       executable &&
       (executable !== selectedExecutable ||
-        !path.isAbsolute(executable) ||
-        !/\.exe$/i.test(executable))
+        !(await isCodexExecutable(executable)))
     )
       throw new Error("error.executable");
     return connect(executable);
   },
   async chooseExecutable() {
     const d = await dialog.showOpenDialog(win, {
-      title: t("Pick official codex.exe"),
+      title: t("Pick official Codex executable"),
       properties: ["openFile"],
-      filters: [{ name: "Codex", extensions: ["exe"] }],
+      ...(process.platform === "win32"
+        ? { filters: [{ name: "Codex", extensions: ["exe"] }] }
+        : {}),
     });
     selectedExecutable = d.canceled ? null : d.filePaths[0];
     return selectedExecutable;

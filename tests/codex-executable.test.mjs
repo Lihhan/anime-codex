@@ -4,9 +4,11 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { createRequire } from "node:module";
-const { resolveCodex } = createRequire(import.meta.url)(
+const { resolveCodex: resolveForPlatform } = createRequire(import.meta.url)(
   "../electron/codex-executable.cjs",
 );
+const resolveCodex = (options) =>
+  resolveForPlatform({ ...options, platform: "win32" });
 async function setup(t) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "anime-codex-path-"));
   t.after(() => fs.rm(root, { recursive: true, force: true }));

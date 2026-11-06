@@ -1,41 +1,112 @@
 const fs = require("node:fs/promises");
+const { constants } = require("node:fs");
 const path = require("node:path");
-
-async function exists(file) {
-  if (!file || !path.isAbsolute(file) || !/\.exe$/i.test(file)) return false;
+const os = require("node:os");
+const MACH_O = new Set([
+  "feedface",
+  "cefaedfe",
+  "feedfacf",
+  "cffaedfe",
+  "cafebabe",
+  "bebafeca",
+  "cafebabf",
+  "bfbafeca",
+]);
+// Never invoke a shell, npm shim or project-relative executable.
+async function isCodexExecutable(
+  file,
+  { platform = process.platform, fsApi = fs } = {},
+) {
+  const paths = platform === "darwin" ? path.posix : path;
+  if (!file || !paths.isAbsolute(file)) return false;
+  if (platform === "win32" && !/\.exe$/i.test(file)) return false;
+  if (!["win32", "darwin"].includes(platform)) return false;
   try {
-    return (await fs.stat(file)).isFile();
+    if (!(await fsApi.stat(file)).isFile()) return false;
+    if (platform === "win32") return true;
+    await fsApi.access(file, constants.X_OK);
+    const handle = await fsApi.open(file, "r");
+    try {
+      const { buffer, bytesRead } = await handle.read(Buffer.alloc(4), 0, 4, 0);
+      return bytesRead === 4 && MACH_O.has(buffer.toString("hex"));
+    } finally {
+      await handle.close();
+    }
   } catch {
     return false;
   }
 }
-
-// Always launch a native absolute executable, never a shell or npm .cmd wrapper.
-async function resolveCodex({ explicit, saved, env = process.env } = {}) {
+async function resolveCodex({
+  explicit,
+  saved,
+  env = process.env,
+  platform = process.platform,
+  home = os.homedir(),
+  fsApi = fs,
+} = {}) {
+  const valid = (file) => isCodexExecutable(file, { platform, fsApi });
   const configured = explicit || env.CODEX_PATH;
   if (configured) {
-    if (await exists(configured)) return configured;
+    if (await valid(configured)) return configured;
     throw new Error("error.codexNotFound");
   }
-  if (await exists(saved)) return saved;
+  if (await valid(saved)) return saved;
+  const paths = platform === "darwin" ? path.posix : path;
   const environmentPath =
     Object.entries(env).find(([key]) => key.toLowerCase() === "path")?.[1] ||
     "";
-  for (const entry of environmentPath.split(path.delimiter)) {
+  for (const entry of environmentPath.split(
+    platform === "darwin" ? ":" : path.delimiter,
+  )) {
     const directory = entry.replace(/^"|"$/g, "");
-    if (!path.isAbsolute(directory)) continue;
-    const candidate = path.join(directory, "codex.exe");
-    if (await exists(candidate)) return candidate;
+    if (!paths.isAbsolute(directory)) continue;
+    const candidate = paths.join(
+      directory,
+      platform === "win32" ? "codex.exe" : "codex",
+    );
+    if (await valid(candidate)) return candidate;
   }
-  if (env.LOCALAPPDATA && path.isAbsolute(env.LOCALAPPDATA)) {
-    const directory = path.join(env.LOCALAPPDATA, "OpenAI", "Codex", "bin");
+  if (platform === "darwin") {
+    // Finder launches do not inherit an interactive shell's PATH.
+    const candidates = [
+      env.CODEX_INSTALL_DIR && paths.isAbsolute(env.CODEX_INSTALL_DIR)
+        ? paths.join(env.CODEX_INSTALL_DIR, "codex")
+        : null,
+      paths.isAbsolute(home) ? paths.join(home, ".local/bin/codex") : null,
+      "/opt/homebrew/bin/codex",
+      "/usr/local/bin/codex",
+      "/Applications/Codex.app/Contents/Resources/codex",
+      "/Applications/ChatGPT.app/Contents/Resources/codex",
+      paths.isAbsolute(home)
+        ? paths.join(home, "Applications/Codex.app/Contents/Resources/codex")
+        : null,
+      paths.isAbsolute(home)
+        ? paths.join(home, "Applications/ChatGPT.app/Contents/Resources/codex")
+        : null,
+    ];
+    for (const candidate of candidates)
+      if (await valid(candidate)) return candidate;
+  }
+  if (
+    platform === "win32" &&
+    env.LOCALAPPDATA &&
+    path.isAbsolute(env.LOCALAPPDATA)
+  ) {
+    const standalone = path.join(
+      env.LOCALAPPDATA,
+      "Programs/OpenAI/Codex/bin/codex.exe",
+    );
+    if (await valid(standalone)) return standalone;
+    const directory = path.join(env.LOCALAPPDATA, "OpenAI/Codex/bin");
     const candidates = [];
     try {
-      for (const item of await fs.readdir(directory, { withFileTypes: true })) {
+      for (const item of await fsApi.readdir(directory, {
+        withFileTypes: true,
+      })) {
         if (!item.isDirectory()) continue;
         const file = path.join(directory, item.name, "codex.exe");
-        if (await exists(file))
-          candidates.push({ file, modified: (await fs.stat(file)).mtimeMs });
+        if (await valid(file))
+          candidates.push({ file, modified: (await fsApi.stat(file)).mtimeMs });
       }
     } catch (error) {
       if (!["ENOENT", "EACCES", "EPERM"].includes(error.code)) throw error;
@@ -47,4 +118,4 @@ async function resolveCodex({ explicit, saved, env = process.env } = {}) {
   }
   throw new Error("error.codexNotFound");
 }
-module.exports = { resolveCodex };
+module.exports = { resolveCodex, isCodexExecutable };

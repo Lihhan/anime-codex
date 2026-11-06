@@ -1,0 +1,72 @@
+name: macOS checks and packages
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "electron/**"
+      - "src/**"
+      - "shared/**"
+      - "scripts/**"
+      - "tests/**"
+      - "package*.json"
+      - ".github/workflows/mac.yml"
+  pull_request:
+    paths:
+      - "electron/**"
+      - "src/**"
+      - "shared/**"
+      - "scripts/**"
+      - "tests/**"
+      - "package*.json"
+      - ".github/workflows/mac.yml"
+permissions:
+  contents: read
+concurrency:
+  group: mac-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  mac:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run smoke:native
+      - run: npm run build
+      - run: npm run smoke:gal
+      - run: npm run smoke:ui
+      - name: Install official Codex for a real unauthenticated handshake
+        run: |
+          curl -fsSL https://chatgpt.com/codex/install.sh -o "$RUNNER_TEMP/codex-install.sh"
+          CODEX_NON_INTERACTIVE=1 sh "$RUNNER_TEMP/codex-install.sh"
+      - run: npm run smoke:connection
+      - run: npm run dist:mac:${{ matrix.arch }}
+      - run: node scripts/smoke-mac-packaged.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Anime-Codex-0.6.0-mac-${{ matrix.arch }}
+          path: |
+            release/v0.6.0/*.dmg
+            release/v0.6.0/*.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mac-checks-${{ matrix.arch }}
+          path: test-results/*.json
+          if-no-files-found: ignore

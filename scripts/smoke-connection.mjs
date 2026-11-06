@@ -35,7 +35,11 @@ for (const stage of ["discovery", "restart"]) {
       await fs.readFile(path.join(directory, "preferences.json")),
     );
     assert.ok(path.isAbsolute(prefs.codexExecutable));
-    assert.ok(prefs.codexExecutable.toLowerCase().endsWith("codex.exe"));
+    assert.ok(
+      prefs.codexExecutable
+        .toLowerCase()
+        .endsWith(process.platform === "darwin" ? "codex" : "codex.exe"),
+    );
     if (remembered) assert.equal(prefs.codexExecutable, remembered);
     remembered = prefs.codexExecutable;
     checks.push({ stage, signedIn: !!result.account, emptyPath: true });

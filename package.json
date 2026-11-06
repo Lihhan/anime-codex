@@ -1,7 +1,7 @@
 {
   "name": "anime-codex",
-  "version": "0.5.0",
-  "description": "A character-driven Windows desktop client for the real Codex App Server",
+  "version": "0.6.0",
+  "description": "A character-driven Windows and macOS desktop client for the real Codex App Server",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
@@ -21,7 +21,11 @@
     "smoke:play": "node scripts/smoke-play.mjs",
     "smoke:arcade": "node scripts/smoke-arcade.mjs",
     "smoke:gal": "node scripts/smoke-gal.mjs",
-    "smoke:gal-real": "node scripts/smoke-gal-real.mjs"
+    "smoke:gal-real": "node scripts/smoke-gal-real.mjs",
+    "dist:mac": "npm run build && electron-builder --mac dmg zip",
+    "dist:mac:arm64": "npm run build && electron-builder --mac dmg zip --arm64",
+    "dist:mac:x64": "npm run build && electron-builder --mac dmg zip --x64",
+    "smoke:native": "node scripts/smoke-native.mjs"
   },
   "build": {
     "appId": "io.animecodex.desktop",
@@ -35,15 +39,15 @@
       "third_party/**/*",
       "THIRD_PARTY_NOTICES.md",
       "!node_modules/onnxruntime-node/bin/napi-v6/linux/**",
-      "!node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
-      "!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**"
+      "!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**",
+      "scripts/native-probe.cjs"
     ],
     "win": {
       "target": "portable",
       "signAndEditExecutable": false
     },
     "directories": {
-      "output": "release/v0.5.0"
+      "output": "release/v0.6.0"
     },
     "asarUnpack": [
       "electron/background-worker.cjs",
@@ -51,7 +55,17 @@
       "node_modules/onnxruntime-node/**",
       "node_modules/onnxruntime-common/**",
       "node_modules/pngjs/**"
-    ]
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.developer-tools",
+      "minimumSystemVersion": "14.0.0",
+      "artifactName": "Anime-Codex-${version}-mac-${arch}.${ext}",
+      "identity": null
+    }
   },
   "dependencies": {
     "onnxruntime-node": "1.31.1",
