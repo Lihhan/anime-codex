@@ -208,7 +208,18 @@ try {
   assert.equal(await game.getByTestId("arcade-resume").isDisabled(), true);
   await game.getByTestId("arcade-restart").click();
   assert.equal(await game.getByTestId("arcade-action").isDisabled(), true);
-  assert.equal(await page.locator(".working").isVisible(), true);
+  assert.equal(
+    await page
+      .getByTestId("character-images")
+      .getAttribute("data-active-action"),
+    "thinking",
+  );
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()
+      .find((w) => !w.webContents.getURL().includes("surface=play"))
+      .focus(),
+  );
+  await page.locator(".working").waitFor();
   assert.deepEqual(errors, []);
   await app.close();
   app = await electron.launch(options);
