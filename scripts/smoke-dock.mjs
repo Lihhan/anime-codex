@@ -108,6 +108,20 @@ try {
       null,
       { timeout: 3000 },
     );
+    // Recovery makes the window visible. The pointer may then be over transparent
+    // artwork, where automatic click-through is expected. Move the native cursor
+    // fixture onto an actual control before checking that input is restored.
+    const controlBox = await page.getByTestId("open-play").boundingBox();
+    await app.evaluate(({ BrowserWindow }, box) => {
+      const bounds = BrowserWindow.fromId(globalThis.mainWindowId).getBounds();
+      globalThis.testCursor = {
+        x: Math.round(bounds.x + box.x + box.width / 2),
+        y: Math.round(bounds.y + box.y + box.height / 2),
+      };
+    }, controlBox);
+    await page.waitForFunction(
+      () => document.documentElement.dataset.pointerPassthrough === "false",
+    );
     assert.equal(await app.evaluate(() => globalThis.lastIgnore), false);
     assert.ok(await page.getByTestId("character").isVisible());
   }
