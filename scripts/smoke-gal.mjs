@@ -20,6 +20,7 @@ try {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.getByTestId("gal-dialogue").waitFor();
+  await page.getByTestId("character-images").waitFor();
   await page.getByTestId("language-select").selectOption("en");
   await page.waitForFunction(() => document.documentElement.lang === "en");
   assert.equal(await page.getByTestId("gal-input").count(), 1);
