@@ -44,7 +44,10 @@
     ],
     "win": {
       "target": "portable",
-      "signAndEditExecutable": false
+      "signAndEditExecutable": false,
+      "files": [
+        "!node_modules/onnxruntime-node/bin/napi-v6/darwin/**"
+      ]
     },
     "directories": {
       "output": "release/v0.6.0"
@@ -64,7 +67,12 @@
       "category": "public.app-category.developer-tools",
       "minimumSystemVersion": "14.0.0",
       "artifactName": "Anime-Codex-${version}-mac-${arch}.${ext}",
-      "identity": null
+      "identity": "-",
+      "hardenedRuntime": false,
+      "notarize": false,
+      "files": [
+        "!node_modules/onnxruntime-node/bin/napi-v6/win32/**"
+      ]
     }
   },
   "dependencies": {
