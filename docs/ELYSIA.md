@@ -1,14 +1,15 @@
-# 爱莉希雅预览（0.13.0）
+# Elysia appearance provenance
 
-参考：神帝宇发布的「q版粉色小妖精小姐」 https://www.aplaybox.com/details/model/ZdIJ1cvFE7Ow 。浏览器已实际打开交互模型预览，观察粉色短发、蓝眼睛、白紫黑服饰、发饰与Q版比例。上游说明包含禁止二配和商业用途；本项目没有下载、转换或分发原模型文件。
+The preview reference was Shendiyu's chibi pink fairy model: <https://www.aplaybox.com/details/model/ZdIJ1cvFE7Ow>. Its interactive browser preview was inspected for pink hair, blue eyes, white/purple/black clothing, head ornament and proportions. The upstream description prohibits redistribution of modified models and commercial use. This project did not download, convert or distribute its model files.
 
-本次加入的是参考预览重新生成的二维序列帧角色，不是网页里的原生3D模型。使用内置 imagegen，参考图为本地保存的网页模型预览截图；后续两张动作图参考第一张生成图。原角色及参考模型的权利仍归相应权利人。
+The included appearance contains newly generated 2D sprite sheets, not that native 3D model. The built-in image generator used a locally saved preview screenshot as reference; later sheets referenced the first generated image. Original character/reference-model rights remain with their owners. Generation does not grant those rights.
 
-素材目录 `public/characters/elysia/chibi/`：
-- atlas.png：待机眨眼、睡觉、读书、吃饭，各4帧。
-- run.png：右、左、背向上、正向下，各4帧。
-- life.png：游戏、办公、挥手、思考，各4帧。
+Files under `public/characters/elysia/chibi/`:
 
-提示规格：粉色短发与弯曲鬓发、蓝色杏眼、精灵耳、黑金发饰、白紫黑服装和黑靴；约2.7头身，明确腰腿、收敛的微笑，避免夸张婴儿眼和持续张嘴。柔和3D手办式赛璐璐阴影与细轮廓。每图4×4等格透明背景，同一造型、完整人物、边缘留白，无文字或UI。每行要求不同的连续动作姿势。实际仍是4帧循环，未达到骨骼动画的连续性。
+- `atlas.png`: blinking, sleeping, reading and eating, four frames each.
+- `run.png`: right, left, away/up and toward/down running, four frames each.
+- `life.png`: gaming, office work, waving and thinking, four frames each.
 
-idle.png 是 atlas 第一格的确定性素材提取，作为原图模式和旧界面的兼容图片。人物具有独立ID、人设、对话和记忆，默认主题粉紫色。原芙宁娜保留可选。
+Prompt specification: short pink hair with curved side locks, almond-shaped blue eyes, pointed ears, black/gold ornament, white/purple/black costume and black boots; approximately 2.7-head-tall proportions, distinct waist/legs and a restrained smile, avoiding oversized baby eyes or a permanently open mouth. Soft figurine-style cel shading and fine outlines. Transparent 4 × 4 grids, consistent identity, complete bodies, clear margins, distinct consecutive poses and no text/UI. Playback remains a four-frame loop rather than continuous skeletal animation.
+
+`idle.png` is a deterministic extraction of the first atlas cell for portrait/legacy compatibility. Elysia has an independent ID, persona, conversation and memory, with a pink/purple theme. Existing Furina remains selectable. The original preview milestone was 0.13.0; the appearance is retained in the integrated 0.8.0 release.

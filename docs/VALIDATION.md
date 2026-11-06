@@ -8,7 +8,17 @@ The actual Windows input helper registered both native hooks, produced four boun
 
 The optional real companion smoke uses a signed-in Codex account and never grants approvals automatically. It records whether a native task executed or requested approval and was safely cancelled, instead of treating a pending request as successful execution. The native cancellation path now marks cancellation intent before awaiting the interrupt response, preventing an interrupted native turn from being mislabeled as failed.
 
-This Windows machine has no signed-in native Claude Code installation. Windows Claude executable discovery, environment handling and adapter protocol paths are tested, but an authenticated Windows Claude model turn is not claimed. The earlier Apple Silicon Claude evidence below remains version-specific. Fresh architecture-specific CI/package evidence will be recorded after those checks complete.
+This Windows machine has no signed-in native Claude Code installation. Windows Claude executable discovery, environment handling and adapter protocol paths are tested, but an authenticated Windows Claude model turn is not claimed. The earlier Apple Silicon Claude evidence below remains version-specific. Fresh architecture-specific CI/package evidence is recorded below.
+
+## Published 0.8.0 package verification
+
+The [Windows workflow](https://github.com/Lihhan/anime-codex/actions/runs/42261434141) and [macOS workflow](https://github.com/Lihhan/anime-codex/actions/runs/42261434131) passed for runtime source `301d801c706f220f752466eb33e55c9aff23c907`. The final release source adds documentation only. All three platform jobs ran 103 unit tests and actual native CPU inference. Source companion/workbench checks passed, followed by architecture-matched packaging and packaged companion, native counter lifecycle, background removal/restoration/cancellation and four-edge native recovery. The Intel job was rerun after an Electron binary download failure; its subsequent source and package checks passed.
+
+Windows artifact: `Anime-Codex-0.8.0-win-x64.exe`. Mac artifacts: `Anime-Codex-0.8.0-mac-{arm64,x64}.{dmg,zip}`. Downloaded CI artifact ZIP digests are checked before package extraction; release asset digests and SHA256SUMS.txt cover the delivered application packages and current source ZIP. The proof reports are retained in the corresponding Actions artifacts. Mac runners used macOS 15; macOS 14, interactive Gatekeeper approval and physical multi-monitor arrangements were not exercised.
+
+The signed-in Windows check recorded real companion chat, an actual native task request, one tool event, a live approval request, safe cancellation, and message/task/memory persistence after restart. It granted zero approvals. The interrupted task did not complete code execution or pass its verification command; those outcomes are not inferred from a task card. Native command-processor execution passed separately with the authored fixture.
+
+An additional local Electron animation sweep completed all 56 manually selectable directed activity pairs and latest-target queuing. An earlier unattended sweep timed out; the successful diagnostic rerun does not establish the absence of timing-sensitive behavior on every system. These animations and fixture events are separate from real model/tool evidence.
 
 ---
 
@@ -18,9 +28,9 @@ This Windows machine has no signed-in native Claude Code installation. Windows C
 
 # Validation record
 
-## Local development 0.8.0
+## Historical local Claude-integration preview
 
-See [Claude integration validation](CLAUDE.md#verification) for the local Apple Silicon checks: 66 passing unit tests, source and packaged real Claude file reads with independent Codex subscription translation, native session resume, and packaged startup/inference. No remote CI or published 0.8.0 release is claimed. The records below refer to 0.7.0 and earlier versions.
+See [Claude integration validation](CLAUDE.md#verification) for the local Apple Silicon checks: 66 passing unit tests, source and packaged real Claude file reads with independent Codex subscription translation, native session resume, and packaged startup/inference. At that preview stage no remote CI or published 0.8.0 release was claimed. The current cross-platform release evidence appears above; the records below refer to 0.7.0 and earlier versions.
 
 Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3 and Codex CLI `0.166.0-alpha.5.1`.
 

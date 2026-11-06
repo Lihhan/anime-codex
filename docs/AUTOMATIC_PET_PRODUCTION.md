@@ -1,52 +1,50 @@
-# 自动制作、生活与初次引导
+# Character production, activities and first-run guide
 
-## 用户入口
+## Create a character
 
-设置 → 角色、模型与更多设置 → 创建新角色。输入名字、作品和补充设定，点击「一键制作并启用桌宠」。制作使用「角色大脑」配置的 Codex 模型 / effort，保持本机 Codex 的环境和权限；原生图像工具必须可用。不会自动配置外部付费接口。
+Open Settings → Character, model and more settings → Create a character. Enter a name, work and optional user-created setting, then choose production/activation. Production uses the companion brain's configured Codex model/effort, native environment and permissions. The native image tool must be available. No external paid image API is automatically configured.
 
-流程：角色档案（语气、未知资料、主题色、活动偏好）→ 一张身份基准图 → 七张 4×4 图集 → 结构检查 → 复制到本机角色库并启用。图集共 112 帧：
+The pipeline creates a profile, one identity reference and seven 4 × 4 atlases, validates their structure, then copies and activates the result locally. The 112 frames cover:
 
-- daily：站立、读书、吃饭、睡觉。
-- play：游戏、办公、摸头回应、倾听。
-- run：向右、向左、向上、向下跑。
-- exit：收起书、食物、游戏机、办公道具。
-- enter：进入读书、吃饭、游戏、办公。
-- change：入睡、醒来、起跑、停跑。
-- social：进入/退出摸头、进入/退出倾听。
+| Sheet  | Four action rows                                   |
+| ------ | -------------------------------------------------- |
+| daily  | Standing, reading, eating, sleeping                |
+| play   | Gaming, office work, head-pat response, listening  |
+| run    | Right, left, up, down running                      |
+| exit   | Putting away book, food, game device, office props |
+| enter  | Starting reading, eating, gaming, office work      |
+| change | Falling asleep, waking, starting/stopping a run    |
+| social | Entering/leaving head-pat response and listening   |
 
-制作进度与每组素材写入 character-studio/<job-id>/job.json。取消、进程中断或失败后，用户可明确选择继续；不会在重启后自行重新生成，也不会覆盖先前成功的素材。失败的一组最多自动重试一次。再次启用同一成品不会添加重复角色。
+Progress/results are stored in `character-studio/<job-id>/job.json`. Cancellation, interruption or failure requires an explicit resume; restarting does not regenerate or overwrite successful sheets. Each failed group is automatically retried at most once. Repeated activation does not create duplicate characters.
 
-工具返回的非整除或非正方形图集先按 4×4 单元补透明边，保留原始文件与全部像素，不用为尺寸差异重新付费生成。
+Non-square/non-divisible sheets receive transparent padding per 4 × 4 cell while retaining original files and pixels, avoiding another paid generation solely for dimensions. Validation rejects non-PNGs, symbolic links, oversized images, invalid grids, empty frames, opaque backgrounds, clipping and completely duplicated static rows. It cannot prove identity, anatomy or action meaning; review the output. Quota use is explained beforehand; cancellation does not refund completed calls.
 
-结构检查拒绝非 PNG、符号链接、超大图片、尺寸不符合 4×4、空帧、不透明背景、贴边裁切和完全重复的静态行。结构检查不能证明身份还原、正确肢体或动作语义；仍应查看真实成品。制作前会说明额度使用，取消不退回已发生的模型调用。
+## Activity transitions
 
-## 动作过渡
+Playback prefers `transition_<old>_<new>`, otherwise `exit_<old>` → `enter_<new>`; neutral standing needs neither. Transitions use actual pose frames without crossfades. Movement waits for completion. Rapid normal selections finish the current movement before routing to the latest target. Picking up the character interrupts immediately; reduced motion skips transitions.
 
-优先播放 transition_<旧动作>_<新动作> 专用片段；没有专用组合时拼接 exit_<旧动作> → enter_<新动作>，中立站立无需退出/进入片段。所有片段使用实际动作帧，没有淡入淡出。移动等待过渡完成才开始。普通快速点击在当前过渡结束后前往最新目标，不从中间跳切；拖起角色立即中断，系统减少动态效果偏好会跳过过渡。当前芙宁娜贴纸与新制作合同覆盖九种活动的 72 个有向组合；旧角色其他画风尚需补充对应素材。
+The Furina sticker pack and new-production contract cover nine activities/72 directed combinations. Other appearances need corresponding artwork: the player cannot invent missing frames. See [transition provenance and limits](ALL_ACTIVITY_TRANSITIONS.md).
 
-## 日常行为
+## Daily behavior and onboarding
 
-以读书、游戏、吃饭、办公等实际活动为主，每次持续 45–120 秒，再选另一种；散步约 8–14 秒。手动动作优先，正在聊天、操作菜单、拖拽、执行任务和新手引导时不抢占用户。安静模式及长时间离开电脑会休息。行为由本地状态机调度，不为每次换动作调用模型。旧静态角色使用已有阅读、思考、编程等姿态回退；完整动作需要图集。
+Activities typically last 45–120 seconds and walks 8–14 seconds, subject to personality overrides. Manual actions take priority. Chat, menus, dragging, tasks and onboarding prevent autonomous interruptions. Quiet mode and prolonged inactivity allow rest. A local state machine schedules actions without a model call for every change. Static characters fall back to available reading/thinking/coding poses; full motion requires atlases.
 
-## 新手引导
+The first-run guide highlights one control at a time:
 
-首次有角色时，一次只介绍一个按钮，并用箭头和描边标记对应按钮：
+1. Chat: send a message and receive a successful reply.
+2. Tasks: open the card and acknowledge its explanation; no real task is created.
+3. Life: select an activity.
+4. Settings: adjust size or quiet companionship.
 
-1. 聊天：发送一条消息并成功收到回复。
-2. 任务：打开卡片，点击「了解任务分发」。不会为了引导创建真实任务。
-3. 生活：选择一个生活动作。
-4. 设置：调整大小或选择安静陪伴。
+Progress persists locally and can be postponed/restarted. Guide speech requires speech enabled outside quiet mode. Restarting the guide does not reset tasks/history.
 
-每一步保存在本机，重新打开继续。支持稍后再认识；在设置快捷卡片可重新开始。默认使用角色气泡；开启语音且非安静模式时朗读引导。日常任务和历史数据不因引导重置。
+## Research evidence
 
-## 0.18.4 资料检索
+Before profile drafting, the configured native Codex web tool searches the character/work and opens references, preferring official material and identifying secondary wikis. User-created settings go to the model but should not enter search queries. A separate call structures research into persona, speech rules and creative examples before image generation.
 
-创建档案先调用用户配置的 Codex 原生联网工具检索角色名与作品，打开资料页；优先官方内容，二手 Wiki 明确分类。自定义内容传给模型但不应加入搜索词。第二次调用把研究结果整理为人设、说话规则和创作示例，再继续原有图像制作。
+`job.research` stores background, personality, short quotations with `sourceUrl`, sources, story stage and uncertainties. `job.researchEvidence` retains tool-access evidence. Only HTTP(S) sources present in actual `webSearch` events are retained; model-invented URLs do not count. Access evidence cannot prove every fact/quotation, so the UI labels results as model-organized research. Missing valid sources produces an insufficient-information result; tool failure stops and preserves the job.
 
-job.research 保存带 sourceUrl 的背景、性格和短引文、来源列表、剧情阶段及疑点；job.researchEvidence 保留工具访问证据。仅保留在 webSearch 工具事件中出现过的 HTTP(S) 来源，不把模型凭空返回的 URL 当作证据。访问记录不能证明引文或事实完全正确，因此 UI 标注为“模型整理”。缺少有效来源时显示资料不足；工具执行失败则中止并保留任务。
+`personaFor` incorporates research into the new persona without silently rebuilding existing/custom personas. Original characters without public sources use user settings and identified creative material. Production exposes expandable sources and short reference dialogue.
 
-personaFor 把资料带入新角色的对话人设；旧角色不会自动重建或覆盖自定义人设。原创角色无公开资料时以用户设定和明确标注的创作内容为准。角色制作展示可展开的来源列表和原作短台词。
-
-真实验证：test-results/research-d6LDVO/cdbccf25-94d5-4df6-865c-11c17bda0077/job.json。芙宁娜研究返回四个有工具访问记录的来源；官方页提取不足、二手资料依赖均记录在 unknowns。只做了研究和档案生成，没有重复制作图片或替换现有角色。
-
-0.18.5 增加 social 图集（进入/退出摸头、进入/退出倾听），与其他退出/进入段组合覆盖九种活动的 72 个有向切换。直接拎起是即时中断；普通快速连续点击在当前过渡完成后处理最新目标。旧角色需要对应素材，不能仅靠播放器凭空补出动作。
+Historical preview evidence: `test-results/research-d6LDVO/cdbccf25-94d5-4df6-865c-11c17bda0077/job.json` recorded four tool-accessed Furina sources, with official-page extraction limits and secondary-source dependencies in `unknowns`. That check performed research/profile drafting only, without regenerating artwork or replacing a character. It is not a fresh Windows production run. See [current validation](VALIDATION.md).
