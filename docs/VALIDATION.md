@@ -1,3 +1,13 @@
+# 0.8.1 same-version refresh
+
+The renamed-photo cleanup passed 118 unit tests and the source settings UI check. Regression coverage verifies retirement of renamed copies and original-file references, default Rin and genuine custom-copy preservation, recoverable backups, and explicit later reimports. Only exact known file hashes are bundled; no photograph or user profile is distributed.
+
+The [Windows workflow](https://github.com/Lihhan/anime-codex/actions/runs/42290081258) and both jobs in the [macOS workflow](https://github.com/Lihhan/anime-codex/actions/runs/42290081107) passed for runtime source `de09a056ea8ea852894503989c37263caf5cc377`. They include the complete source and packaged checks described below. The refresh retains version 0.8.1 and replaces its application files, source archive and SHA256SUMS.txt after digest verification. Final source additions are documentation only.
+
+The local library was repaired with conflicting older instances stopped. This local storage repair is separate from the isolated UI/fixture tests. Historical results below describe the initial 0.8.1 packages and earlier releases.
+
+---
+
 # 0.8.1 validation
 
 Local Windows checks passed 117 unit tests, production build and dependency audit (zero known vulnerabilities). All five new complete packs passed structural validation, SHA-256/evidence checks and runtime decoding, frame progression and activity transitions. Furina assets were retained.
