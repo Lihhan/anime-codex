@@ -12,6 +12,10 @@ All 55 unit tests passed locally, including five-template installation, transpar
 
 Four real read-only Codex turns ran through the desktop bubble composer, one per fan character. Each introduced itself in first person, read a uniquely marked file through an actual tool, returned its exact content and responded to the same hypothetical frustrated-user scenario in its configured voice. The four stored threads were independent, no error was shown, and the source file remained unchanged. The local report is test-results/presets-real-codex.json. These checks demonstrate persona instructions and real file reads; subjective resemblance is a fan interpretation, not a guarantee of canonical behavior on every turn.
 
+The Windows 0.7.0 packaged executable passed startup/version/architecture, native CPU inference, all four preset switches, template protection, Rin restoration and selection persistence. Actual background removal, foreground retention, original restoration and cancellation also passed. The ASAR root allowlist contained only intended application files. Source bubble and full-chat UI checks passed separately.
+
+Both Mac architectures passed the complete [0.7.0 macOS workflow](https://github.com/Lihhan/anime-codex/actions/runs/42153467192), including all 55 unit tests, source preset/bubble/full-chat checks, native CPU inference, a real unauthenticated Codex handshake, actual local background removal/restoration/cancellation, DMG/ZIP packaging and packaged startup/inference/background checks. Apple Silicon and Intel packages were exercised on GitHub-hosted macOS 15; macOS 14 and a signed-in Mac model turn were not exercised. The [Windows workflow](https://github.com/Lihhan/anime-codex/actions/runs/42153467159) also passed. Raw CI reports are retained in workflow artifacts; local four-character real model-turn results are described above.
+
 ## Version 0.6.0: macOS and Windows
 
 Both architectures passed the complete [macOS 15 workflow](https://github.com/Lihhan/anime-codex/actions/runs/42146775526): Apple Silicon on macos-15 and Intel on macos-15-intel. Each ran all 52 unit tests, a real native ONNX Identity-model inference, the production build, source bubble/full-chat UI checks, and a real Codex App Server handshake/account read with an empty PATH, including saved discovery after restart. The Mac runners had no signed-in Codex account and did not run a model turn or consume model quota.
@@ -78,7 +82,7 @@ UI-only approval/action fixtures never count as executed commands. A real turn m
 
 ## Packaging and limitations
 
-Windows and Mac 0.6.0 packages are built under `release/v0.6.0/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
+Windows and Mac 0.7.0 packages are built under `release/v0.7.0/`, separately from earlier builds. The application requires a local Codex installation and sign-in; credentials and Codex binaries are not bundled.
 
 Geometry tests cover multiple logical display areas, including negative coordinates. Not every monitor arrangement, DPI transition, GPU, system voice, accessibility tool or managed Codex policy has been physically tested. Image mode does not deform faces or limbs, generate missing artwork, perform Live2D rendering, or provide phoneme-accurate lip sync.
 
