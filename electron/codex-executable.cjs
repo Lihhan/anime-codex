@@ -17,7 +17,7 @@ async function isCodexExecutable(
   file,
   { platform = process.platform, fsApi = fs } = {},
 ) {
-  const paths = platform === "darwin" ? path.posix : path;
+  const paths = platform === "win32" ? path.win32 : path.posix;
   if (!file || !paths.isAbsolute(file)) return false;
   if (platform === "win32" && !/\.exe$/i.test(file)) return false;
   if (!["win32", "darwin"].includes(platform)) return false;
