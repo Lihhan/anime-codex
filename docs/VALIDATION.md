@@ -6,7 +6,9 @@ The source UI checks passed uploaded audio import, actual native HTML audio deco
 
 Settings checks passed shared portrait/sprite gaze on both axes, disable/reset behavior, native Windows counter lifecycle and quiet stop/resume, setting persistence, exact-name legacy Ke Jie retirement with backup, custom removal, and uploaded pictures overriding sprite presentation. Cursor coordinates were substituted through the native API; physical pointer movement is not claimed. Source companion and retained workbench UI checks passed. No model calls were made for these fixture checks.
 
-Architecture-specific package CI and release verification are recorded with the published 0.8.1 release. Historical results below apply only to their stated versions.
+The [Windows workflow](https://github.com/Lihhan/anime-codex/actions/runs/42284154929) and both jobs in the [macOS workflow](https://github.com/Lihhan/anime-codex/actions/runs/42284154940) passed for runtime source `92162f805bf63a93fc35b171dc0ab84dab87db2c`. Each architecture passed source checks and its packaged executable checks, including native CPU inference, input-counter lifecycle, local background removal/restoration/cancellation, uploaded audio decoding/playback, four-edge recovery and companion startup/interaction. The final source changes documentation only. Mac CI used macOS 15; macOS 14 and interactive Gatekeeper approval were not exercised.
+
+CI artifact ZIP digests are checked before extraction. Release asset digests and SHA256SUMS.txt cover the five native application packages and attached source ZIP. Uploaded-audio reports explicitly record silent fixtures and no physical speaker audition. Historical results below apply only to their stated versions.
 
 ---
 
