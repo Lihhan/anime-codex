@@ -257,6 +257,8 @@ Preferences and copied images live in `%APPDATA%\anime-codex\` on Windows and no
 
 ## Build from source (for developers)
 
+Version 0.7.0 receives in-place updates. Build from the current `main` branch or the release's attached **Anime-Codex-0.7.0-source.zip**. The existing Git tag remains unchanged; GitHub's automatically generated source archives contain the original tagged snapshot. The release notes identify the source commit for each updated build.
+
 **Skip this section if you downloaded the ready-to-run .exe.** Use it only to change the code or build your own copy.
 
 1. Install **Node.js 24 with npm** from [nodejs.org](https://nodejs.org/en/download) and **Git for Windows** from [git-scm.com](https://git-scm.com/downloads/win). Keep their normal PATH options enabled.

@@ -10,7 +10,7 @@
 - Restore minimized windows when using the recovery shortcut.
 - Add native-hover, inset geometry and four-edge UI regressions.
 
-## 0.7.0
+## 0.7.0 — original character presets
 
 - Add protected Furina, Nahida, Kaguya and Iroha Sakayori presets alongside original Rin and custom uploads.
 - Use real-world Kaguya/Iroha appearances, with eight transparent pose images per character.
