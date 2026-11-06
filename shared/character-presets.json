@@ -78,5 +78,23 @@
       "en": "Practical and caring, in her real-world school uniform",
       "ja": "落ち着いていて思いやりのある、現実世界の制服姿"
     }
+  },
+  "elysia": {
+    "name": "Elysia",
+    "localizedNames": {
+      "zh": "爱莉希雅",
+      "en": "Elysia",
+      "ja": "エリシア"
+    },
+    "work": {
+      "zh": "崩坏3",
+      "en": "Honkai Impact 3rd",
+      "ja": "崩壊3rd"
+    },
+    "summary": {
+      "zh": "温柔自信，带一点俏皮，认真陪你把事情做好",
+      "en": "Warm, confident and playfully attentive",
+      "ja": "優しく自信に満ちた、少しお茶目な仲間"
+    }
   }
 }

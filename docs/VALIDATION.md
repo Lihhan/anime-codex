@@ -1,4 +1,12 @@
+## Local 0.9.0 validation
+
+70 unit tests and the production build passed. Real native Codex verified code writing/testing, read-only SSH and computer-state inspection. Packaged UI validated model/effort overrides without global config changes, actual code execution, and generated character activation with restart persistence. A separate native computer test verified click, type and submit against an isolated window. Browser host was unavailable; browser interaction was not validated. See [LOCAL_AGENT.md](LOCAL_AGENT.md) for exact evidence and scope.
+
 # Validation record
+
+## Local development 0.8.0
+
+See [Claude integration validation](CLAUDE.md#verification) for the local Apple Silicon checks: 66 passing unit tests, source and packaged real Claude file reads with independent Codex subscription translation, native session resume, and packaged startup/inference. No remote CI or published 0.8.0 release is claimed. The records below refer to 0.7.0 and earlier versions.
 
 Date: November 5, 2026. Local platform: Windows x64, Node.js 24, Electron 45.2.3 and Codex CLI `0.166.0-alpha.5.1`.
 
@@ -87,3 +95,32 @@ Windows and Mac 0.7.0 packages are built under `release/v0.7.0/`, separately fro
 Geometry tests cover multiple logical display areas, including negative coordinates. Not every monitor arrangement, DPI transition, GPU, system voice, accessibility tool or managed Codex policy has been physically tested. Image mode does not deform faces or limbs, generate missing artwork, perform Live2D rendering, or provide phoneme-accurate lip sync.
 
 The repository is private at [Lihhan/anime-codex](https://github.com/Lihhan/anime-codex). Personal image imports, app data and raw test output are excluded from Git. Repository documentation is English; application-owned UI supports Chinese, English and Japanese.
+
+## 0.10.0 companion preview — 2026-11-05 local
+
+- 79 Node tests passed (`test-results/companion-tests.txt`). New coverage includes character isolation, older-history recall, torn JSONL recovery, summary provenance, per-project serialization, cross-project concurrency, single-use approvals, cancellation, native thread continuation, failed completion checks, automatic task routing, and byte-identical non-overwriting file restoration.
+- Vite production build and macOS arm64 Electron packaging passed. Installed bundle passes `codesign --verify --deep --strict`.
+- Real local end-to-end (`test-results/companion-real.json`, directory `companion-real-YWdJ54`): Codex and Claude each wrote and executed `proof.mjs` in separate disposable directories. The application independently reran the supplied `node proof.mjs` check; both returned exit 0. A separate character chat completed while workers were active. Restart retained conversations, tasks and confirmed memory. Hashes of existing native Codex/Claude configuration files were unchanged.
+- System Trash + recovery: the test's own snack file was actually removed via Electron's Trash API and restored byte-for-byte from the app's recovery copy. This validates file content restoration, not original ACLs/extended attributes or Finder Put Back.
+- Packaged UI (`test-results/companion-ui.json`): chat, memory editing, character isolation, star game, compact mode, hide-without-exit, and optional Swift event-counter helper startup/shutdown passed with zero renderer errors. Aggregate global input visual timing has not been separately tested using physical keyboard input.
+- Installed app (`test-results/companion-installed.json`): version 0.10.0, original active character ID preserved, model/effort controls visible, zero renderer errors. Screenshots: `companion-installed.png`, `companion-panel.png`.
+- Initial live smoke exposed a UI navigation/layout issue after result delivery; the subsequent real run passed after separating old conversation CSS and preventing header/tab/composer shrink. The first keyboard checkbox smoke also needed the UI to expose asynchronous helper preparation; the packaged retest passed.
+- This is a functional companion preview. Full Live2D/frame animation, semantic vector memory, arbitrary external-app thread takeover and Finder-icon pathfinding remain outside the implemented scope; see SUPERAGENT.md.
+
+## 0.18.0 — 自动制作与生活引导（2026-11-06）
+
+- `npm test`：91 项通过。新增制作检查点/失败续作、取消、原图打包、资产独立安装/重启、活动调度、引导推进条件测试。
+- `scripts/smoke-pet-upgrade.mjs`：Electron 四步引导及持久化、兼容与专用过渡、过渡完成前暂停移动、日常活动切换通过。引导中的聊天回复使用受控测试替身，不代表此处重新验证了真实聊天模型。
+- `scripts/smoke-quick.mjs`：快捷菜单、关闭方式、缩放边界和避让布局回归通过。
+- 真实 Codex 模型制作：`test-results/production-real.json` 对应原创角色“小苔”，模型 `gpt-6.1-sol`，本机角色大脑配置；基准图与六组 96 帧产物状态 `ready`。测试中在前三组完成后切换到新版打包实现，验证从检查点继续；前三组没有重做。
+- `scripts/smoke-generated-pet.mjs`：用上述真实成品通过 `studioProduce({id})` 自动安装到隔离角色库；验证 `exit_read`、`enter_walk` 播放和重启后加载。记录 `test-results/generated-pet.json`。
+- 图片结构检查不代表所有画面已经达到美术终稿：实测早期睡姿偏站立打盹、个别道具颜色跨组有变化。后续生成提示已加强躺卧姿态及参考已有动作中的道具；仍需按角色查看实际成品。
+- 现有内置图集使用短暂收势/中立姿态/淡入的兼容过渡，新制作完整包具备专用进入退出帧。
+
+## 0.18.1 大小滑杆
+
+`node scripts/smoke-size-slider.mjs` 使用真实指针持续往返拖动 40–140%，覆盖三个角色位置（含右下边缘），验证滑杆坐标不变、松开不跳动和最终值。
+
+## 0.18.2 拖动动画
+
+`node scripts/smoke-drag.mjs` 检查真实拖动的抬起、即时 drag 帧切换、落地恢复和取消拖动恢复；现有角色复用 attention 帧，并未新增绘制悬空精灵图。

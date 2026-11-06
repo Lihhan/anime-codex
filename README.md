@@ -1,4 +1,12 @@
+> **0.18.6 desktop companion preview:** Resident desktop pet with Codex / Claude Code task delegation, model and effort selection, persistent companion memory, research-backed character creation, animated activity transitions and an interactive first-run guide. Current visual tuning targets the Furina sticker appearance. See [automatic character creation](docs/AUTOMATIC_PET_PRODUCTION.md), [activity transitions](docs/ALL_ACTIVITY_TRANSITIONS.md), and [validation](docs/VALIDATION.md). This is a source preview; download links below still point to the previously published 0.7.0 installers. Local 0.18.6 validation covers macOS Apple Silicon, not fresh Windows or Intel release acceptance.
+
+> **0.10.0 companion preview:** The default interface is now a resident character with separate conversation, memory and native-worker tasks. Read [the companion guide](docs/SUPERAGENT.md) for usage, data storage, file feeding and current limits.
+
+> 本机开发版 0.9.0：Codex 原生权限继承、模型与 effort 选择、Mori 风格角色工作室，以及新版分区设置。见 [本地 Agent 与角色工作室](docs/LOCAL_AGENT.md)。
+
 # Anime Codex
+
+**Development 0.8.0:** selectable local Claude Code with independent English prompt polishing and Chinese reply translation through your locally signed-in Codex subscription. See [Claude setup, environment inheritance and validation](docs/CLAUDE.md). The release download links below still refer to the published 0.7.0 packages.
 
 A transparent Windows and macOS desktop programming companion powered by the **real Codex App Server**. Upload your own character images, talk naturally, and watch the character change expression as Codex actually works.
 

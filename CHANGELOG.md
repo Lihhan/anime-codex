@@ -1,3 +1,95 @@
+# 0.18.6
+
+- 放慢动作过渡，每个关键姿势至少280ms，起点和落稳增加停留。
+- 校准芙宁娜各图集帧中心与脚底基线，并匹配睡觉、游戏等跨图集比例；保留源图像像素。
+
+# 0.18.5
+
+- 芙宁娜贴纸补齐吃饭、游戏、办公、跑动、摸头与倾听的进入/退出帧，九种活动共 72 个有向切换都有动作路径。
+- 连续点击合并为最新目标，先完成当前过渡；自动制作新增社交过渡图集。
+
+# 0.18.4
+
+- 芙宁娜新增睡醒起身、接住落书并阅读的八帧动作过渡，替换淡入淡出；支持跨行连续动作及直接状态转换。
+
+- 角色制作先检索台词、人设和背景，再整理档案；记录网页访问证据、来源、剧情阶段和未确认内容。
+- 资料和创作示例分开标注，角色提示保留研究依据，制作界面可查看来源。
+
+# 0.18.3
+
+- 为芙宁娜贴纸画风加入专门的被拎起四帧动画：提起衣领、悬空垂腿、摆腿和挣扎表情。
+- 动画播放器支持每个动作独立的精灵图行列数。
+
+# 0.18.2
+
+- 拖动角色时增加悬空摆动、随拖动方向倾斜和放下落地缓冲；支持专用 drag 动画，旧角色使用 attention 帧兼容。
+- 点击、取消拖动和减少动态效果设置保持兼容。
+
+# 0.18.1
+
+- 固定快捷大小调节卡片的位置，连续缩放和松开滑杆时不再跟随角色跳动。
+
+## 0.18.0 — 自动制作、动作过渡与初次引导
+
+- 一键制作角色档案、基准形象、六组动作/过渡图集，结构检查后自动启用；支持取消和从已有进度继续。
+- 使用角色大脑配置的 Codex 模型和 effort；保留生成来源、原图、透明图集和校验结果。
+- 动作按退出、衔接、进入顺序播放，移动等待过渡完成；内置旧图集使用兼容过渡。
+- 日常以持续 45–120 秒的生活活动为主，按角色偏好切换，减少长时间站立。
+- 首次使用按聊天、任务、生活、设置逐步引导，完成对应交互后推进，本机保存进度，支持跳过和重播。
+
+## 0.12.0 — 大小与生活动作
+
+- 角色大小支持 40%–140%，默认 70%，本机保存；气泡和文字尺寸独立。
+- 新增四向跑步及读书、吃饭、游戏、办公，共32帧新素材。
+- 连续移动及四边反弹；闲置生活调度和手动活动入口。
+- 82项测试通过；Electron实测缩放持久化、四向动作及撞边后回走。
+
+## 0.11.0 — Q 版桌宠与气泡交互
+
+- 芙宁娜增加 16 帧 Q 版动作包：眨眼、跑步、睡觉、进食，原立绘可切换。
+- 默认聊天改为角色旁的紧凑气泡，历史面板单独展开；工具栏空闲隐藏。
+- 面板主题跟随角色，动画 manifest 与角色身份分离，生成器 Q 版提示统一。
+- 79 项测试通过；Electron 测试覆盖逐帧播放、睡姿、外观切换、气泡与自动隐藏。
+
+# 0.10.0 — Resident companion preview
+
+- New default desktop companion surface, compact bubbles, separate chat/tasks/memory/life/settings panels.
+- Text-only character brain, persistent history, confirmed memory and background summaries.
+- Independent Codex/Claude worker threads, per-project scheduling, cancellation, resumption, native permission requests and result reporting. Optional user-authored completion checks.
+- Wandering/resting/touch, cursor following, optional macOS input rhythm, mini mode, star game, and system voice.
+- File feeding through system Trash with local recovery copies and no-overwrite restoration.
+- Existing role generation and character library retained. Native global configurations remain untouched.
+- See docs/SUPERAGENT.md for implementation boundaries and referenced projects.
+
+## 0.9.2 — Application icon
+
+- Replace the default Electron icon with an original mint anime companion and coding-bracket mark.
+- Add macOS ICNS, Windows ICO, runtime Dock/window icon, sidebar branding and favicon.
+- Keep the source artwork, generation prompt and reproducible packaging script in the repository.
+
+## 0.9.1 — Automatic connection
+
+- Automatically connect the selected local backend on startup.
+- Remember and restore each backend’s last project; explain missing directories.
+- Coalesce overlapping connection attempts.
+
+## 0.9.0 — Local agent and character studio
+
+- Codex inherits login-shell exports and can inherit native sandbox/approval settings.
+- Dynamic model/effort picker; overrides stay in app preferences and thread parameters.
+- Character profiles, voice rules, image-generation candidates, review and local recovery inspired by Mori.
+- Redesigned settings navigation, workbench and dialogue surfaces.
+
+## 0.8.0 (local development build)
+
+- Add native Claude Code as a selectable programming backend while retaining Codex.
+- Inherit login-shell exports and native Claude configuration without permission-mode, network or timezone overrides.
+- Route live tool approvals and user questions through the desktop UI; preserve actual tool records and native session resume.
+- Translate/polish inputs into English and replies into Chinese through independent subscription-authenticated Codex calls.
+- Preserve original/sent/translated text, protect code fragments, and handle translation failures and cancellation explicitly.
+- Add backend/translation settings, local Claude history, focused regression tests and real source/UI verification.
+- Record limitations and platform evidence in docs/CLAUDE.md; no remote release or CI pass is claimed.
+
 ## 0.7.0
 
 - Add protected Furina, Nahida, Kaguya and Iroha Sakayori presets alongside original Rin and custom uploads.

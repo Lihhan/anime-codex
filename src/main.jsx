@@ -11,11 +11,25 @@ import { GameApp } from "./GameApp";
 import { resolveAction } from "../shared/character-images.mjs";
 import { touchPoint, isDrag } from "../shared/interactions.mjs";
 import { bubbleReply } from "../shared/dialogue.mjs";
+import { CharacterStudio } from "./CharacterStudio";
+import { ModelSettings } from "./ModelSettings";
+import { BackendSettings } from "./BackendSettings";
 import { GalDialogue } from "./GalDialogue";
+import "./workbench.css";
+import { CompanionApp } from './CompanionApp';
 
 const api = window.animeCodex;
 const pretty = (v) => JSON.stringify(v, null, 2);
 function App() {
+  const [backend, setBackend] = useState("codex");
+  const [codexModel, setCodexModel] = useState({ model: "", effort: "" });
+  const [effectiveModel, setEffectiveModel] = useState(null);
+  const [translation, setTranslation] = useState({
+    enabled: true,
+    provider: "codex",
+    model: "",
+  });
+  const [translationStatus, setTranslationStatus] = useState(null);
   const [appearance, setAppearance] = useState({
     fontSize: 18,
     interactions: true,
@@ -42,7 +56,24 @@ function App() {
     [library, setLibrary] = useState([]),
     [desktop, setDesktop] = useState(null),
     [profileName, setProfileName] = useState("");
-  const t = createTranslator(language);
+  const translate = createTranslator(language);
+  const t = (key, values) => {
+    if (
+      backend === "claude" &&
+      key ===
+        "Choose a project folder to send messages. The default mode is read-only."
+    )
+      return translate("claude.chooseProject");
+    const text = translate(key, values);
+    return backend === "claude" &&
+      key !== "ANIME CODEX" &&
+      !key.startsWith("translation.")
+      ? text
+          .replaceAll("Codex", "Claude Code")
+          .replaceAll("CODEX", "CLAUDE CODE")
+          .replaceAll("codex login", "claude auth login")
+      : text;
+  };
   const [workbench, setWorkbench] = useState(false),
     [dialogue, setDialogue] = useState(true),
     [pinned, setPinned] = useState(true),
@@ -52,7 +83,7 @@ function App() {
     [connected, setConnected] = useState(false),
     [account, setAccount] = useState(""),
     [workspace, setWorkspace] = useState(""),
-    [mode, setMode] = useState("read-only"),
+    [mode, setMode] = useState("inherit"),
     [thread, setThread] = useState(null),
     [threads, setThreads] = useState([]),
     [threadCursor, setThreadCursor] = useState(null),
@@ -65,6 +96,7 @@ function App() {
     [loading, setLoading] = useState(false),
     [tab, setTab] = useState("activity"),
     [settings, setSettings] = useState(false),
+    [settingsTab, setSettingsTab] = useState("agent"),
     [voiceOn, setVoiceOn] = useState(false),
     [mouth, setMouth] = useState(0),
     [answers, setAnswers] = useState({});
@@ -118,6 +150,9 @@ function App() {
     dockTimer = useRef(null);
   function applyPreferences(result, preserveEdits = false) {
     if (!result) return;
+    if (result.backend) setBackend(result.backend);
+    if (result.codexModel) setCodexModel(result.codexModel);
+    if (result.translation) setTranslation(result.translation);
     if (
       charRef.current?.id &&
       result.character?.id &&
@@ -288,11 +323,15 @@ function App() {
       setError(t("Start the Electron desktop app to connect to Codex."));
       return;
     }
-    api
-      .bootstrap()
-      .then(applyPreferences)
-      .catch((e) => setError(e.message));
+    void run(async () => {
+      applyPreferences(await api.bootstrap());
+      await connectBackend();
+    });
     return api.onEvent((e) => {
+      if (e.method === "client/translation") {
+        setTranslationStatus(e.params);
+        return;
+      }
       if (e.method === "client/background") {
         setBackgroundStatus(e.params);
         return;
@@ -424,6 +463,28 @@ function App() {
     setThreads((old) => (cursor ? [...old, ...r.data] : r.data));
     setThreadCursor(r.nextCursor);
   }
+  async function changeBackend(provider) {
+    await run(async () => {
+      await api.setBackend({ provider });
+      setBackend(provider);
+      setConnected(false);
+      setWorkspace("");
+      setAccount("");
+      setThreads([]);
+      setThreadCursor(null);
+      setTranslationStatus(null);
+      reset(null);
+    });
+  }
+  async function saveTranslation(value) {
+    return run(async () => {
+      const result = await api.setTranslation(value);
+      setTranslation(result);
+      setTranslationStatus(null);
+      reset(null);
+      return result;
+    });
+  }
   async function connectBackend(executable) {
     const r = await api.connect(executable ? { executable } : {});
     setAccount(r.account?.type || t("Not signed in"));
@@ -434,6 +495,13 @@ function App() {
       );
     }
     setConnected(true);
+    if (r.workspace) {
+      setWorkspace(r.workspace);
+      const list = await api.listThreads();
+      setThreads(list.data);
+      setThreadCursor(list.nextCursor);
+    }
+    if (r.workspaceWarning) setError(r.workspaceWarning);
   }
   async function prepareConversation() {
     if (!connected) await connectBackend();
@@ -498,6 +566,7 @@ function App() {
       if (!id) {
         const r = await api.newThread({ persona, mode });
         id = r.thread.id;
+        setEffectiveModel({ model: r.model, effort: r.reasoningEffort });
         reset(id);
       }
       setState((s) => ({ ...s, busy: true, phase: "thinking" }));
@@ -781,7 +850,13 @@ function App() {
       </div>
       <aside className="sidebar">
         <a className="brand" href="#">
-          <span className="brand-icon">✧</span>
+          <img
+            className="brand-icon"
+            src="./app-icon.png"
+            width="40"
+            height="40"
+            alt=""
+          />
           <div>
             {t("ANIME CODEX")}
             <small>{t("YOUR IDEAS, OUR NEXT CHAPTER")}</small>
@@ -847,7 +922,15 @@ function App() {
               title={threadEntry.id}
               onClick={() =>
                 run(async () => {
-                  await api.resume({ id: threadEntry.id, persona, mode });
+                  const resumed = await api.resume({
+                    id: threadEntry.id,
+                    persona,
+                    mode,
+                  });
+                  setEffectiveModel({
+                    model: resumed.model,
+                    effort: resumed.reasoningEffort,
+                  });
                   reset(threadEntry.id);
                   await history(threadEntry.id);
                 })
@@ -893,10 +976,17 @@ function App() {
             </h1>
           </div>
           <div className="header-actions">
+            {backend === "codex" && effectiveModel && (
+              <span className="model-pill">
+                {effectiveModel.model} · {effectiveModel.effort || "default"}
+              </span>
+            )}
             <span className="pill">
-              {mode === "read-only"
-                ? t("Read-only mode")
-                : t("Project write access")}
+              {backend === "claude" || mode === "inherit"
+                ? "本机权限"
+                : mode === "read-only"
+                  ? t("Read-only mode")
+                  : t("Project write access")}
             </span>
             <button
               className={voiceOn ? "active" : ""}
@@ -919,6 +1009,7 @@ function App() {
             id="character-connection-settings"
             role="dialog"
             aria-labelledby="settings-title"
+            data-tab={settingsTab}
           >
             <div className="settings-header">
               <h2 id="settings-title">{t("Character and connection")}</h2>
@@ -933,220 +1024,291 @@ function App() {
                 ×
               </button>
             </div>
-            <CharacterSettings
-              onOriginalRin={() =>
-                run(async () => {
-                  if (builtinId.current) {
-                    const restored = await api.selectCharacter({
-                      id: builtinId.current,
-                    });
-                    applyPreferences(restored);
-                    setProfileName(restored.character?.name || "");
-                    setPreviewPhase(null);
-                  }
-                })
-              }
-              backgroundAutomatic={backgroundOptions.automatic}
-              onBackgroundAutomatic={(automatic) =>
-                run(async () => {
-                  const result = await api.setBackgroundOptions({ automatic });
-                  setBackgroundOptions(result.backgroundRemoval);
-                })
-              }
-              onRemoveBackground={(phase) =>
-                run(async () =>
-                  applyPreferences(
-                    await api.removeBackground({ id: character.id, phase }),
-                    true,
-                  ),
-                )
-              }
-              onRestoreOriginal={(phase) =>
-                run(async () =>
-                  applyPreferences(
-                    await api.restoreOriginal({ id: character.id, phase }),
-                    true,
-                  ),
-                )
-              }
-              t={t}
-              character={character}
-              library={library}
-              language={language}
-              profileName={profileName}
-              setProfileName={setProfileName}
-              loading={loading || state.busy || !!state.pending.length}
-              busy={state.busy}
-              preview={previewPhase}
-              setPreview={setPreviewPhase}
-              onSelect={(id) =>
-                run(async () =>
-                  applyPreferences(await api.selectCharacter({ id })),
-                )
-              }
-              onImport={(phase, id) => run(() => importAction(phase, id))}
-              onRemove={(phase) =>
-                run(async () =>
-                  applyPreferences(
-                    await api.removeActionImage({ id: character.id, phase }),
-                    true,
-                  ),
-                )
-              }
-              onSave={() => run(saveCurrentCharacter)}
-            />
-            <section className="appearance-settings">
-              <h2>{t("Reading and interaction")}</h2>
-              <label>
-                {t("gal.layout")}
-                <select
-                  data-testid="dialogue-style"
-                  value={appearance.dialogueStyle || "gal"}
-                  onChange={(e) => {
-                    setShowChatLog(false);
-                    updateAppearance({ dialogueStyle: e.target.value });
-                  }}
+            <nav className="settings-tabs" aria-label="设置分区">
+              {[
+                ["agent", "连接与模型"],
+                ["character", "角色工作室"],
+                ["appearance", "外观与交互"],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  data-testid={"settings-tab-" + id}
+                  aria-pressed={settingsTab === id}
+                  onClick={() => setSettingsTab(id)}
                 >
-                  <option value="gal">{t("gal.bubbleLayout")}</option>
-                  <option value="chat">{t("gal.chatLayout")}</option>
-                </select>
-              </label>
-              <label>
-                {t("Conversation font size")} ·{" "}
-                <output>{appearance.fontSize}px</output>
-                <input
-                  data-testid="font-size"
-                  type="range"
-                  min="14"
-                  max="24"
-                  step="1"
-                  value={appearance.fontSize}
-                  onChange={(e) =>
-                    updateAppearance({ fontSize: Number(e.target.value) })
-                  }
-                />
-              </label>
-              <label className="checkbox-label">
-                <input
-                  data-testid="touch-enabled"
-                  type="checkbox"
-                  checked={appearance.interactions}
-                  onChange={(e) =>
-                    updateAppearance({ interactions: e.target.checked })
-                  }
-                />
-                {t("Enable playful character reactions")}
-              </label>
-              <p>
-                {t(
-                  "Touch hair, shoulders or hands. Drag to move. Play in a separate window while I work.",
-                )}
-              </p>
-              <button
-                onClick={() =>
-                  api.openPlay().catch((error) => setError(error.message))
-                }
-              >
-                {t("Open playroom")}
-              </button>
-            </section>
-            <section className="desktop-settings">
-              <h2>{t("Character size")}</h2>
-              <label>
-                {t("Character size")} ·{" "}
-                {Math.round((desktop?.scale || 1) * 100)}%
-                <input
-                  data-testid="character-scale"
-                  type="range"
-                  min="50"
-                  max="180"
-                  step="5"
-                  value={Math.round((desktop?.scale || 1) * 100)}
-                  onChange={(e) =>
-                    api.desktopControl({
-                      action: "scale",
-                      value: Number(e.target.value) / 100,
-                    })
-                  }
-                />
-              </label>
-              <label className="checkbox-label">
-                <input
-                  data-testid="auto-hide"
-                  type="checkbox"
-                  checked={desktop?.autoHide ?? true}
-                  onChange={(e) =>
-                    api.desktopControl({
-                      action: "autoHide",
-                      value: e.target.checked,
-                    })
-                  }
-                />
-                {t("Auto-hide at screen edges")}
-              </label>
-              <button onClick={() => api.desktopControl({ action: "reset" })}>
-                {t("Reset position and size")}
-              </button>
-              <p>
-                {t(
-                  "Drag the character to move it. Alt + wheel resizes it. Click the edge tab to restore.",
-                )}
-              </p>
-            </section>
-            <div>
-              <h2>{t("Settings")}</h2>
-              <p>
-                {t("Run codex login first. Official Codex manages sign-in.")}
-              </p>
-              <button
-                disabled={connected || loading}
-                onClick={() => run(() => connectBackend())}
-              >
-                {t("Connect to Codex on PATH")}
-              </button>
-              <button
-                disabled={connected || loading}
-                onClick={() =>
-                  run(async () => {
-                    const executable = await api.chooseExecutable();
-                    if (executable) await connectBackend(executable);
-                  })
-                }
-              >
-                {t("Choose Codex executable and connect")}
-              </button>
-            </div>
-            <label>
-              {t("Permissions for new or resumed conversations")}
-              <select
-                disabled={state.busy || !!thread}
-                value={mode}
-                onChange={(e) => setMode(e.target.value)}
-              >
-                <option value="read-only">{t("Read-only (default)")}</option>
-                <option value="workspace-write">
-                  {t("Project write (can modify the selected folder)")}
-                </option>
-              </select>
-              <small>
-                {t(
-                  "Choose a project and start a new conversation to change permissions. Project writes are not approved file by file; Codex handles boundary approvals.",
-                )}
-              </small>
-            </label>
-            <label className="persona">
-              {t("Personality for new or resumed conversations")}
-              <textarea
-                value={persona}
-                maxLength={12000}
-                onChange={(e) => setPersona(e.target.value)}
+                  {label}
+                </button>
+              ))}
+            </nav>
+            <div
+              className="settings-group character-group"
+              hidden={settingsTab !== "character"}
+            >
+              <CharacterStudio
+                api={api}
+                busy={loading || state.busy || !!state.pending.length}
+                onApply={applyPreferences}
               />
-            </label>
-            <p>
-              {t(
-                "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.",
+              <details className="existing-characters">
+                <summary>现有角色库与动作图片</summary>
+                <CharacterSettings
+                  onOriginalRin={() =>
+                    run(async () => {
+                      if (builtinId.current) {
+                        const restored = await api.selectCharacter({
+                          id: builtinId.current,
+                        });
+                        applyPreferences(restored);
+                        setProfileName(restored.character?.name || "");
+                        setPreviewPhase(null);
+                      }
+                    })
+                  }
+                  backgroundAutomatic={backgroundOptions.automatic}
+                  onBackgroundAutomatic={(automatic) =>
+                    run(async () => {
+                      const result = await api.setBackgroundOptions({
+                        automatic,
+                      });
+                      setBackgroundOptions(result.backgroundRemoval);
+                    })
+                  }
+                  onRemoveBackground={(phase) =>
+                    run(async () =>
+                      applyPreferences(
+                        await api.removeBackground({ id: character.id, phase }),
+                        true,
+                      ),
+                    )
+                  }
+                  onRestoreOriginal={(phase) =>
+                    run(async () =>
+                      applyPreferences(
+                        await api.restoreOriginal({ id: character.id, phase }),
+                        true,
+                      ),
+                    )
+                  }
+                  t={t}
+                  character={character}
+                  library={library}
+                  language={language}
+                  profileName={profileName}
+                  setProfileName={setProfileName}
+                  loading={loading || state.busy || !!state.pending.length}
+                  busy={state.busy}
+                  preview={previewPhase}
+                  setPreview={setPreviewPhase}
+                  onSelect={(id) =>
+                    run(async () =>
+                      applyPreferences(await api.selectCharacter({ id })),
+                    )
+                  }
+                  onImport={(phase, id) => run(() => importAction(phase, id))}
+                  onRemove={(phase) =>
+                    run(async () =>
+                      applyPreferences(
+                        await api.removeActionImage({
+                          id: character.id,
+                          phase,
+                        }),
+                        true,
+                      ),
+                    )
+                  }
+                  onSave={() => run(saveCurrentCharacter)}
+                />
+              </details>
+            </div>
+            <div
+              className="settings-group"
+              hidden={settingsTab !== "appearance"}
+            >
+              <section className="appearance-settings">
+                <h2>{t("Reading and interaction")}</h2>
+                <label>
+                  {t("gal.layout")}
+                  <select
+                    data-testid="dialogue-style"
+                    value={appearance.dialogueStyle || "gal"}
+                    onChange={(e) => {
+                      setShowChatLog(false);
+                      updateAppearance({ dialogueStyle: e.target.value });
+                    }}
+                  >
+                    <option value="gal">{t("gal.bubbleLayout")}</option>
+                    <option value="chat">{t("gal.chatLayout")}</option>
+                  </select>
+                </label>
+                <label>
+                  {t("Conversation font size")} ·{" "}
+                  <output>{appearance.fontSize}px</output>
+                  <input
+                    data-testid="font-size"
+                    type="range"
+                    min="14"
+                    max="24"
+                    step="1"
+                    value={appearance.fontSize}
+                    onChange={(e) =>
+                      updateAppearance({ fontSize: Number(e.target.value) })
+                    }
+                  />
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    data-testid="touch-enabled"
+                    type="checkbox"
+                    checked={appearance.interactions}
+                    onChange={(e) =>
+                      updateAppearance({ interactions: e.target.checked })
+                    }
+                  />
+                  {t("Enable playful character reactions")}
+                </label>
+                <p>
+                  {t(
+                    "Touch hair, shoulders or hands. Drag to move. Play in a separate window while I work.",
+                  )}
+                </p>
+                <button
+                  onClick={() =>
+                    api.openPlay().catch((error) => setError(error.message))
+                  }
+                >
+                  {t("Open playroom")}
+                </button>
+              </section>
+              <section className="desktop-settings">
+                <h2>{t("Character size")}</h2>
+                <label>
+                  {t("Character size")} ·{" "}
+                  {Math.round((desktop?.scale || 1) * 100)}%
+                  <input
+                    data-testid="character-scale"
+                    type="range"
+                    min="50"
+                    max="180"
+                    step="5"
+                    value={Math.round((desktop?.scale || 1) * 100)}
+                    onChange={(e) =>
+                      api.desktopControl({
+                        action: "scale",
+                        value: Number(e.target.value) / 100,
+                      })
+                    }
+                  />
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    data-testid="auto-hide"
+                    type="checkbox"
+                    checked={desktop?.autoHide ?? true}
+                    onChange={(e) =>
+                      api.desktopControl({
+                        action: "autoHide",
+                        value: e.target.checked,
+                      })
+                    }
+                  />
+                  {t("Auto-hide at screen edges")}
+                </label>
+                <button onClick={() => api.desktopControl({ action: "reset" })}>
+                  {t("Reset position and size")}
+                </button>
+                <p>
+                  {t(
+                    "Drag the character to move it. Alt + wheel resizes it. Click the edge tab to restore.",
+                  )}
+                </p>
+              </section>
+            </div>
+            <div className="settings-group" hidden={settingsTab !== "agent"}>
+              <div>
+                {backend === "codex" && (
+                  <ModelSettings
+                    api={api}
+                    value={codexModel}
+                    connected={connected}
+                    busy={loading || state.busy || !!state.pending.length}
+                    onSave={async (value) => {
+                      const saved = await api.setCodexModel(value);
+                      setCodexModel(saved);
+                      setEffectiveModel(null);
+                      reset(null);
+                    }}
+                  />
+                )}
+                <BackendSettings
+                  language={language}
+                  provider={backend}
+                  translation={translation}
+                  busy={loading || state.busy || !!state.pending.length}
+                  onProvider={changeBackend}
+                  onSave={saveTranslation}
+                  onTest={() => run(() => api.testTranslation())}
+                />
+                <h2>{t("Settings")}</h2>
+                <p>
+                  {t("Run codex login first. Official Codex manages sign-in.")}
+                </p>
+                <button
+                  disabled={connected || loading}
+                  onClick={() => run(() => connectBackend())}
+                >
+                  {t("Connect to Codex on PATH")}
+                </button>
+                <button
+                  disabled={connected || loading}
+                  onClick={() =>
+                    run(async () => {
+                      const executable = await api.chooseExecutable();
+                      if (executable) await connectBackend(executable);
+                    })
+                  }
+                >
+                  {t("Choose Codex executable and connect")}
+                </button>
+              </div>
+              {backend === "codex" && (
+                <label>
+                  {t("Permissions for new or resumed conversations")}
+                  <select
+                    disabled={state.busy || !!thread}
+                    value={mode}
+                    onChange={(e) => setMode(e.target.value)}
+                  >
+                    <option value="inherit">
+                      继承本机 Codex 权限与审批配置
+                    </option>
+                    <option value="read-only">
+                      {t("Read-only (default)")}
+                    </option>
+                    <option value="workspace-write">
+                      {t("Project write (can modify the selected folder)")}
+                    </option>
+                  </select>
+                  <small>
+                    {t(
+                      "Choose a project and start a new conversation to change permissions. Project writes are not approved file by file; Codex handles boundary approvals.",
+                    )}
+                  </small>
+                </label>
               )}
-            </p>
+              <label className="persona">
+                {t("Personality for new or resumed conversations")}
+                <textarea
+                  value={persona}
+                  maxLength={12000}
+                  onChange={(e) => setPersona(e.target.value)}
+                />
+              </label>
+              <p>
+                {t(
+                  "Voice uses system TTS. Available voices depend on your operating system. Accurate lip sync is not implemented.",
+                )}
+              </p>
+            </div>
           </section>
         )}
         <div className="workspace-grid">
@@ -1290,6 +1452,15 @@ function App() {
             className={"conversation" + (galActive ? " gal-conversation" : "")}
             data-tail={avatarX >= panelWidth + 32 ? "right" : "left"}
           >
+            {translationStatus?.active && (
+              <div className="translation-status" role="status">
+                {t(
+                  translationStatus.stage === "input"
+                    ? "translation.input"
+                    : "translation.output",
+                )}
+              </div>
+            )}
             {galActive ? (
               <GalDialogue
                 t={t}
@@ -1383,7 +1554,9 @@ function App() {
                         {i.type === "userMessage" ? t("You") : displayName}
                         <small>
                           {i.type === "agentMessage"
-                            ? t("CODEX · ORIGINAL RESPONSE")
+                            ? i.translated
+                              ? t("translation.label")
+                              : t("CODEX · ORIGINAL RESPONSE")
                             : ""}
                         </small>
                       </div>
@@ -1392,6 +1565,23 @@ function App() {
                           ? i.content?.map((c) => c.text || "").join("\n")
                           : i.text}
                       </div>
+                      {i.translationError && (
+                        <p className="translation-error">
+                          {t("translation.failed")} {i.translationError}
+                        </p>
+                      )}
+                      {(i.originalText || i.sentText) && (
+                        <details className="translation-original">
+                          <summary>
+                            {t(
+                              i.type === "userMessage"
+                                ? "translation.sent"
+                                : "translation.original",
+                            )}
+                          </summary>
+                          <pre>{i.sentText || i.originalText}</pre>
+                        </details>
+                      )}
                     </article>
                   ))}
                   {state.busy && (
@@ -1593,11 +1783,15 @@ function App() {
             <div className="boundary">
               <span>{t("◇ Execution boundaries")}</span>
               <p>
-                {mode === "read-only"
-                  ? t("Read-only access.")
-                  : t("Codex may modify the selected project.")}
+                {backend === "claude" || mode === "inherit"
+                  ? "文件、网络与审批按本机配置执行。"
+                  : mode === "read-only"
+                    ? t("Read-only access.")
+                    : t("Codex may modify the selected project.")}
                 <br />
-                {t("You decide approvals. Failures are shown honestly.")}
+                {backend === "claude" || mode === "inherit"
+                  ? "需要你决定的请求会显示在这里。"
+                  : t("You decide approvals. Failures are shown honestly.")}
               </p>
             </div>
           </aside>
@@ -1697,6 +1891,6 @@ createRoot(document.getElementById("root")).render(
   new URLSearchParams(location.search).get("surface") === "play" ? (
     <GameApp />
   ) : (
-    <App />
+    new URLSearchParams(location.search).get('surface') === 'workbench' ? <App /> : <CompanionApp />
   ),
 );

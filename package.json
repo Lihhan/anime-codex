@@ -1,6 +1,6 @@
 {
   "name": "anime-codex",
-  "version": "0.7.0",
+  "version": "0.18.6",
   "description": "A character-driven Windows and macOS desktop client for the real Codex App Server",
   "private": true,
   "type": "module",
@@ -27,7 +27,15 @@
     "dist:mac:x64": "npm run build && electron-builder --mac dmg zip --x64 --publish never",
     "smoke:native": "node scripts/smoke-native.mjs",
     "smoke:presets": "node scripts/smoke-presets.mjs",
-    "smoke:presets-real": "node scripts/smoke-presets-real.mjs"
+    "smoke:presets-real": "node scripts/smoke-presets-real.mjs",
+    "smoke:claude": "node scripts/smoke-claude-ui.mjs",
+    "smoke:claude-real": "node scripts/smoke-claude-real.mjs",
+    "smoke:agent": "node scripts/smoke-agent.mjs",
+    "smoke:workbench": "node scripts/smoke-workbench.mjs",
+    "smoke:studio": "node scripts/smoke-studio.mjs",
+    "build:icons": "node scripts/build-icons.mjs",
+    "smoke:companion": "node scripts/smoke-companion.mjs",
+    "smoke:companion-real": "node scripts/smoke-companion-real.mjs"
   },
   "build": {
     "appId": "io.animecodex.desktop",
@@ -60,10 +68,11 @@
         "scripts/native-probe.cjs",
         "!node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
         "!node_modules/onnxruntime-node-intel/**"
-      ]
+      ],
+      "icon": "build/icon.ico"
     },
     "directories": {
-      "output": "release/v0.7.0"
+      "output": "release/v0.18.6"
     },
     "asarUnpack": [
       "electron/background-worker.cjs",
@@ -100,7 +109,8 @@
         "!node_modules/onnxruntime-node-intel/bin/napi-v6/win32/**",
         "!node_modules/onnxruntime-node-intel/bin/napi-v6/linux/**",
         "!node_modules/onnxruntime-node-intel/bin/napi-v6/darwin/arm64/**"
-      ]
+      ],
+      "icon": "build/icon.icns"
     }
   },
   "dependencies": {

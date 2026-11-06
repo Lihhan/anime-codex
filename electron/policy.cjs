@@ -1,15 +1,19 @@
 const path = require("node:path");
 function threadOptions(cwd, persona, mode = "read-only") {
   if (!path.isAbsolute(cwd)) throw new Error("error.project");
-  if (!["read-only", "workspace-write"].includes(mode))
+  if (!["inherit", "read-only", "workspace-write"].includes(mode))
     throw new Error("error.permissionMode");
   if (typeof persona !== "string" || persona.length > 12000)
     throw new Error("error.personaLength");
   return {
     cwd,
-    sandbox: mode,
-    approvalPolicy: "on-request",
-    approvalsReviewer: "user",
+    ...(mode === "inherit"
+      ? {}
+      : {
+          sandbox: mode,
+          approvalPolicy: "on-request",
+          approvalsReviewer: "user",
+        }),
     developerInstructions: persona,
   };
 }
