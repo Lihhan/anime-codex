@@ -41,6 +41,8 @@ export function createTranslator(language = "zh") {
         );
         if (key === "{v0}/{v1} · 制作{v2}动作与过渡帧")
           variables.v2 = translate(variables.v2);
+        if (key === "「{v0}」{v1}。点我看汇报。")
+          variables.v1 = translate(variables.v1);
         break;
       }
     }

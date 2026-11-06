@@ -34,6 +34,10 @@ test("native status templates localize while interpolation values and unknown ra
   assert.equal(en("设置"), "Settings");
   assert.equal(ja("Settings"), "設定");
   assert.equal(
+    ja("“Original task title”: Check failed. Click me for the report."),
+    "「Original task title」：確認に失敗。私をクリックして報告を見てね。",
+  );
+  assert.equal(
     en("3/9 · 制作日常生活动作与过渡帧"),
     "3/9 · Creating Daily life actions and transitions",
   );
