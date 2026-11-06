@@ -47,6 +47,13 @@ try {
     );
     assert.ok(menuLabels.includes(t("Edit")));
     assert.ok(menuLabels.includes(t("Window")));
+    await page.getByText(t("创建新角色 · 档案与形象"), { exact: true }).click();
+    await page
+      .getByTestId("character-studio")
+      .getByRole("heading", { name: t("让角色成为你的搭档"), exact: true })
+      .waitFor();
+    await page.getByPlaceholder(t("原创角色可留空"), { exact: true }).waitFor();
+    await page.getByText(t("创建新角色 · 档案与形象"), { exact: true }).click();
     await page
       .getByRole("heading", { name: t("我的角色"), exact: true })
       .waitFor();
@@ -119,7 +126,8 @@ try {
       (await window.animeCodex.companionState()).settings.collapseOnBlur ===
       false,
   );
-  await app.evaluate(async ({ BrowserWindow, screen }) => {
+  const initialBodyBox = await page.getByTestId("pet-body").boundingBox();
+  await app.evaluate(async ({ BrowserWindow, screen }, rect) => {
     const main = BrowserWindow.getAllWindows()[0],
       bounds = main.getBounds();
     const originalIgnore = main.setIgnoreMouseEvents.bind(main);
@@ -128,7 +136,10 @@ try {
       globalThis.overlayProbe.ignored = flag;
       originalIgnore(flag, options);
     };
-    screen.getCursorScreenPoint = () => ({ x: bounds.x + 1, y: bounds.y + 1 });
+    screen.getCursorScreenPoint = () => ({
+      x: bounds.x + rect.x + rect.width / 2,
+      y: bounds.y + rect.y + rect.height / 2,
+    });
     const other = new BrowserWindow({
       width: 350,
       height: 200,
@@ -143,6 +154,13 @@ try {
     globalThis.overlayProbe.other = other;
     await other.loadURL("data:text/html,<button>Other window</button>");
     other.focus();
+  }, initialBodyBox);
+  await page.waitForFunction(
+    () => document.documentElement.dataset.pointerPassthrough === "false",
+  );
+  await app.evaluate(({ screen }) => {
+    const b = globalThis.overlayProbe.bounds;
+    screen.getCursorScreenPoint = () => ({ x: b.x + 1, y: b.y + 1 });
   });
   await page.waitForFunction(
     () => document.documentElement.dataset.pointerPassthrough === "true",
@@ -177,14 +195,12 @@ try {
       });
   });
   await page.evaluate(() => {
-    window.pickerProbe = window.animeCodex
-      .bootstrap()
-      .then((b) =>
-        window.animeCodex.chooseVoiceClip({
-          id: b.character.id,
-          action: "touch",
-        }),
-      );
+    window.pickerProbe = window.animeCodex.bootstrap().then((b) =>
+      window.animeCodex.chooseVoiceClip({
+        id: b.character.id,
+        action: "touch",
+      }),
+    );
   });
   for (let n = 0; n < 30; n++) {
     if (await app.evaluate(() => !!globalThis.overlayProbe.resolvePicker))
@@ -215,6 +231,26 @@ try {
     globalThis.overlayProbe.main.focus();
   });
   const bodyBox = await page.getByTestId("pet-body").boundingBox();
+  await app.evaluate(({ screen }, rect) => {
+    const b = globalThis.overlayProbe.main.getBounds();
+    screen.getCursorScreenPoint = () => ({
+      x: b.x + rect.x + rect.width / 2,
+      y: b.y + rect.y + rect.height / 2,
+    });
+  }, bodyBox);
+  await page.waitForFunction(
+    () => document.documentElement.dataset.pointerPassthrough === "false",
+  );
+  await app.evaluate(({ screen }, rect) => {
+    const b = globalThis.overlayProbe.main.getBounds();
+    screen.getCursorScreenPoint = () => ({
+      x: b.x + rect.x + 1,
+      y: b.y + rect.y + 1,
+    });
+  }, bodyBox);
+  await page.waitForFunction(
+    () => document.documentElement.dataset.pointerPassthrough === "true",
+  );
   await app.evaluate(({ screen }, rect) => {
     const b = globalThis.overlayProbe.main.getBounds();
     screen.getCursorScreenPoint = () => ({
@@ -280,6 +316,8 @@ try {
         dialogGuardFixture: true,
         nativeMenusLocalized: true,
         transparentAreaIgnoresMouse: true,
+        artworkAlphaHitTest: true,
+        characterStudioLocalized: true,
         physicalMouseInjection: false,
         modelCalls: false,
       },
