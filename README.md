@@ -2,11 +2,54 @@
 
 An AI desktop pet you can talk to, play with, and ask for coding help. Choose one of six built-in characters, bring your own artwork, or make an animated companion from an idea.
 
-**Furina in motion** · Three animations from her chibi appearance in the app.
+**Iroha Sakayori in motion**
 
-|                                                 Idle                                                 |                                            Reading                                             |                                         Running                                         |
-| :--------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: |
-| <img src="docs/images/furina-chibi-idle.gif" alt="Chibi Furina blinking while standing" width="160"> | <img src="docs/images/furina-chibi-reading.gif" alt="Chibi Furina reading a book" width="160"> | <img src="docs/images/furina-chibi-running.gif" alt="Chibi Furina running" width="160"> |
+Explore all 28 animations from her chibi appearance, including daily activities, movement, and the poses that connect them.
+
+|                                             Idle                                              |                                             Reading                                              |                                             Eating                                              |                                              Sleeping                                              |
+| :-------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------: |
+| <img src="docs/images/iroha-chibi/idle.gif" alt="Idle animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/read.gif" alt="Reading animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/meal.gif" alt="Eating animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/sleep.gif" alt="Sleeping animation for chibi Iroha" width="135"> |
+
+<details>
+<summary>See the full animation gallery</summary>
+
+**Work and play**
+
+|                                              Gaming                                               |                                              Working                                               |                                             Head pat                                             |                                                Listening                                                |
+| :-----------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: |
+| <img src="docs/images/iroha-chibi/gaming.gif" alt="Gaming animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/office.gif" alt="Working animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/pet.gif" alt="Head pat animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/attention.gif" alt="Listening animation for chibi Iroha" width="135"> |
+
+**Running in four directions**
+
+|                                                Run right                                                 |                                                Run left                                                |                                               Run away                                               |                                                Run toward you                                                |
+| :------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: |
+| <img src="docs/images/iroha-chibi/walk-right.gif" alt="Run right animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/walk-left.gif" alt="Run left animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/walk-up.gif" alt="Run away animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/walk-down.gif" alt="Run toward you animation for chibi Iroha" width="135"> |
+
+**Starting an activity**
+
+|                                                Start reading                                                 |                                                Start eating                                                 |                                                 Start gaming                                                  |                                                 Start working                                                  |
+| :----------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------: |
+| <img src="docs/images/iroha-chibi/enter-read.gif" alt="Start reading animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/enter-meal.gif" alt="Start eating animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/enter-gaming.gif" alt="Start gaming animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/enter-office.gif" alt="Start working animation for chibi Iroha" width="135"> |
+
+**Finishing an activity**
+
+|                                                Finish reading                                                |                                                Finish eating                                                |                                                 Finish gaming                                                 |                                                 Finish working                                                 |
+| :----------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------: |
+| <img src="docs/images/iroha-chibi/exit-read.gif" alt="Finish reading animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/exit-meal.gif" alt="Finish eating animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/exit-gaming.gif" alt="Finish gaming animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/exit-office.gif" alt="Finish working animation for chibi Iroha" width="135"> |
+
+**Sleep and movement transitions**
+
+|                                                 Fall asleep                                                 |                                                Wake up                                                 |                                                Start running                                                 |                                                Stop running                                                |
+| :---------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------: |
+| <img src="docs/images/iroha-chibi/enter-sleep.gif" alt="Fall asleep animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/exit-sleep.gif" alt="Wake up animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/enter-walk.gif" alt="Start running animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/exit-walk.gif" alt="Stop running animation for chibi Iroha" width="135"> |
+
+**Social transitions**
+
+|                                                React to a head pat                                                |                                               Settle after a head pat                                                |                                                   Start listening                                                   |                                                  Finish listening                                                   |
+| :---------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
+| <img src="docs/images/iroha-chibi/enter-pet.gif" alt="React to a head pat animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/exit-pet.gif" alt="Settle after a head pat animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/enter-attention.gif" alt="Start listening animation for chibi Iroha" width="135"> | <img src="docs/images/iroha-chibi/exit-attention.gif" alt="Finish listening animation for chibi Iroha" width="135"> |
+
+</details>
 
 [Download 0.8.1](https://github.com/Lihhan/anime-codex/releases/tag/v0.8.1) · [Make your own pet](#make-your-own-ai-desktop-pet) · [Meet the characters](#meet-the-built-in-characters)
 
