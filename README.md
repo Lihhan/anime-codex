@@ -1,146 +1,82 @@
-# Anime Codex 0.8.1
+# Anime Codex
 
-A transparent desktop character companion for **Windows x64 and macOS 14+**. Chat with a consistent character, keep local memories, and delegate actual programming tasks to your installed **Codex or Claude Code**.
+An AI desktop pet you can talk to, play with, and ask for coding help. Choose one of six built-in characters, bring your own artwork, or make an animated companion from an idea.
 
-The refreshed **0.8.1** download adds a complete **Chinese / English / Japanese** interface and a saved, fixed-position topmost character. Transparent areas pass clicks through, and panels temporarily collapse when another window is active. It also removes renamed copies of the retired legacy photo while preserving genuine custom characters. Quit older running copies before opening the refreshed EXE.
+<img src="public/characters/rin/idle.png" alt="Rin, the original Anime Codex desktop companion" width="180">
 
-Version **0.8.1** adds complete animated sprite packs for Rin, Nahida, Kaguya, Iroha and Elysia, restores companion settings on Windows, and lets you upload prerecorded action audio. Furina retains her existing pack. Project-free chat and native permissions remain available on both platforms.
+_Rin, the original companion._
 
-## Download
+[Download 0.8.1](https://github.com/Lihhan/anime-codex/releases/tag/v0.8.1) · [Make your own pet](#make-your-own-ai-desktop-pet) · [Meet the characters](#meet-the-built-in-characters)
 
-Sign in to GitHub with access to this repository, then open **[0.8.1 downloads](https://github.com/Lihhan/anime-codex/releases/tag/v0.8.1)**.
+## Make your own AI desktop pet
 
-| Your computer                           | File                                                                                                                          |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Windows 10/11, Intel or AMD x64         | [Anime-Codex-0.8.1-win-x64.exe](https://github.com/Lihhan/anime-codex/releases/download/v0.8.1/Anime-Codex-0.8.1-win-x64.exe) |
-| Apple Silicon Mac (M-series), macOS 14+ | [Apple Silicon DMG](https://github.com/Lihhan/anime-codex/releases/download/v0.8.1/Anime-Codex-0.8.1-mac-arm64.dmg)           |
-| Intel Mac, macOS 14+                    | [Intel DMG](https://github.com/Lihhan/anime-codex/releases/download/v0.8.1/Anime-Codex-0.8.1-mac-x64.dmg)                     |
+Hover over your pet and open **Settings → Characters, models and more settings → New character · Profile and appearance**.
 
-Mac ZIP alternatives and `SHA256SUMS.txt` are on the same page. **The application downloads do not require Node.js, npm, Git, Swift or a .NET SDK.** Choose the application file for your computer; source ZIPs are for developers.
+1. **Give your character a name.** Add the title of their work if they come from a story, game, or anime. Leave that field empty for an original character.
+2. **Describe how you want them to look and act.** You can specify their personality, outfit, how they speak, and even what they should call you. For example: _A sleepy librarian with silver hair and a teal sweater. Speak gently, make the occasional dry joke, and call me Alex._
+3. **Choose what to make.**
+   - **Create and activate companion** makes a profile, a consistent appearance, and animations for activities such as standing, listening, reading, eating, sleeping, working, and playing, with poses for changing between activities. Once it finishes, the new pet joins your library and becomes active.
+   - **Generate profile and dialogue style** starts with their personality and way of speaking. Choose this if you want to review the profile first and decide on artwork later.
+4. **Return when it is ready.** You can close the settings panel while production runs. If interrupted, reopen the saved draft and continue from the work already completed.
 
-A GitHub 404 usually means you are signed out or your account lacks repository access.
+Full animation generation needs image generation to be available in your signed-in Codex setup. It uses your account allowance and can take a while. If image generation is unavailable, the app saves your progress and explains why.
 
-## Install on Windows
+**Already have a picture?** In **My characters → Edit persona / Import appearance**, upload an idle image first. Add optional pictures for actions like listening, thinking, working, and reacting to a setback. Missing actions use the idle picture, so one image is enough to get started. You can also try **Remove background** and restore the original if you prefer it.
 
-1. **Prepare Codex once.** If you already use the signed-in official Codex desktop app on this Windows computer, keep that installation. Otherwise install and sign in using the [official Windows guide](https://developers.openai.com/codex/app/windows/) or [Codex CLI guide](https://developers.openai.com/codex/cli/). A backend installed only inside WSL is not a native Windows backend for this app.
-2. **Close an older Anime Codex instance.** Use its tray menu to quit, rather than only closing a panel.
-3. **Download `Anime-Codex-0.8.1-win-x64.exe`** from the release page. Save it in a permanent folder such as `Documents\Anime Codex`.
-4. **Double-click the file.** It is portable: there is no installation wizard. Wait for the character and first-run guide to appear.
-5. **Hover over the character and click Chat (`聊天`).** Type below the bubble. Ordinary conversation does not require choosing a project.
+**Want to add sound?** Under **My action audio pack**, upload and preview your own recordings, then enable playback for the matching actions. Recordings are saved per character. Replies still appear as text in the speech bubble. [Audio guide](docs/ACTION_AUDIO.md)
 
-This development executable is unsigned. If Windows displays an unknown-publisher warning, verify the repository and checksum before using the launch options offered by Windows; follow your organization's software policy.
+## Interact with your pet
 
-To start again later, open the same EXE. Your characters, memories and settings are stored separately, so replacing the EXE does not erase them.
+| Try this                    | What happens                                                                                                                                                                                                                                                                             |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Hover, then choose Chat** | Type below the speech bubble. Your pet replies in its own voice. You can chat without opening a project.                                                                                                                                                                                 |
+| **Tap the character**       | Try the hair, shoulders, or hands. Taps can trigger a playful line or expression, depending on the character's artwork.                                                                                                                                                                  |
+| **Open Life**               | Give your pet something to do: read, rest, play, or take a walk. Try **Catch stars** for a quick game.                                                                                                                                                                                   |
+| **Open Life → Open arcade** | Play anime character guessing, memory pairs, or two pixel-art beagle games. Hold and release to hop between platforms, or jump and duck through a runner. The arcade opens in its own window while coding work continues.                                                                |
+| **Drag or resize**          | Move your pet by dragging it. Use the quick settings to resize it or switch to mini mode.                                                                                                                                                                                                |
+| **Keep it nearby**          | Your pet can stay on top and in the same spot while you use other windows. Transparent areas let clicks through. Panels tuck away when you switch apps and return when you come back. Use full Settings to change this behavior, let your pet follow your cursor, or turn on quiet mode. |
 
-## Install on a Mac
+If the app first opens in Chinese, hover over your pet, click the sliders icon, and open the full settings panel. Its first dropdown is the language picker. In full Settings, choose **Language** to switch between **中文 / English / 日本語**. Menus and new replies follow your choice; previous conversations stay in their original language.
 
-1. Install and sign in to native Codex using the [official CLI guide](https://developers.openai.com/codex/cli/). Confirm that a normal Terminal session can use your account.
-2. Open **Apple menu → About This Mac** and choose the matching Apple Silicon or Intel DMG above.
-3. Open the DMG, drag **Anime Codex.app** into **Applications**, then eject the disk image.
-4. Quit an older Anime Codex instance and open the new app from Applications.
-5. Hover over the character, click Chat (`聊天`) and type below the bubble.
+## What your pet can do
 
-These development packages are **ad-hoc signed and not Apple-notarized**. If macOS blocks a verified download, follow Apple's [first-launch instructions](https://support.apple.com/en-us/102445). Do not disable Gatekeeper. The optional key/mouse counter is precompiled for the matching architecture; an installed Swift toolchain is not required to use the downloaded app.
+- **Talk and remember.** Ask questions, brainstorm, or just chat. The **Memory** tab lets you review suggested memories and decide what to keep, edit, or forget. Characters keep separate conversations and memories.
+- **Help with a real project.** Open **Tasks → Give me a task**, pick a project folder, and ask for something concrete, such as explaining the project, fixing a bug, or running its tests. Codex or optional Claude Code does the work. You can follow progress, review changes, and answer approval requests. Your pet reports what happened, including failures and checks that did not run.
+- **Make tidying a game.** In **Life**, offer a file as a snack. Review the list first: if you confirm, those files move to the Trash or Recycle Bin, and the app keeps a recovery copy.
 
-## Use the companion
+## Meet the built-in characters
 
-- **Chat:** hover over the character and click `聊天`. The character's conversational brain uses your local Codex login. It can keep talking while a worker task runs.
-- **Tasks:** click `任务` → `交给我一件事 ↗`, choose the intended project folder, select Codex or Claude Code, then enter the task. Workers keep actual native sessions, tool records, output, progress and live approval requests.
-- **Programming workbench:** right-click the tray/menu-bar icon and choose `编程工作台`. Choose `桌面伙伴` to return. Finish or stop any active workbench task before switching.
-- **Settings:** click `设置` → `角色、模型与更多设置 ↗`. Select characters, appearance, personality, models/effort and companion behavior here.
-- **Memory:** use the full panel's `记忆` tab. Suggested memories require confirmation; confirmed memories can be edited or forgotten. Original conversation history remains available separately from summaries.
-- **Keep the character visible:** full Settings includes **Keep character on top** and **Keep position (dragging is still allowed)**. Both start enabled. Panels open beside the character; transparent image areas pass clicks through. By default, switching to another window collapses app panels while leaving the character visible. You can disable that preference.
-- **Move and resize:** drag the character and use the quick size slider. Settings includes idle motion, wandering, quiet mode and uploaded action audio.
-- **Mini mode:** quick Settings → `收成小挂件`; click the mini character's expand control to return.
-- **Hide versus quit:** closing a panel leaves the companion running. Use the system tray/menu-bar icon to show, temporarily hide or quit it.
-- **Recover a hidden character:** press **Ctrl+Alt+A** on Windows or **Command+Option+A** on Mac. The retained workbench also has a separate native edge-recovery tab.
+Choose a companion from **Settings → Characters, models and more settings → My characters**.
 
-The companion, workbench and games support **中文 / English / 日本語**. Open full Settings → **Language** to switch; the choice is saved and shared across app windows. Controls, tutorials, local reactions, progress/error labels, action-audio settings and native app menus follow the selection. New replies and generated profiles use that language; original chat history, user content, code, native output, diffs and approval payloads keep their original text. [Language and overlay details](docs/LANGUAGES_AND_OVERLAY.md).
+| Character          | Where they come from           | What they're like                                                                 |
+| ------------------ | ------------------------------ | --------------------------------------------------------------------------------- |
+| **Rin**            | Original Anime Codex character | Calm, curious, and quietly funny.                                                 |
+| **Furina**         | _Genshin Impact_               | Witty and theatrical, with a warm side.                                           |
+| **Nahida**         | _Genshin Impact_               | Gentle, observant, and patient when explaining things.                            |
+| **Kaguya**         | _Cosmic Princess Kaguya!_      | Playful, energetic, and full of ideas. Wears her everyday outfit with headphones. |
+| **Iroha Sakayori** | _Cosmic Princess Kaguya!_      | Practical, kind, and quietly humorous. Appears in her everyday school uniform.    |
+| **Elysia**         | _Honkai Impact 3rd_            | Bright, warm, and teasing in a friendly way.                                      |
 
-### Global keyboard and mouse rhythm — Windows and Mac
+The franchise characters are unofficial fan interpretations. See [character artwork credits](characters/FANART.md) and [Rin's artwork credits](characters/ASSETS.md).
 
-Open full Settings and enable **`跟随全局键鼠节奏（只读取计数）`**. The character reacts to overall typing/click rhythm across the ordinary desktop. This is **off by default** and runs locally without model calls.
+## Download and get started
 
-Both implementations send only aggregate `keys` and `clicks` counts to the app. They do not inspect or save key identities, typed text, clipboard data, cursor coordinates or window titles. Windows uses an in-memory .NET helper hosted by the built-in Windows PowerShell; Mac uses a bundled CoreGraphics counter. No administrator rights, keyboard-remapping driver, startup service or separate SDK is installed. Turning the option off or quitting stops the helper. The helpers also stop when their owning process disappears.
+Sign in to GitHub with access to the repository, then open the [0.8.1 release](https://github.com/Lihhan/anime-codex/releases/tag/v0.8.1). For AI chat, coding with Codex, and character creation, set up and sign in to [Codex](https://developers.openai.com/codex/cli/) on the same computer. The downloaded Anime Codex app is ready to open without building it yourself.
 
-Protected desktops and organization restrictions may limit native input monitoring. Startup failures are reported; the app does not change Windows security or execution-policy settings.
+### Install on Windows
 
-### Your own action audio
+1. Download [Anime-Codex-0.8.1-win-x64.exe](https://github.com/Lihhan/anime-codex/releases/download/v0.8.1/Anime-Codex-0.8.1-win-x64.exe) for Windows 10 or 11 on Intel or AMD x64.
+2. If you're updating, quit Anime Codex from its tray icon first.
+3. Save the EXE somewhere you can find it again and double-click it. There is no installation wizard.
+4. Hover over the pet and choose **Chat** to say hello.
 
-Open full Settings, select a character, then find `自己的动作语音包`. Upload a recording beside an action, click Preview (`试听`), and enable `播放我上传的动作语音`. Each character saves its own recordings; missing actions stay silent. Files stay on this computer. No voice model or synthesized voice is used. [Step-by-step audio instructions](docs/ACTION_AUDIO.md).
+### Install on a Mac
 
-### Codex and Claude Code
+1. Open **Apple menu → About This Mac**. On macOS 14 or later, choose the [Apple Silicon download](https://github.com/Lihhan/anime-codex/releases/download/v0.8.1/Anime-Codex-0.8.1-mac-arm64.dmg) for an M-series chip or the [Intel download](https://github.com/Lihhan/anime-codex/releases/download/v0.8.1/Anime-Codex-0.8.1-mac-x64.dmg) for an Intel processor.
+2. If you're updating, quit Anime Codex from its menu-bar icon first.
+3. Open the DMG, drag **Anime Codex.app** into **Applications**, and open it from there.
+4. Hover over the pet and choose **Chat** to say hello.
 
-Codex is required for the companion brain, memory consolidation, character research/generation and optional independent translation. Claude Code is an **optional programming worker**; it does not replace the companion brain's Codex login.
+If you lose sight of your pet, use the tray or menu-bar icon to bring it back, or press **Ctrl+Alt+A** on Windows / **Command+Option+A** on Mac. See the [release notes](https://github.com/Lihhan/anime-codex/releases/tag/v0.8.1) for first-launch details.
 
-For Claude tasks, install and sign in to **native Claude Code on the same OS** using its [official setup guide](https://code.claude.com/docs/en/setup). On Windows, use native `claude.exe`, not an npm `claude.cmd` wrapper or a WSL-only installation. The app checks PATH and `%USERPROFILE%\.local\bin\claude.exe`; an explicit executable can be chosen in workbench settings. Restart the app after changing exported environment variables.
-
-Worker tasks inherit the selected native CLI's configuration and permissions. The app does not silently replace those rules with full access. Review live approvals before accepting. A worker's completion is distinct from verification: a separately configured check command must actually pass before it is marked checked. Windows checks run with the native command processor; Mac checks use the user's shell.
-
-In the retained Claude workbench, independent translation can polish input into English and translate Claude's reply into the selected interface language using separate Codex subscription calls. Original/sent/translated text remains inspectable, and fenced/inline code is preserved byte-for-byte. Translation uses additional Codex quota and latency; it can be disabled. No CLI credentials are bundled or copied into the app. [Claude integration details](docs/CLAUDE.md) · [Companion architecture](docs/SUPERAGENT.md).
-
-### Characters and artwork
-
-Rin, Nahida, Kaguya, Iroha and Elysia each include seven validated animation sheets (112 poses) produced through the existing character pipeline. Kaguya and Iroha use their everyday designs. Custom image uploads, optional action images and idle fallback remain available. Uploading a new picture selects the portrait appearance so your picture is visible. Furina's sticker appearance includes activity transitions; PNG actions are not a Live2D rig. Character research and portrait generation depend on the native account's actual tool availability and report failures instead of substituting fabricated artwork or results.
-
-Franchise presets are unofficial fan interpretations. The code's MIT license does not grant franchise character rights. See [fan-art provenance](characters/FANART.md), [original Rin provenance](characters/ASSETS.md), [third-party notices](THIRD_PARTY_NOTICES.md), and [character production](docs/AUTOMATIC_PET_PRODUCTION.md).
-
-### File feeding
-
-File feeding requires a preview and explicit confirmation. Only then does the app make a recovery copy and move the selected regular files to the system Trash/Recycle Bin. It does not silently clean directories or empty the Trash. Restoration refuses to overwrite an existing file. [Limits and storage](docs/SUPERAGENT.md#file-feeding).
-
-## Troubleshooting
-
-| Problem                                 | What to do                                                                                                                                                                                                |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Nothing appears                         | Wait for portable extraction, check the tray/menu-bar icon, then use the recovery shortcut. Quit older copies.                                                                                            |
-| Codex cannot be found                   | Confirm a native signed-in installation exists on this OS. The app also checks supported desktop-install paths. In workbench settings, choose the actual `codex.exe` on Windows or native `codex` on Mac. |
-| Chat reports a sign-in or quota error   | Complete sign-in in the official Codex CLI/app and retry. The app preserves actual failures; a local welcome/touch line does not mean a model request succeeded.                                          |
-| Claude cannot be found                  | Install native Claude Code, sign in, then restart. Confirm `claude --version` works in a fresh terminal.                                                                                                  |
-| Keyboard rhythm cannot start on Windows | Check that built-in Windows PowerShell and .NET Framework are available and permitted by your organization. No execution-policy or security-setting changes are made by Anime Codex.                      |
-| A source ZIP contains no EXE            | Download the Windows application asset above, or use the build steps below.                                                                                                                               |
-
-Local data is normally `%APPDATA%\anime-codex\` on Windows and `~/Library/Application Support/anime-codex/` on Mac. Keep that folder to retain your library and memories when upgrading. Personal imports, account data and test reports are excluded from Git.
-
-## Build from source
-
-Use **Node.js 24**, npm and Git. In Windows PowerShell, run these lines one at a time:
-
-```powershell
-git clone https://github.com/Lihhan/anime-codex.git
-Set-Location anime-codex
-npm.cmd ci
-npm.cmd run build
-npm.cmd start
-```
-
-On Mac use `npm` instead of `npm.cmd`. Source dependencies do not install or authenticate Codex/Claude. Quit the app through its tray/menu-bar menu before ending the development terminal.
-
-Build application packages:
-
-```powershell
-# Windows x64
-npm.cmd run dist:win
-```
-
-```sh
-# Build on a Mac; Xcode Command Line Tools are needed to compile the bundled counter.
-npm run dist:mac:arm64
-npm run dist:mac:x64
-```
-
-Outputs are under `release/v0.8.1/`. To start the retained workbench directly for development, set `ANIME_CODEX_SURFACE=workbench` before `npm start`; omit it for the default companion.
-
-## Validation
-
-```powershell
-npm.cmd test
-npm.cmd run build
-npm.cmd run smoke:native
-npm.cmd run smoke:companion
-npm.cmd run smoke:input   # Windows native input-counter lifecycle and check-command test
-```
-
-CI builds Windows x64, Mac Apple Silicon and Intel packages. It checks source and packaged companion/workbench UI, native inference, native input helpers and existing safety regressions. Real model-turn tests use subscription allowance and are opt-in; UI fixtures never count as actual execution. See [version-specific validation evidence](docs/VALIDATION.md).
-
-Code: MIT. Repository: [Lihhan/anime-codex](https://github.com/Lihhan/anime-codex).
+[Character and image guide](docs/CHARACTERS.md) · [Language and desktop settings](docs/LANGUAGES_AND_OVERLAY.md) · [Developer setup](docs/DEVELOPMENT.md) · [Validation](docs/VALIDATION.md)
