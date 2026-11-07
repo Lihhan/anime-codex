@@ -2,9 +2,11 @@
 
 An AI desktop pet you can talk to, play with, and ask for coding help. Choose one of six built-in characters, bring your own artwork, or make an animated companion from an idea.
 
-<img src="public/characters/furina/idle.png" alt="Furina, a built-in Anime Codex desktop companion" width="180">
+**Furina in motion** · Three animations from her chibi appearance in the app.
 
-_Furina, one of the six built-in companions._
+|                                                 Idle                                                 |                                            Reading                                             |                                         Running                                         |
+| :--------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: |
+| <img src="docs/images/furina-chibi-idle.gif" alt="Chibi Furina blinking while standing" width="160"> | <img src="docs/images/furina-chibi-reading.gif" alt="Chibi Furina reading a book" width="160"> | <img src="docs/images/furina-chibi-running.gif" alt="Chibi Furina running" width="160"> |
 
 [Download 0.8.1](https://github.com/Lihhan/anime-codex/releases/tag/v0.8.1) · [Make your own pet](#make-your-own-ai-desktop-pet) · [Meet the characters](#meet-the-built-in-characters)
 
